@@ -60,7 +60,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
         if (!time) return '-'
         const date = new Date(time)
         if (isNaN(date.getTime())) return time.toString()
-        
+
         return date.toLocaleString('zh-CN', {
             year: 'numeric',
             month: '2-digit',
@@ -122,11 +122,11 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
             key: 'priceDescription',
             render: (desc: string, record: OrderItem) => {
                 let description = desc || ''
-                
+
                 // 如果有价格政策，添加计算详情
                 if (record.pricingPolicies && record.pricingPolicies.length > 0) {
                     const originalPrice = (record.unitPrice || 0) * (record.quantity || 1)
-                    
+
                     // 构造政策数据供计算使用
                     const policies = record.pricingPolicies.map(policy => ({
                         _id: policy.policyName, // 使用名称作为ID
@@ -134,9 +134,9 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                         type: policy.policyType,
                         discountRatio: policy.discountRatio
                     }))
-                    
+
                     const selectedPolicyIds = policies.map(p => p._id)
-                    
+
                     try {
                         const calculationResult = calculatePriceWithPolicies(
                             originalPrice,
@@ -145,7 +145,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                             selectedPolicyIds,
                             record.unit || '件'
                         )
-                        
+
                         if (calculationResult.appliedPolicy) {
                             const formattedDetails = formatCalculationDetails(calculationResult)
                             if (description) {
@@ -158,7 +158,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                         console.warn('计算价格政策详情失败:', error)
                     }
                 }
-                
+
                 return description || '-'
             }
         }
@@ -171,7 +171,9 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
             onCancel={onClose}
             footer={null}
             width={1000}
-            bodyStyle={{ maxHeight: '70vh', overflowY: 'auto' }}
+            styles={{
+                body: { maxHeight: '70vh', overflowY: 'auto' }
+            }}
         >
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 {/* 基本信息 */}
@@ -217,7 +219,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                         <Table
                             columns={itemColumns}
                             dataSource={displayData.items}
-                            rowKey={(record, index) => `${record.serviceName}-${index}`}
+                            rowKey={(record) => `${record.serviceName}-${record.serviceId || Math.random()}`}
                             pagination={false}
                             size="small"
                             scroll={{ x: 800 }}
