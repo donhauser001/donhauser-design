@@ -124,10 +124,10 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 let description = desc || ''
                 let calculationDetails = ''
 
-                                // 如果有价格政策，生成详细的计算信息
+                // 如果有价格政策，生成详细的计算信息
                 if (record.pricingPolicies && record.pricingPolicies.length > 0) {
                     const originalPrice = (record.unitPrice || 0) * (record.quantity || 1)
-                    
+
                     // 对于查看订单详情，优先使用快照中保存的详细计算结果
                     // 因为快照中包含了当时完整的计算过程和结果
                     const policyDetailsArray = record.pricingPolicies.map(policy => {
@@ -144,7 +144,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                                     discountRatio: policy.discountRatio,
                                     status: 'active'
                                 }
-                                
+
                                 const calculationResult = calculatePriceWithPolicies(
                                     originalPrice,
                                     record.quantity || 1,
@@ -152,7 +152,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                                     [policy.policyName],
                                     record.unit || '件'
                                 )
-                                
+
                                 if (calculationResult.appliedPolicy) {
                                     return formatCalculationDetails(calculationResult)
                                 }
@@ -163,22 +163,19 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                             return `${policy.policyName}: 按${policy.discountRatio}%计费`
                         }
                     })
-                    
+
                     calculationDetails = policyDetailsArray.join('<br/><br/>')
                 }
 
-                return (
+                                return (
                     <div>
                         {description && <div style={{ marginBottom: 8 }}>{description}</div>}
                         {calculationDetails && (
-                            <div
-                                style={{
-                                    backgroundColor: '#f6ffed',
-                                    padding: 8,
-                                    borderRadius: 4,
-                                    border: '1px solid #b7eb8f',
-                                    fontSize: '11px',
-                                    lineHeight: 1.4
+                            <div 
+                                style={{ 
+                                    fontSize: '12px',
+                                    lineHeight: 1.4,
+                                    color: '#666'
                                 }}
                                 dangerouslySetInnerHTML={{ __html: calculationDetails }}
                             />
