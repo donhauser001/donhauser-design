@@ -130,7 +130,26 @@ export const getColumns = ({
             dataIndex: 'createTime',
             key: 'createTime',
             width: 150,
-            render: (time: string) => time ? time.split(' ')[0] : '-'
+            render: (time: string) => {
+                if (!time) return '-'
+                
+                const date = new Date(time)
+                // 检查是否是有效日期
+                if (isNaN(date.getTime())) {
+                    // 如果是字符串格式（如 "2025-01-18"），直接返回
+                    return time.split(' ')[0]
+                }
+                
+                // 格式化为中文日期时间格式
+                return date.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                })
+            }
         },
         {
             title: '操作',
