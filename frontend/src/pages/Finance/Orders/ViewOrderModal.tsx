@@ -116,17 +116,24 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 </Text>
             )
         },
-                {
+        {
             title: '说明',
             dataIndex: 'priceDescription',
             key: 'priceDescription',
-            render: (desc: string, record: OrderItem) => {
+                        render: (desc: string, record: OrderItem) => {
                 let description = desc || ''
                 let calculationDetails = ''
+                
+                // 调试信息
+                console.log('ViewOrderModal - record:', record)
+                console.log('ViewOrderModal - pricingPolicies:', record.pricingPolicies)
                 
                 // 如果有价格政策，添加计算详情
                 if (record.pricingPolicies && record.pricingPolicies.length > 0) {
                     const originalPrice = (record.unitPrice || 0) * (record.quantity || 1)
+                    
+                    console.log('ViewOrderModal - 开始计算价格政策')
+                    console.log('ViewOrderModal - originalPrice:', originalPrice)
                     
                     // 构造政策数据供计算使用
                     const policies = record.pricingPolicies.map(policy => ({
@@ -135,6 +142,8 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                         type: policy.policyType,
                         discountRatio: policy.discountRatio
                     }))
+                    
+                    console.log('ViewOrderModal - policies:', policies)
                     
                     const selectedPolicyIds = policies.map(p => p._id)
                     
@@ -147,23 +156,26 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                             record.unit || '件'
                         )
                         
+                        console.log('ViewOrderModal - calculationResult:', calculationResult)
+                        
                         if (calculationResult.appliedPolicy) {
                             calculationDetails = formatCalculationDetails(calculationResult)
+                            console.log('ViewOrderModal - calculationDetails:', calculationDetails)
                         }
                     } catch (error) {
                         console.warn('计算价格政策详情失败:', error)
                     }
                 }
-                
+
                 return (
                     <div>
                         {description && <div style={{ marginBottom: 8 }}>{description}</div>}
                         {calculationDetails && (
-                            <div 
-                                style={{ 
-                                    backgroundColor: '#f6ffed', 
-                                    padding: 8, 
-                                    borderRadius: 4, 
+                            <div
+                                style={{
+                                    backgroundColor: '#f6ffed',
+                                    padding: 8,
+                                    borderRadius: 4,
                                     border: '1px solid #b7eb8f',
                                     fontSize: '11px',
                                     lineHeight: 1.4
