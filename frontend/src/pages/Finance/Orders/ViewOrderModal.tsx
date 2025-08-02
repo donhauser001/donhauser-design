@@ -120,25 +120,29 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
             title: '说明',
             dataIndex: 'priceDescription',
             key: 'priceDescription',
-                        render: (desc: string, record: OrderItem) => {
+            render: (desc: string, record: OrderItem) => {
                 let description = desc || ''
                 let calculationDetails = ''
-                
+
                 // 如果有价格政策，添加计算详情
                 if (record.pricingPolicies && record.pricingPolicies.length > 0) {
                     const originalPrice = (record.unitPrice || 0) * (record.quantity || 1)
-                    
+
                     // 构造政策数据供计算使用
-                    const policies = record.pricingPolicies.map(policy => ({
-                        _id: policy.policyName, // 使用名称作为ID
-                        name: policy.policyName,
-                        type: policy.policyType,
-                        discountRatio: policy.discountRatio,
-                        status: 'active' // 确保政策状态为active
-                    }))
-                    
+                    const policies = record.pricingPolicies.map(policy => {
+                        console.log('ViewOrderModal - 构造政策对象:', policy)
+                        return {
+                            _id: policy.policyName, // 使用名称作为ID
+                            name: policy.policyName,
+                            type: policy.policyType,
+                            discountRatio: policy.discountRatio,
+                            status: 'active', // 确保政策状态为active
+                            tierSettings: policy.tierSettings // 添加阶梯设置
+                        }
+                    })
+
                     const selectedPolicyIds = policies.map(p => p._id)
-                    
+
                     try {
                         const calculationResult = calculatePriceWithPolicies(
                             originalPrice,
@@ -147,7 +151,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                             selectedPolicyIds,
                             record.unit || '件'
                         )
-                        
+
                         if (calculationResult.appliedPolicy) {
                             calculationDetails = formatCalculationDetails(calculationResult)
                         }
