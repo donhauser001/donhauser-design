@@ -126,18 +126,23 @@ export const getColumns = ({
             }
         },
         {
-            title: '创建时间',
-            dataIndex: 'createTime',
-            key: 'createTime',
+            title: '更新时间',
+            key: 'updateTime',
             width: 150,
-            render: (time: string) => {
-                if (!time) return '-'
+            render: (_: any, record: Order) => {
+                const snapshots = record.snapshots || []
+                const lastSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null
                 
-                const date = new Date(time)
+                // 优先使用最后一个快照的创建时间
+                const timeToDisplay = lastSnapshot ? lastSnapshot.createdAt : record.createTime
+                
+                if (!timeToDisplay) return '-'
+                
+                const date = new Date(timeToDisplay)
                 // 检查是否是有效日期
                 if (isNaN(date.getTime())) {
                     // 如果是字符串格式（如 "2025-01-18"），直接返回
-                    return time.split(' ')[0]
+                    return timeToDisplay.toString().split(' ')[0]
                 }
                 
                 // 格式化为中文日期时间格式
