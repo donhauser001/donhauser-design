@@ -128,35 +128,18 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 if (record.pricingPolicies && record.pricingPolicies.length > 0) {
                     const originalPrice = (record.unitPrice || 0) * (record.quantity || 1)
 
-                    // 构造政策数据供计算使用
-                    const policies = record.pricingPolicies.map(policy => {
-                        console.log('ViewOrderModal - 构造政策对象:', policy)
-                        return {
-                            _id: policy.policyName, // 使用名称作为ID
-                            name: policy.policyName,
-                            type: policy.policyType,
-                            discountRatio: policy.discountRatio,
-                            status: 'active', // 确保政策状态为active
-                            tierSettings: policy.tierSettings // 添加阶梯设置
+                                        // 对于查看订单详情，直接使用快照中保存的计算详情
+                    // 因为快照已经包含了完整的计算结果，无需重新计算
+                    const policyDetails = record.pricingPolicies.map(policy => {
+                        if (policy.calculationDetails) {
+                            return policy.calculationDetails
                         }
-                    })
-
-                    const selectedPolicyIds = policies.map(p => p._id)
-
-                    try {
-                        const calculationResult = calculatePriceWithPolicies(
-                            originalPrice,
-                            record.quantity || 1,
-                            policies,
-                            selectedPolicyIds,
-                            record.unit || '件'
-                        )
-
-                        if (calculationResult.appliedPolicy) {
-                            calculationDetails = formatCalculationDetails(calculationResult)
-                        }
-                    } catch (error) {
-                        console.warn('计算价格政策详情失败:', error)
+                        // 如果没有预计算的详情，使用简单格式
+                        return `${policy.policyName}: 按${policy.discountRatio}%计费`
+                    }).join('<br/><br/>')
+                    
+                    if (policyDetails) {
+                        calculationDetails = policyDetails
                     }
                 }
 
