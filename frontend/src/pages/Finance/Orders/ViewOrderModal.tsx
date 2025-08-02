@@ -228,10 +228,16 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                         <Descriptions.Item label="客户名称">{displayData.clientName}</Descriptions.Item>
                         <Descriptions.Item label="联系人">
                             {displayData.contactNames && displayData.contactNames.length > 0 ? (
-                                displayData.contactNames.map((name, index) => {
-                                    const phone = displayData.contactPhones?.[index] || ''
-                                    return `${name}${phone ? ` ${phone}` : ''}`
-                                }).join('、')
+                                <div>
+                                    {displayData.contactNames.map((name, index) => {
+                                        const phone = displayData.contactPhones?.[index] || ''
+                                        return (
+                                            <div key={index}>
+                                                {name}{phone ? ` ${phone}` : ''}
+                                            </div>
+                                        )
+                                    })}
+                                </div>
                             ) : '无'}
                         </Descriptions.Item>
                         <Descriptions.Item label="项目名称">{displayData.projectName}</Descriptions.Item>
