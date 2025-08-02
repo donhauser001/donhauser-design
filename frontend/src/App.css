@@ -1,0 +1,16 @@
+/* 应用级样式 */
+.app-container {
+  min-height: 100vh;
+}
+
+/* 布局样式 */
+.layout-container {
+  min-height: 100vh;
+}
+
+/* 内容区域样式 */
+.content-container {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: calc(100vh - 64px);
+} 
