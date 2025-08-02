@@ -219,8 +219,8 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 {/* 订单信息 */}
                 <Card>
                     <Title level={5}>订单信息</Title>
-                                        <Descriptions 
-                        column={3} 
+                    <Descriptions
+                        column={3}
                         size="small"
                         labelStyle={{ textAlign: 'left', width: '100px' }}
                         contentStyle={{ textAlign: 'left' }}
@@ -276,8 +276,8 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 {/* 金额汇总 */}
                 <Card>
                     <Title level={5}>金额汇总</Title>
-                    <div style={{ textAlign: 'right' }}>
-                        <Space direction="vertical" size="small">
+                    <div style={{ textAlign: 'center' }}>
+                        <Space size="large">
                             <Text>项目数量: {displayData.items?.length || 0} 项</Text>
                             <Text>
                                 总金额: <Text strong>¥{displayData.totalAmount.toLocaleString()}</Text>
