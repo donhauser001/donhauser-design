@@ -124,21 +124,53 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 let description = desc || ''
                 let calculationDetails = ''
 
-                // 如果有价格政策，添加计算详情
+                                // 如果有价格政策，生成详细的计算信息
                 if (record.pricingPolicies && record.pricingPolicies.length > 0) {
                     const originalPrice = (record.unitPrice || 0) * (record.quantity || 1)
-
-                                        // 对于查看订单详情，直接使用快照中保存的计算详情
-                    // 因为快照已经包含了完整的计算结果，无需重新计算
-                    const policyDetails = record.pricingPolicies.map(policy => {
-                        if (policy.calculationDetails) {
-                            return policy.calculationDetails
-                        }
-                        // 如果没有预计算的详情，使用简单格式
-                        return `${policy.policyName}: 按${policy.discountRatio}%计费`
-                    }).join('<br/><br/>')
                     
-                    if (policyDetails) {
+                    // 构造政策数据供计算使用
+                    const policies = record.pricingPolicies.map(policy => ({
+                        _id: policy.policyName, // 使用名称作为ID
+                        name: policy.policyName,
+                        type: policy.policyType,
+                        discountRatio: policy.discountRatio,
+                        status: 'active',
+                        // 对于阶梯政策，从calculationDetails重构tierSettings（如果需要）
+                        tierSettings: policy.tierSettings || []
+                    }))
+                    
+                    const selectedPolicyIds = policies.map(p => p._id)
+                    
+                    try {
+                        const calculationResult = calculatePriceWithPolicies(
+                            originalPrice,
+                            record.quantity || 1,
+                            policies,
+                            selectedPolicyIds,
+                            record.unit || '件'
+                        )
+                        
+                        if (calculationResult.appliedPolicy) {
+                            calculationDetails = formatCalculationDetails(calculationResult)
+                        } else {
+                            // 如果计算失败，使用快照中的详情作为备用
+                            const policyDetails = record.pricingPolicies.map(policy => {
+                                if (policy.calculationDetails) {
+                                    return policy.calculationDetails
+                                }
+                                return `${policy.policyName}: 按${policy.discountRatio}%计费`
+                            }).join('<br/><br/>')
+                            calculationDetails = policyDetails
+                        }
+                    } catch (error) {
+                        console.warn('计算价格政策详情失败，使用快照数据:', error)
+                        // 备用方案：使用快照中的详情
+                        const policyDetails = record.pricingPolicies.map(policy => {
+                            if (policy.calculationDetails) {
+                                return policy.calculationDetails
+                            }
+                            return `${policy.policyName}: 按${policy.discountRatio}%计费`
+                        }).join('<br/><br/>')
                         calculationDetails = policyDetails
                     }
                 }
