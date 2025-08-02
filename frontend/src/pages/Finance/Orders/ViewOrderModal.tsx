@@ -1,6 +1,7 @@
 import React from 'react'
 import { Modal, Descriptions, Table, Tag, Typography, Card, Space, Divider } from 'antd'
 import { Order } from '../../../api/orders'
+import { calculatePriceWithPolicies, formatCalculationDetails } from '../../../components/PricePolicyCalculator'
 
 const { Title, Text } = Typography
 
@@ -89,27 +90,20 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
             title: '单价',
             dataIndex: 'unitPrice',
             key: 'unitPrice',
-            width: 100,
-            render: (price: number) => `¥${price.toLocaleString()}`
+            width: 120,
+            render: (price: number, record: OrderItem) => `¥${price.toLocaleString()}/${record.unit || '件'}`
         },
         {
             title: '价格政策',
             dataIndex: 'pricingPolicies',
             key: 'pricingPolicies',
             width: 150,
-            render: (policies: OrderItem['pricingPolicies']) => (
-                <div>
-                    {policies && policies.length > 0 ? (
-                        policies.map((policy, index) => (
-                            <Tag key={index} color="blue" style={{ marginBottom: 4 }}>
-                                {policy.policyName}
-                            </Tag>
-                        ))
-                    ) : (
-                        <Text type="secondary">无</Text>
-                    )}
-                </div>
-            )
+            render: (policies: OrderItem['pricingPolicies']) => {
+                if (!policies || policies.length === 0) {
+                    return <Text type="secondary">无政策</Text>
+                }
+                return policies.map(policy => policy.policyName).join('、')
+            }
         },
         {
             title: '折后价格',
@@ -117,7 +111,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
             key: 'discountedPrice',
             width: 120,
             render: (price: number) => (
-                <Text strong style={{ color: '#f50' }}>
+                <Text strong>
                     ¥{price.toLocaleString()}
                 </Text>
             )
@@ -126,19 +120,53 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
             title: '说明',
             dataIndex: 'priceDescription',
             key: 'priceDescription',
-            render: (desc: string) => desc || '-'
+            render: (desc: string, record: OrderItem) => {
+                let description = desc || ''
+                
+                // 如果有价格政策，添加计算详情
+                if (record.pricingPolicies && record.pricingPolicies.length > 0) {
+                    const originalPrice = (record.unitPrice || 0) * (record.quantity || 1)
+                    
+                    // 构造政策数据供计算使用
+                    const policies = record.pricingPolicies.map(policy => ({
+                        _id: policy.policyName, // 使用名称作为ID
+                        name: policy.policyName,
+                        type: policy.policyType,
+                        discountRatio: policy.discountRatio
+                    }))
+                    
+                    const selectedPolicyIds = policies.map(p => p._id)
+                    
+                    try {
+                        const calculationResult = calculatePriceWithPolicies(
+                            originalPrice,
+                            record.quantity || 1,
+                            policies,
+                            selectedPolicyIds,
+                            record.unit || '件'
+                        )
+                        
+                        if (calculationResult.appliedPolicy) {
+                            const formattedDetails = formatCalculationDetails(calculationResult)
+                            if (description) {
+                                description += '\n\n' + formattedDetails.replace(/<br\/>/g, '\n')
+                            } else {
+                                description = formattedDetails.replace(/<br\/>/g, '\n')
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('计算价格政策详情失败:', error)
+                    }
+                }
+                
+                return description || '-'
+            }
         }
     ]
 
     return (
         <Modal
-            title={
-                <Space>
-                    <span>订单详情</span>
-                    <Tag color="blue">v{displayData.version}</Tag>
-                    {order.status === 'cancelled' && <Tag color="red">已取消</Tag>}
-                </Space>
-            }
+            title={`订单详情 - v${displayData.version}${order.status === 'cancelled' ? ' (已取消)' : ''}`}
             open={visible}
             onCancel={onClose}
             footer={null}
@@ -152,17 +180,13 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                     <Descriptions column={2} size="small">
                         <Descriptions.Item label="订单号">{order.orderNo}</Descriptions.Item>
                         <Descriptions.Item label="状态">
-                            {order.status === 'normal' ? (
-                                <Tag color="green">正常</Tag>
-                            ) : (
-                                <Tag color="red">已取消</Tag>
-                            )}
+                            {order.status === 'normal' ? '正常' : '已取消'}
                         </Descriptions.Item>
                         <Descriptions.Item label="创建时间">{formatTime(order.createTime)}</Descriptions.Item>
                         <Descriptions.Item label="更新时间">{formatTime(displayData.createdAt)}</Descriptions.Item>
                         <Descriptions.Item label="当前版本">v{displayData.version}</Descriptions.Item>
                         <Descriptions.Item label="总金额">
-                            <Text strong style={{ color: '#f50', fontSize: '16px' }}>
+                            <Text strong style={{ fontSize: '16px' }}>
                                 {displayData.totalAmountRMB}
                             </Text>
                         </Descriptions.Item>
@@ -176,20 +200,10 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                         <Descriptions.Item label="客户名称">{displayData.clientName}</Descriptions.Item>
                         <Descriptions.Item label="联系人">
                             {displayData.contactNames && displayData.contactNames.length > 0 ? (
-                                <Space wrap>
-                                    {displayData.contactNames.map((name, index) => (
-                                        <Tag key={index}>{name}</Tag>
-                                    ))}
-                                </Space>
-                            ) : '无'}
-                        </Descriptions.Item>
-                        <Descriptions.Item label="联系电话">
-                            {displayData.contactPhones && displayData.contactPhones.length > 0 ? (
-                                <Space wrap>
-                                    {displayData.contactPhones.map((phone, index) => (
-                                        <Tag key={index} color="geekblue">{phone}</Tag>
-                                    ))}
-                                </Space>
+                                displayData.contactNames.map((name, index) => {
+                                    const phone = displayData.contactPhones?.[index] || ''
+                                    return `${name}${phone ? ` ${phone}` : ''}`
+                                }).join('、')
                             ) : '无'}
                         </Descriptions.Item>
                         <Descriptions.Item label="项目名称">{displayData.projectName}</Descriptions.Item>
@@ -219,8 +233,11 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                     <div style={{ textAlign: 'right' }}>
                         <Space direction="vertical" size="small">
                             <Text>项目数量: {displayData.items?.length || 0} 项</Text>
-                            <Text style={{ fontSize: '18px' }}>
-                                总金额: <Text strong style={{ color: '#f50' }}>{displayData.totalAmountRMB}</Text>
+                            <Text style={{ fontSize: '16px' }}>
+                                总金额: <Text strong>¥{displayData.totalAmount.toLocaleString()}</Text>
+                            </Text>
+                            <Text style={{ fontSize: '14px' }} type="secondary">
+                                大写: {displayData.totalAmountRMB}
                             </Text>
                         </Space>
                     </div>
