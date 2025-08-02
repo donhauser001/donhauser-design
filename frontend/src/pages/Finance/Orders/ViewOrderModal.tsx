@@ -219,7 +219,12 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 {/* 订单信息 */}
                 <Card>
                     <Title level={5}>订单信息</Title>
-                    <Descriptions column={3} size="small">
+                    <Descriptions 
+                        column={3} 
+                        size="small"
+                        labelStyle={{ textAlign: 'left' }}
+                        contentStyle={{ textAlign: 'left' }}
+                    >
                         <Descriptions.Item label="订单号">{order.orderNo}</Descriptions.Item>
                         <Descriptions.Item label="状态">
                             {order.status === 'normal' ? '正常' : '已取消'}
