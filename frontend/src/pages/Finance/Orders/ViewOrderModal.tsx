@@ -170,7 +170,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 return (
                     <div>
                         {description && (
-                            <div style={{ 
+                            <div style={{
                                 marginBottom: 8,
                                 fontSize: '14px',
                                 lineHeight: 1.4,
@@ -190,7 +190,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                             />
                         )}
                         {!description && !calculationDetails && (
-                            <span style={{ 
+                            <span style={{
                                 fontSize: '14px',
                                 lineHeight: 1.4,
                                 color: '#000'
@@ -228,8 +228,8 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                         <Descriptions.Item label="更新时间">{formatTime(displayData.createdAt)}</Descriptions.Item>
                         <Descriptions.Item label="当前版本">v{displayData.version}</Descriptions.Item>
                         <Descriptions.Item label="总金额">
-                            <Text strong style={{ fontSize: '16px' }}>
-                                {displayData.totalAmountRMB}
+                            <Text strong>
+                                ¥{displayData.totalAmount.toLocaleString()}
                             </Text>
                         </Descriptions.Item>
                     </Descriptions>
@@ -275,10 +275,10 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                     <div style={{ textAlign: 'right' }}>
                         <Space direction="vertical" size="small">
                             <Text>项目数量: {displayData.items?.length || 0} 项</Text>
-                            <Text style={{ fontSize: '16px' }}>
+                            <Text>
                                 总金额: <Text strong>¥{displayData.totalAmount.toLocaleString()}</Text>
                             </Text>
-                            <Text style={{ fontSize: '14px' }} type="secondary">
+                            <Text type="secondary">
                                 大写: {displayData.totalAmountRMB}
                             </Text>
                         </Space>
