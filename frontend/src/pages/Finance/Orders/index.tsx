@@ -13,6 +13,7 @@ import StepIndicator from './StepIndicator'
 import StepOne from './StepOne'
 import StepTwo from './StepTwo'
 import StepThree from './StepThree'
+import ViewOrderModal from './ViewOrderModal'
 
 // 导入工具函数
 import { getColumns } from './columns'
@@ -129,11 +130,27 @@ const Orders: React.FC = () => {
 
     // 添加更新订单状态
     const [updatingOrderId, setUpdatingOrderId] = React.useState<string | null>(null)
+    
+    // 查看订单模态窗状态
+    const [isViewModalVisible, setIsViewModalVisible] = React.useState(false)
+    const [viewingOrder, setViewingOrder] = React.useState<Order | null>(null)
 
     // 自定义取消处理函数
     const handleCustomModalCancel = () => {
         handleModalCancel()
         setUpdatingOrderId(null) // 重置更新状态
+    }
+
+    // 查看订单处理函数
+    const handleViewOrder = (order: Order) => {
+        setViewingOrder(order)
+        setIsViewModalVisible(true)
+    }
+
+    // 关闭查看模态窗
+    const handleViewModalClose = () => {
+        setIsViewModalVisible(false)
+        setViewingOrder(null)
     }
 
     // 使用服务选择hooks
@@ -540,7 +557,8 @@ const Orders: React.FC = () => {
                         handleConfirmOrder,
                         handleCancelOrder,
                         handleRestoreOrder,
-                        handleUpdateOrder: handleUpdateOrderClick
+                        handleUpdateOrder: handleUpdateOrderClick,
+                        handleViewOrder
                     })}
                     dataSource={filteredOrders}
                     rowKey={(record) => record._id || ''}
@@ -633,6 +651,13 @@ const Orders: React.FC = () => {
                     </Form>
                 </div>
             </Modal>
+
+            {/* 查看订单详情模态窗 */}
+            <ViewOrderModal
+                visible={isViewModalVisible}
+                order={viewingOrder}
+                onClose={handleViewModalClose}
+            />
         </div>
     )
 }

@@ -1,5 +1,5 @@
 import { Tag } from 'antd'
-import { EyeOutlined, CheckOutlined, CloseOutlined, CheckCircleOutlined } from '@ant-design/icons'
+import { EyeOutlined, EditOutlined, CheckOutlined, CloseOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import { Order } from '../../../api/orders'
 import ActionMenu, { ActionTypes } from '../../../components/ActionMenu'
 
@@ -9,6 +9,7 @@ interface ColumnsProps {
     handleCancelOrder: (order: Order) => void
     handleRestoreOrder: (order: Order) => void
     handleUpdateOrder: (order: Order) => void
+    handleViewOrder: (order: Order) => void
 }
 
 export const getColumns = ({
@@ -16,7 +17,8 @@ export const getColumns = ({
     handleConfirmOrder,
     handleCancelOrder,
     handleRestoreOrder,
-    handleUpdateOrder
+    handleUpdateOrder,
+    handleViewOrder
 }: ColumnsProps) => [
         {
             title: '订单号',
@@ -163,11 +165,19 @@ export const getColumns = ({
             render: (_: any, record: Order) => {
                 const actions = []
 
+                // 查看按钮
+                actions.push({
+                    key: 'view',
+                    label: '查看',
+                    icon: <EyeOutlined />,
+                    onClick: () => handleViewOrder(record)
+                })
+
                 // 更新按钮
                 actions.push({
                     key: 'update',
                     label: '更新',
-                    icon: <EyeOutlined />,
+                    icon: <EditOutlined />,
                     onClick: () => handleUpdateOrder(record)
                 })
 
