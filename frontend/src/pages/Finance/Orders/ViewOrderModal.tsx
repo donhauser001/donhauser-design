@@ -219,10 +219,10 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 {/* 订单信息 */}
                 <Card>
                     <Title level={5}>订单信息</Title>
-                    <Descriptions 
-                        column={3} 
+                                        <Descriptions 
+                        column={2} 
                         size="small"
-                        labelStyle={{ textAlign: 'left' }}
+                        labelStyle={{ textAlign: 'left', width: '120px' }}
                         contentStyle={{ textAlign: 'left' }}
                     >
                         <Descriptions.Item label="订单号">{order.orderNo}</Descriptions.Item>
@@ -233,11 +233,11 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                         <Descriptions.Item label="客户名称">{displayData.clientName}</Descriptions.Item>
                         <Descriptions.Item label="联系人">
                             {displayData.contactNames && displayData.contactNames.length > 0 ? (
-                                <div>
+                                <div style={{ lineHeight: '1.8' }}>
                                     {displayData.contactNames.map((name, index) => {
                                         const phone = displayData.contactPhones?.[index] || ''
                                         return (
-                                            <div key={index}>
+                                            <div key={index} style={{ marginBottom: '4px' }}>
                                                 {name}{phone ? ` ${phone}` : ''}
                                             </div>
                                         )
