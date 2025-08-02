@@ -52,7 +52,37 @@ export class ServicePricingService {
     // 根据ID列表获取服务定价
     static async getServicePricingByIds(ids: string[]): Promise<IServicePricing[]> {
         try {
-            return await ServicePricing.find({ _id: { $in: ids } })
+            const servicePricingList = await ServicePricing.find({ _id: { $in: ids } })
+
+            // 确保每个服务定价都有完整的价格政策信息
+            const enrichedServicePricing = await Promise.all(
+                servicePricingList.map(async (service) => {
+                    // 如果已经有价格政策名称，直接返回
+                    if (service.pricingPolicyNames && service.pricingPolicyNames.length > 0) {
+                        return service
+                    }
+
+                    // 如果没有价格政策名称，但有价格政策ID，则获取名称
+                    if (service.pricingPolicyIds && service.pricingPolicyIds.length > 0) {
+                        const policies = await PricingPolicy.find({ _id: { $in: service.pricingPolicyIds } })
+                        const pricingPolicyNames = policies.map(policy => policy.name)
+
+                        // 更新服务定价的价格政策名称
+                        await ServicePricing.findByIdAndUpdate(service._id, {
+                            pricingPolicyNames: pricingPolicyNames
+                        })
+
+                        return {
+                            ...service.toObject(),
+                            pricingPolicyNames: pricingPolicyNames
+                        }
+                    }
+
+                    return service
+                })
+            )
+
+            return enrichedServicePricing
         } catch (error) {
             throw new Error('获取服务定价列表失败')
         }
@@ -62,7 +92,8 @@ export class ServicePricingService {
     static async createServicePricing(data: CreateServicePricingData): Promise<IServicePricing> {
         try {
             // 获取关联数据的名称
-            const category = PricingCategoryService.prototype.getCategoryById(data.categoryId)
+            const pricingCategoryService = new PricingCategoryService()
+            const category = pricingCategoryService.getCategoryById(data.categoryId)
             const additionalConfig = data.additionalConfigId ? await AdditionalConfig.findById(data.additionalConfigId) : null
             const serviceProcess = data.serviceProcessId ? await ServiceProcess.findById(data.serviceProcessId) : null
 
@@ -90,8 +121,13 @@ export class ServicePricingService {
     // 更新服务定价
     static async updateServicePricing(id: string, data: UpdateServicePricingData): Promise<IServicePricing | null> {
         try {
+            console.log('更新服务定价 - 输入数据:', { id, data })
+
             // 获取关联数据的名称
-            const category = PricingCategoryService.prototype.getCategoryById(data.categoryId)
+            const pricingCategoryService = new PricingCategoryService()
+            const category = pricingCategoryService.getCategoryById(data.categoryId)
+            console.log('获取到的分类:', category)
+
             const additionalConfig = data.additionalConfigId ? await AdditionalConfig.findById(data.additionalConfigId) : null
             const serviceProcess = data.serviceProcessId ? await ServiceProcess.findById(data.serviceProcessId) : null
 
@@ -102,19 +138,27 @@ export class ServicePricingService {
                 pricingPolicyNames = policies.map(policy => policy.name)
             }
 
-            return await ServicePricing.findByIdAndUpdate(
+            const updateData = {
+                ...data,
+                categoryName: category?.name,
+                additionalConfigName: additionalConfig?.name,
+                serviceProcessName: serviceProcess?.name,
+                pricingPolicyNames: pricingPolicyNames
+            }
+
+            console.log('更新数据:', updateData)
+
+            const result = await ServicePricing.findByIdAndUpdate(
                 id,
-                {
-                    ...data,
-                    categoryName: category?.name,
-                    additionalConfigName: additionalConfig?.name,
-                    serviceProcessName: serviceProcess?.name,
-                    pricingPolicyNames: pricingPolicyNames
-                },
+                updateData,
                 { new: true, runValidators: true }
             )
+
+            console.log('更新结果:', result)
+            return result
         } catch (error) {
-            throw new Error('更新服务定价失败')
+            console.error('更新服务定价详细错误:', error)
+            throw new Error(`更新服务定价失败: ${error instanceof Error ? error.message : '未知错误'}`)
         }
     }
 

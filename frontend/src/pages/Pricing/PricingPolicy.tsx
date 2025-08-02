@@ -99,6 +99,11 @@ const PricingPolicy: React.FC = () => {
         try {
             const values = await policyForm.validateFields()
 
+            // 验证阶梯设置的连续性
+            if (values.type === 'tiered_discount' && values.tierSettings) {
+                validateTierSettings(values.tierSettings)
+            }
+
             const newPolicy: CreatePolicyData = {
                 name: values.name,
                 alias: values.alias,
@@ -115,6 +120,11 @@ const PricingPolicy: React.FC = () => {
             message.success('政策创建成功')
         } catch (error) {
             console.error('表单验证失败:', error)
+            if (error instanceof Error) {
+                message.error(error.message)
+            } else {
+                message.error('表单验证失败')
+            }
         }
     }
 
@@ -124,6 +134,11 @@ const PricingPolicy: React.FC = () => {
             const values = await policyForm.validateFields()
 
             if (!editingPolicy) return
+
+            // 验证阶梯设置的连续性
+            if (values.type === 'tiered_discount' && values.tierSettings) {
+                validateTierSettings(values.tierSettings)
+            }
 
             const updateData: UpdatePolicyData = {
                 name: values.name,
@@ -142,6 +157,11 @@ const PricingPolicy: React.FC = () => {
             message.success('政策更新成功')
         } catch (error) {
             console.error('表单验证失败:', error)
+            if (error instanceof Error) {
+                message.error(error.message)
+            } else {
+                message.error('表单验证失败')
+            }
         }
     }
 
@@ -167,80 +187,167 @@ const PricingPolicy: React.FC = () => {
         }
     }
 
+    // 验证阶梯设置的连续性
+    const validateTierSettings = (tierSettings: any[]) => {
+        if (!tierSettings || tierSettings.length <= 1) return true
+
+        for (let i = 0; i < tierSettings.length - 1; i++) {
+            const currentTier = tierSettings[i]
+            const nextTier = tierSettings[i + 1]
+
+            const currentEnd = currentTier.endQuantity || currentTier.startQuantity
+            const nextStart = nextTier.startQuantity
+
+            if (nextStart <= currentEnd) {
+                throw new Error(`第${i + 2}阶梯的起始数量必须大于第${i + 1}阶梯的结束数量`)
+            }
+        }
+        return true
+    }
+
     // 渲染阶梯设置
     const renderTierSettings = () => {
         return (
-            <Form.List name="tierSettings">
-                {(fields, { add, remove }) => (
-                    <div>
-                        {fields.map(({ key, name, ...restField }) => (
-                            <div key={key} style={{ marginBottom: 16, padding: 16, border: '1px solid #d9d9d9', borderRadius: 6 }}>
-                                <Row gutter={16} align="middle">
-                                    <Col span={8}>
-                                        <Form.Item
-                                            {...restField}
-                                            name={[name, 'startQuantity']}
-                                            label="起始数量"
-                                            rules={[{ required: true, message: '请输入起始数量' }]}
-                                        >
-                                            <InputNumber
-                                                min={1}
-                                                placeholder="起始数量"
-                                                style={{ width: '100%' }}
-                                                addonAfter="件"
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={8}>
-                                        <Form.Item
-                                            {...restField}
-                                            name={[name, 'endQuantity']}
-                                            label="结束数量"
-                                        >
-                                            <InputNumber
-                                                min={1}
-                                                placeholder="结束数量（可选）"
-                                                style={{ width: '100%' }}
-                                                addonAfter="件"
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={6}>
-                                        <Form.Item
-                                            {...restField}
-                                            name={[name, 'discountRatio']}
-                                            label="折扣比例"
-                                            rules={[{ required: true, message: '请输入折扣比例' }]}
-                                        >
-                                            <InputNumber
-                                                min={0}
-                                                max={100}
-                                                placeholder="0-100"
-                                                style={{ width: '100%' }}
-                                                addonAfter="%"
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                    <Col span={2}>
-                                        <MinusCircleOutlined
-                                            onClick={() => remove(name)}
-                                            style={{ color: '#ff4d4f', fontSize: '16px', cursor: 'pointer' }}
-                                        />
-                                    </Col>
-                                </Row>
-                            </div>
-                        ))}
-                        <Button
-                            type="dashed"
-                            onClick={() => add()}
-                            block
-                            icon={<PlusCircleOutlined />}
-                        >
-                            添加阶梯
-                        </Button>
+            <div>
+                <div style={{ marginBottom: 16, padding: 12, backgroundColor: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: 6 }}>
+                    <div style={{ fontWeight: 500, marginBottom: 4, color: '#52c41a' }}>阶梯设置规则：</div>
+                    <div style={{ fontSize: '12px', color: '#666', lineHeight: 1.5 }}>
+                        • 每个阶梯的起始数量必须大于上一阶梯的结束数量<br />
+                        • 结束数量不能小于起始数量（可以等于，如1-1表示单件）<br />
+                        • 阶梯之间不能有重叠区间<br />
+                        • 最后一个阶梯可以不设置结束数量（表示无上限）<br />
+                        • 示例：第1件、第2-5件、第6件以上
                     </div>
-                )}
-            </Form.List>
+                </div>
+                <Form.List name="tierSettings">
+                    {(fields, { add, remove }) => (
+                        <div>
+                            {fields.map(({ key, name, ...restField }) => (
+                                <div key={key} style={{ marginBottom: 16, padding: 16, border: '1px solid #d9d9d9', borderRadius: 6 }}>
+                                    <Row gutter={16} align="middle">
+                                        <Col span={8}>
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'startQuantity']}
+                                                label="起始数量"
+                                                rules={[
+                                                    { required: true, message: '请输入起始数量' },
+                                                    {
+                                                        validator: async (_, value) => {
+                                                            const tierSettings = policyForm.getFieldValue('tierSettings') || []
+                                                            const currentIndex = fields.findIndex(field => field.key === key)
+
+                                                            // 检查当前阶梯的起始数量是否合理
+                                                            if (currentIndex > 0) {
+                                                                const prevTier = tierSettings[currentIndex - 1]
+                                                                const prevEnd = prevTier?.endQuantity || prevTier?.startQuantity
+                                                                if (value <= prevEnd) {
+                                                                    throw new Error(`起始数量必须大于上一阶梯的结束数量`)
+                                                                }
+                                                            }
+
+                                                            // 检查后续阶梯的起始数量是否合理
+                                                            if (currentIndex < tierSettings.length - 1) {
+                                                                const nextTier = tierSettings[currentIndex + 1]
+                                                                const currentEnd = tierSettings[currentIndex]?.endQuantity || value
+                                                                if (nextTier?.startQuantity <= currentEnd) {
+                                                                    throw new Error(`下一阶梯的起始数量必须大于当前阶梯的结束数量`)
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                ]}
+                                            >
+                                                <InputNumber
+                                                    min={1}
+                                                    placeholder="起始数量"
+                                                    style={{ width: '100%' }}
+                                                    addonAfter="件"
+                                                />
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={8}>
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'endQuantity']}
+                                                label="结束数量"
+                                                rules={[
+                                                    {
+                                                        validator: async (_, value) => {
+                                                            if (value) {
+                                                                const startQuantity = policyForm.getFieldValue(['tierSettings', name, 'startQuantity'])
+                                                                if (value < startQuantity) {
+                                                                    throw new Error('结束数量不能小于起始数量')
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                ]}
+                                            >
+                                                <InputNumber
+                                                    min={1}
+                                                    placeholder="结束数量（可选）"
+                                                    style={{ width: '100%' }}
+                                                    addonAfter="件"
+                                                />
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={6}>
+                                            <Form.Item
+                                                {...restField}
+                                                name={[name, 'discountRatio']}
+                                                label="折扣比例"
+                                                rules={[{ required: true, message: '请输入折扣比例' }]}
+                                            >
+                                                <InputNumber
+                                                    min={0}
+                                                    max={100}
+                                                    placeholder="0-100"
+                                                    style={{ width: '100%' }}
+                                                    addonAfter="%"
+                                                />
+                                            </Form.Item>
+                                        </Col>
+                                        <Col span={2}>
+                                            <MinusCircleOutlined
+                                                onClick={() => remove(name)}
+                                                style={{ color: '#ff4d4f', fontSize: '16px', cursor: 'pointer' }}
+                                            />
+                                        </Col>
+                                    </Row>
+                                </div>
+                            ))}
+                            <Button
+                                type="dashed"
+                                onClick={() => {
+                                    const currentTierSettings = policyForm.getFieldValue('tierSettings') || []
+                                    let nextStartQuantity = 1
+
+                                    if (currentTierSettings.length > 0) {
+                                        const lastTier = currentTierSettings[currentTierSettings.length - 1]
+                                        const lastEnd = lastTier.endQuantity || lastTier.startQuantity
+                                        nextStartQuantity = lastEnd + 1
+                                    }
+
+                                    // 如果是第一个阶梯，默认设置为单件阶梯（1-1）
+                                    const isFirstTier = currentTierSettings.length === 0
+                                    const defaultEndQuantity = isFirstTier ? 1 : undefined
+
+                                    add({
+                                        startQuantity: nextStartQuantity,
+                                        endQuantity: defaultEndQuantity,
+                                        discountRatio: 100
+                                    })
+                                }}
+                                block
+                                icon={<PlusCircleOutlined />}
+                            >
+                                添加阶梯
+                            </Button>
+                        </div>
+                    )}
+                </Form.List>
+            </div>
         )
     }
 

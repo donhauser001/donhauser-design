@@ -11,6 +11,7 @@ export * from './AdditionalConfig';
 export * from './PricingPolicy';
 export * from './ServicePricing';
 export * from './Quotation';
+export * from './OrderVersion';
 
 export interface Project {
   id: string;
