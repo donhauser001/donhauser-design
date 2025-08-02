@@ -210,7 +210,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
             open={visible}
             onCancel={onClose}
             footer={null}
-            width={1000}
+            width={1200}
             styles={{
                 body: { maxHeight: '70vh', overflowY: 'auto' }
             }}
@@ -220,9 +220,9 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 <Card>
                     <Title level={5}>订单信息</Title>
                                         <Descriptions 
-                        column={2} 
+                        column={3} 
                         size="small"
-                        labelStyle={{ textAlign: 'left', width: '120px' }}
+                        labelStyle={{ textAlign: 'left', width: '100px' }}
                         contentStyle={{ textAlign: 'left' }}
                     >
                         <Descriptions.Item label="订单号">{order.orderNo}</Descriptions.Item>
