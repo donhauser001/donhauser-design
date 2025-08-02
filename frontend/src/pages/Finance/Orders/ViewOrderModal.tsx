@@ -216,29 +216,15 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
             }}
         >
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                {/* 基本信息 */}
+                {/* 订单信息 */}
                 <Card>
-                    <Title level={5}>基本信息</Title>
-                    <Descriptions column={2} size="small">
+                    <Title level={5}>订单信息</Title>
+                    <Descriptions column={3} size="small">
                         <Descriptions.Item label="订单号">{order.orderNo}</Descriptions.Item>
                         <Descriptions.Item label="状态">
                             {order.status === 'normal' ? '正常' : '已取消'}
                         </Descriptions.Item>
-                        <Descriptions.Item label="创建时间">{formatTime(order.createTime)}</Descriptions.Item>
-                        <Descriptions.Item label="更新时间">{formatTime(displayData.createdAt)}</Descriptions.Item>
                         <Descriptions.Item label="当前版本">v{displayData.version}</Descriptions.Item>
-                        <Descriptions.Item label="总金额">
-                            <Text strong>
-                                ¥{displayData.totalAmount.toLocaleString()}
-                            </Text>
-                        </Descriptions.Item>
-                    </Descriptions>
-                </Card>
-
-                {/* 客户信息 */}
-                <Card>
-                    <Title level={5}>客户信息</Title>
-                    <Descriptions column={1} size="small">
                         <Descriptions.Item label="客户名称">{displayData.clientName}</Descriptions.Item>
                         <Descriptions.Item label="联系人">
                             {displayData.contactNames && displayData.contactNames.length > 0 ? (
@@ -249,6 +235,13 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                             ) : '无'}
                         </Descriptions.Item>
                         <Descriptions.Item label="项目名称">{displayData.projectName}</Descriptions.Item>
+                        <Descriptions.Item label="创建时间">{formatTime(order.createTime)}</Descriptions.Item>
+                        <Descriptions.Item label="更新时间">{formatTime(displayData.createdAt)}</Descriptions.Item>
+                        <Descriptions.Item label="总金额">
+                            <Text strong>
+                                ¥{displayData.totalAmount.toLocaleString()}
+                            </Text>
+                        </Descriptions.Item>
                     </Descriptions>
                 </Card>
 
