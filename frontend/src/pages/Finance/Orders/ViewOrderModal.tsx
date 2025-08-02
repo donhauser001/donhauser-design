@@ -124,26 +124,18 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 let description = desc || ''
                 let calculationDetails = ''
                 
-                // 调试信息
-                console.log('ViewOrderModal - record:', record)
-                console.log('ViewOrderModal - pricingPolicies:', record.pricingPolicies)
-                
                 // 如果有价格政策，添加计算详情
                 if (record.pricingPolicies && record.pricingPolicies.length > 0) {
                     const originalPrice = (record.unitPrice || 0) * (record.quantity || 1)
-                    
-                    console.log('ViewOrderModal - 开始计算价格政策')
-                    console.log('ViewOrderModal - originalPrice:', originalPrice)
                     
                     // 构造政策数据供计算使用
                     const policies = record.pricingPolicies.map(policy => ({
                         _id: policy.policyName, // 使用名称作为ID
                         name: policy.policyName,
                         type: policy.policyType,
-                        discountRatio: policy.discountRatio
+                        discountRatio: policy.discountRatio,
+                        status: 'active' // 确保政策状态为active
                     }))
-                    
-                    console.log('ViewOrderModal - policies:', policies)
                     
                     const selectedPolicyIds = policies.map(p => p._id)
                     
@@ -156,11 +148,8 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                             record.unit || '件'
                         )
                         
-                        console.log('ViewOrderModal - calculationResult:', calculationResult)
-                        
                         if (calculationResult.appliedPolicy) {
                             calculationDetails = formatCalculationDetails(calculationResult)
-                            console.log('ViewOrderModal - calculationDetails:', calculationDetails)
                         }
                     } catch (error) {
                         console.warn('计算价格政策详情失败:', error)
