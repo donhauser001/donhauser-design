@@ -167,20 +167,37 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                     calculationDetails = policyDetailsArray.join('<br/><br/>')
                 }
 
-                                return (
+                return (
                     <div>
-                        {description && <div style={{ marginBottom: 8 }}>{description}</div>}
+                        {description && (
+                            <div style={{ 
+                                marginBottom: 8,
+                                fontSize: '14px',
+                                lineHeight: 1.4,
+                                color: '#000'
+                            }}>
+                                {description}
+                            </div>
+                        )}
                         {calculationDetails && (
-                            <div 
-                                style={{ 
-                                    fontSize: '12px',
+                            <div
+                                style={{
+                                    fontSize: '14px',
                                     lineHeight: 1.4,
-                                    color: '#666'
+                                    color: '#000'
                                 }}
                                 dangerouslySetInnerHTML={{ __html: calculationDetails }}
                             />
                         )}
-                        {!description && !calculationDetails && '-'}
+                        {!description && !calculationDetails && (
+                            <span style={{ 
+                                fontSize: '14px',
+                                lineHeight: 1.4,
+                                color: '#000'
+                            }}>
+                                -
+                            </span>
+                        )}
                     </div>
                 )
             }
