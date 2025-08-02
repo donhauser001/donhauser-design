@@ -125,7 +125,7 @@ const Orders: React.FC = () => {
         handleModalCancel,
         handleCreateOrder,
         handleUpdateOrder
-    } = useOrderModal(clients, fetchServiceDetails)
+    } = useOrderModal(clients, fetchServiceDetails, fetchOrders)
 
     // 添加更新订单状态
     const [updatingOrderId, setUpdatingOrderId] = React.useState<string | null>(null)
@@ -429,24 +429,8 @@ const Orders: React.FC = () => {
                 console.error('获取客户和联系人信息失败:', error)
             }
 
-            // 设置价格政策
-            const policiesData = lastSnapshot.items.flatMap((item: any) =>
-                item.pricingPolicies.map((policy: any) => ({
-                    _id: policy.policyId,
-                    serviceId: item.serviceId,
-                    policyId: policy.policyId,
-                    name: policy.policyName,
-                    type: policy.policyType,
-                    discountRatio: policy.discountRatio,
-                    alias: '',
-                    summary: '',
-                    validUntil: '',
-                    status: 'active' as const,
-                    createTime: '',
-                    updateTime: ''
-                })) as any
-            )
-            setPolicies(policiesData)
+            // 注意：不要覆盖全局的价格政策数据，保持使用系统中的完整政策信息
+            // 价格政策应该已经在组件初始化时正确加载了
 
             // 获取报价单信息并加载服务项目
             if (lastSnapshot.projectInfo.quotationId) {

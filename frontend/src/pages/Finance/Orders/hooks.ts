@@ -58,7 +58,7 @@ export const useClients = () => {
     return { clients }
 }
 
-export const useOrderModal = (clients: Client[], fetchServiceDetails: (serviceIds: string[]) => Promise<void>) => {
+export const useOrderModal = (clients: Client[], fetchServiceDetails: (serviceIds: string[]) => Promise<void>, fetchOrders?: () => Promise<void>) => {
     const [isModalVisible, setIsModalVisible] = useState(false)
     const [currentStep, setCurrentStep] = useState(1)
     const [selectedContactIds, setSelectedContactIds] = useState<string[]>([])
@@ -188,7 +188,9 @@ export const useOrderModal = (clients: Client[], fetchServiceDetails: (serviceId
                 setIsModalVisible(false)
                 resetModalState()
                 // 刷新订单列表
-                window.location.reload()
+                if (fetchOrders) {
+                    await fetchOrders()
+                }
             } else {
                 message.error('订单创建失败')
             }
@@ -256,7 +258,9 @@ export const useOrderModal = (clients: Client[], fetchServiceDetails: (serviceId
                 setIsModalVisible(false)
                 resetModalState()
                 // 刷新订单列表
-                window.location.reload()
+                if (fetchOrders) {
+                    await fetchOrders()
+                }
             } else {
                 message.error('订单更新失败')
             }
