@@ -23,6 +23,14 @@ export const getColumns = ({
             dataIndex: 'orderNo',
             key: 'orderNo',
             width: 150,
+            render: (orderNo: string, record: Order) => (
+                <div>
+                    <span>{orderNo}</span>
+                    {record.status === 'cancelled' && (
+                        <Tag color="red" style={{ marginLeft: 8 }}>已取消</Tag>
+                    )}
+                </div>
+            )
         },
         {
             title: '客户',
@@ -100,23 +108,6 @@ export const getColumns = ({
                     const itemCount = currentSnapshot?.items?.length || 0
                     return `¥${amount.toLocaleString()} (${itemCount}项)`
                 }
-            }
-        },
-        {
-            title: '状态',
-            dataIndex: 'status',
-            key: 'status',
-            width: 100,
-            render: (status: string) => {
-                const colorMap: { [key: string]: string } = {
-                    'normal': 'green',
-                    'cancelled': 'red'
-                }
-                const textMap: { [key: string]: string } = {
-                    'normal': '正常',
-                    'cancelled': '已取消'
-                }
-                return <Tag color={colorMap[status]}>{textMap[status]}</Tag>
             }
         },
         {
