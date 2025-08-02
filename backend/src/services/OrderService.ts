@@ -1,6 +1,7 @@
 import { Order, IOrder, IOrderSnapshot, IOrderItemSnapshot } from '../models/Order'
 import { OrderVersionService } from './OrderVersionService'
 import { convertToRMB } from '../utils/rmbConverter'
+import { calculatePriceWithPolicies } from '../utils/pricePolicyCalculator'
 
 export class OrderService {
     private orderVersionService = new OrderVersionService()
@@ -315,28 +316,27 @@ export class OrderService {
             const quantity = service.quantity || 1
             const originalPrice = (service.unitPrice || 0) * quantity
 
-            // 计算折扣价格
-            let discountedPrice = originalPrice
-            let discountAmount = 0
+            // 使用正确的价格政策计算逻辑
+            const calculationResult = calculatePriceWithPolicies(
+                originalPrice,
+                quantity,
+                policies,
+                service.selectedPolicies || [],
+                service.unit || '件'
+            )
+
+            const discountedPrice = calculationResult.discountedPrice
+            const discountAmount = calculationResult.discountAmount
             const pricingPolicies: any[] = []
 
-            if (service.selectedPolicies && service.selectedPolicies.length > 0) {
-                // 这里应该调用价格政策计算逻辑
-                // 简化处理，实际应该使用 PricePolicyCalculator
-                const policy = policies.find(p => p._id === service.selectedPolicies[0])
-                if (policy) {
-                    const discountRatio = policy.discountRatio || 100
-                    discountedPrice = originalPrice * (discountRatio / 100)
-                    discountAmount = originalPrice - discountedPrice
-
-                    pricingPolicies.push({
-                        policyId: policy._id,
-                        policyName: policy.name,
-                        policyType: policy.type,
-                        discountRatio: policy.discountRatio || 100,
-                        calculationDetails: `应用政策: ${policy.name}, 计费比例: ${discountRatio}%`
-                    })
-                }
+            if (calculationResult.appliedPolicy) {
+                pricingPolicies.push({
+                    policyId: calculationResult.appliedPolicy._id,
+                    policyName: calculationResult.appliedPolicy.name,
+                    policyType: calculationResult.appliedPolicy.type,
+                    discountRatio: calculationResult.discountRatio,
+                    calculationDetails: calculationResult.calculationDetails
+                })
             }
 
             return {
