@@ -1,5 +1,6 @@
-import React from 'react'
-import { Modal, Descriptions, Table, Typography, Card, Space } from 'antd'
+import React, { useState, useEffect } from 'react'
+import { Modal, Descriptions, Table, Typography, Card, Space, Dropdown, Button } from 'antd'
+import { DownOutlined } from '@ant-design/icons'
 import { Order } from '../../../api/orders'
 import { calculatePriceWithPolicies, formatCalculationDetails } from '../../../components/PricePolicyCalculator'
 
@@ -29,21 +30,40 @@ interface OrderItem {
 const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose }) => {
     if (!order) return null
 
-    // 获取最后一个快照的数据
-    const snapshots = order.snapshots || []
-    const lastSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null
+    // 版本选择状态：默认选择最后一个版本（索引-1表示使用最后一个）
+    const [selectedVersionIndex, setSelectedVersionIndex] = useState<number>(-1)
 
-    // 使用最后一个快照的数据，如果没有快照则使用订单基本数据
-    const displayData = lastSnapshot ? {
-        clientName: lastSnapshot.clientInfo.clientName,
-        contactNames: lastSnapshot.clientInfo.contactNames,
-        contactPhones: lastSnapshot.clientInfo.contactPhones,
-        projectName: lastSnapshot.projectInfo.projectName,
-        totalAmount: lastSnapshot.totalAmount,
-        totalAmountRMB: lastSnapshot.totalAmountRMB,
-        items: lastSnapshot.items,
-        version: lastSnapshot.version,
-        createdAt: lastSnapshot.createdAt
+    // 获取所有快照数据
+    const snapshots = order.snapshots || []
+    
+    // 重置版本选择当订单改变时
+    useEffect(() => {
+        setSelectedVersionIndex(-1) // 默认选择最后一个版本
+    }, [order._id])
+
+    // 根据选中的版本获取数据
+    const getSelectedSnapshot = () => {
+        if (snapshots.length === 0) return null
+        if (selectedVersionIndex === -1) {
+            // 选择最后一个版本
+            return snapshots[snapshots.length - 1]
+        }
+        return snapshots[selectedVersionIndex] || null
+    }
+
+    const selectedSnapshot = getSelectedSnapshot()
+
+    // 使用选中版本的数据，如果没有快照则使用订单基本数据
+    const displayData = selectedSnapshot ? {
+        clientName: selectedSnapshot.clientInfo.clientName,
+        contactNames: selectedSnapshot.clientInfo.contactNames,
+        contactPhones: selectedSnapshot.clientInfo.contactPhones,
+        projectName: selectedSnapshot.projectInfo.projectName,
+        totalAmount: selectedSnapshot.totalAmount,
+        totalAmountRMB: selectedSnapshot.totalAmountRMB,
+        items: selectedSnapshot.items,
+        version: selectedSnapshot.version,
+        createdAt: selectedSnapshot.createdAt
     } : {
         clientName: order.clientName,
         contactNames: order.contactNames,
@@ -55,6 +75,20 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
         version: order.currentVersion,
         createdAt: order.createTime
     }
+
+    // 创建版本菜单项（按时间倒序：最新在前）
+    const versionMenuItems = snapshots
+        .map((snapshot, index) => ({
+            key: index.toString(),
+            label: index === snapshots.length - 1 
+                ? `v${snapshot.version} (最新)` 
+                : `v${snapshot.version}`,
+            onClick: () => setSelectedVersionIndex(index === snapshots.length - 1 ? -1 : index)
+        }))
+        .reverse() // 倒序，最新版本在顶部
+
+    // 判断是否只有一个版本
+    const hasMultipleVersions = snapshots.length > 1
 
     // 格式化时间显示
     const formatTime = (time: string | Date) => {
@@ -214,7 +248,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
 
     return (
         <Modal
-            title={`订单详情 - v${displayData.version}${order.status === 'cancelled' ? ' (已取消)' : ''}`}
+            title={`订单详情 - v${displayData.version}${selectedVersionIndex === -1 ? ' (最新)' : ''}${order.status === 'cancelled' ? ' (已取消)' : ''}`}
             open={visible}
             onCancel={onClose}
             footer={null}
@@ -237,7 +271,21 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                         <Descriptions.Item label="状态">
                             {order.status === 'normal' ? '正常' : '已取消'}
                         </Descriptions.Item>
-                        <Descriptions.Item label="当前版本">v{displayData.version}</Descriptions.Item>
+                        <Descriptions.Item label="当前版本">
+                            {hasMultipleVersions ? (
+                                <Dropdown 
+                                    menu={{ items: versionMenuItems }}
+                                    trigger={['click']}
+                                >
+                                    <Button size="small" type="link" style={{ padding: 0, height: 'auto' }}>
+                                        v{displayData.version} 
+                                        <DownOutlined style={{ marginLeft: 4, fontSize: 10 }} />
+                                    </Button>
+                                </Dropdown>
+                            ) : (
+                                <span>v{displayData.version}</span>
+                            )}
+                        </Descriptions.Item>
                         <Descriptions.Item label="客户名称">{displayData.clientName}</Descriptions.Item>
                         <Descriptions.Item label="联系人">
                             {displayData.contactNames && displayData.contactNames.length > 0 ? (
