@@ -35,7 +35,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
 
     // 获取所有快照数据
     const snapshots = order.snapshots || []
-    
+
     // 重置版本选择当订单改变时
     useEffect(() => {
         setSelectedVersionIndex(-1) // 默认选择最后一个版本
@@ -80,8 +80,8 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
     const versionMenuItems = snapshots
         .map((snapshot, index) => ({
             key: index.toString(),
-            label: index === snapshots.length - 1 
-                ? `v${snapshot.version} (最新)` 
+            label: index === snapshots.length - 1
+                ? `v${snapshot.version} (最新)`
                 : `v${snapshot.version}`,
             onClick: () => setSelectedVersionIndex(index === snapshots.length - 1 ? -1 : index)
         }))
@@ -272,18 +272,60 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                             {order.status === 'normal' ? '正常' : '已取消'}
                         </Descriptions.Item>
                         <Descriptions.Item label="当前版本">
-                            {hasMultipleVersions ? (
+                                                        {hasMultipleVersions ? (
                                 <Dropdown 
                                     menu={{ items: versionMenuItems }}
                                     trigger={['click']}
+                                    placement="bottomLeft"
                                 >
-                                    <Button size="small" type="link" style={{ padding: 0, height: 'auto' }}>
+                                    <Button 
+                                        size="small" 
+                                        style={{ 
+                                            padding: '4px 8px',
+                                            height: 'auto',
+                                            border: '1px solid #d9d9d9',
+                                            borderRadius: '6px',
+                                            backgroundColor: '#fafafa',
+                                            color: '#262626',
+                                            fontSize: '13px',
+                                            fontWeight: 500,
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            lineHeight: 1.2
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#f0f0f0'
+                                            e.currentTarget.style.borderColor = '#40a9ff'
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#fafafa'
+                                            e.currentTarget.style.borderColor = '#d9d9d9'
+                                        }}
+                                    >
                                         v{displayData.version} 
-                                        <DownOutlined style={{ marginLeft: 4, fontSize: 10 }} />
+                                        <DownOutlined style={{ 
+                                            marginLeft: 6, 
+                                            fontSize: 10,
+                                            color: '#8c8c8c'
+                                        }} />
                                     </Button>
                                 </Dropdown>
                             ) : (
-                                <span>v{displayData.version}</span>
+                                <span style={{
+                                    padding: '4px 8px',
+                                    border: '1px solid #e8e8e8',
+                                    borderRadius: '6px',
+                                    backgroundColor: '#f8f8f8',
+                                    color: '#8c8c8c',
+                                    fontSize: '13px',
+                                    fontWeight: 500,
+                                    display: 'inline-block',
+                                    lineHeight: 1.2
+                                }}>
+                                    v{displayData.version}
+                                </span>
                             )}
                         </Descriptions.Item>
                         <Descriptions.Item label="客户名称">{displayData.clientName}</Descriptions.Item>
