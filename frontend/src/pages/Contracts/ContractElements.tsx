@@ -255,7 +255,7 @@ const ContractElements: React.FC = () => {
             title: '更新时间',
             dataIndex: 'updateTime',
             key: 'updateTime',
-            width: 160,
+            width: 180,
             render: (text: string) => {
                 if (!text) return '-'
                 try {
