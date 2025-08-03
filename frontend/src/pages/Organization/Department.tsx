@@ -322,76 +322,78 @@ const Department: React.FC = () => {
                 okText="确认"
                 cancelText="取消"
             >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    initialValues={{
-                        status: 'active'
-                    }}
-                >
-                    <Form.Item
-                        name="enterpriseId"
-                        label="所属企业"
-                        rules={[
-                            { required: true, message: '请选择所属企业' }
-                        ]}
+                {isModalVisible && (
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        initialValues={{
+                            status: 'active'
+                        }}
                     >
-                        <Select
-                            placeholder="请选择所属企业"
-                            onChange={(value) => {
-                                form.setFieldsValue({ parentId: undefined })
-                            }}
+                        <Form.Item
+                            name="enterpriseId"
+                            label="所属企业"
+                            rules={[
+                                { required: true, message: '请选择所属企业' }
+                            ]}
                         >
-                            {enterprises.map(enterprise => (
-                                <Option key={enterprise.id} value={enterprise.id}>
-                                    {enterprise.enterpriseName}
-                                </Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-
-                    <Form.Item
-                        name="name"
-                        label="部门名称"
-                        rules={[
-                            { required: true, message: '请输入部门名称' }
-                        ]}
-                    >
-                        <Input placeholder="请输入部门名称" />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="parentId"
-                        label="上级部门"
-                    >
-                        <Select
-                            placeholder="请选择上级部门"
-                            disabled={!form.getFieldValue('enterpriseId')}
-                        >
-                            <Option value="">无</Option>
-                            {form.getFieldValue('enterpriseId') &&
-                                getParentDepartmentOptions(form.getFieldValue('enterpriseId')).map(option => (
-                                    <Option key={option.value} value={option.value}>
-                                        {option.label}
+                            <Select
+                                placeholder="请选择所属企业"
+                                onChange={(value) => {
+                                    form.setFieldsValue({ parentId: undefined })
+                                }}
+                            >
+                                {enterprises.map(enterprise => (
+                                    <Option key={enterprise.id} value={enterprise.id}>
+                                        {enterprise.enterpriseName}
                                     </Option>
-                                ))
-                            }
-                        </Select>
-                    </Form.Item>
+                                ))}
+                            </Select>
+                        </Form.Item>
 
-                    <Form.Item
-                        name="status"
-                        label="状态"
-                        rules={[
-                            { required: true, message: '请选择状态' }
-                        ]}
-                    >
-                        <Select placeholder="请选择状态">
-                            <Option value="active">启用</Option>
-                            <Option value="inactive">禁用</Option>
-                        </Select>
-                    </Form.Item>
-                </Form>
+                        <Form.Item
+                            name="name"
+                            label="部门名称"
+                            rules={[
+                                { required: true, message: '请输入部门名称' }
+                            ]}
+                        >
+                            <Input placeholder="请输入部门名称" />
+                        </Form.Item>
+
+                        <Form.Item
+                            name="parentId"
+                            label="上级部门"
+                        >
+                            <Select
+                                placeholder="请选择上级部门"
+                                disabled={!form.getFieldValue('enterpriseId')}
+                            >
+                                <Option value="">无</Option>
+                                {form.getFieldValue('enterpriseId') &&
+                                    getParentDepartmentOptions(form.getFieldValue('enterpriseId')).map(option => (
+                                        <Option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </Option>
+                                    ))
+                                }
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item
+                            name="status"
+                            label="状态"
+                            rules={[
+                                { required: true, message: '请选择状态' }
+                            ]}
+                        >
+                            <Select placeholder="请选择状态">
+                                <Option value="active">启用</Option>
+                                <Option value="inactive">禁用</Option>
+                            </Select>
+                        </Form.Item>
+                    </Form>
+                )}
             </Modal>
         </div>
     )

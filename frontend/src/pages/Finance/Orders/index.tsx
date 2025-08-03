@@ -40,15 +40,12 @@ const Orders: React.FC = () => {
     // 添加缺失的状态变量
     const [quotations, setQuotations] = React.useState<any[]>([])
 
-    const { clients } = useClients()
+    const { clients, loading: clientLoading, fetchClients } = useClients()
 
     // 获取服务项目详细信息
     const fetchServiceDetails = async (serviceIds: string[], updateModeData?: { items: any[] }) => {
         try {
-            console.log('开始获取服务项目详情，服务ID:', serviceIds, '更新模式:', !!updateModeData)
-
             if (serviceIds.length === 0) {
-                console.log('服务ID列表为空')
                 setServiceDetails([])
                 return
             }
@@ -58,8 +55,6 @@ const Orders: React.FC = () => {
                     ids: serviceIds.join(',')
                 }
             })
-
-            console.log('服务项目API响应:', response.data)
 
             if (response.data.success) {
                 let servicesWithQuantity = response.data.data.map((service: any) => ({
@@ -89,10 +84,8 @@ const Orders: React.FC = () => {
                 if (!updateModeData) {
                     setSelectedServices([])
                 }
-
-                console.log('成功获取服务项目:', servicesWithQuantity.length, '个')
             } else {
-                console.log('获取服务项目详情失败:', response.data.message)
+                console.error('获取服务项目详情失败:', response.data.message)
                 setServiceDetails([])
             }
         } catch (error) {
@@ -194,39 +187,36 @@ const Orders: React.FC = () => {
                 // 获取该客户的联系人列表 - 包含已禁用的联系人
                 const contactsResponse = await axios.get('/api/users', {
                     params: {
-                        role: '客户'
+                        role: '客户',
+                        page: 1,
+                        limit: 1000 // 获取所有联系人，不使用分页限制
                     }
                 })
 
                 if (contactsResponse.data.success) {
                     // 过滤出属于该公司的联系人
                     const clientContacts = contactsResponse.data.data.filter((contact: Contact) => {
-                        return contact.company === (client.companyName || client.name)
+                        const clientName = client.name || client.companyName || ''
+                        const contactCompany = contact.company || ''
+                        return contactCompany === clientName
                     })
                     setContacts(clientContacts)
-
-                    console.log('客户公司名称:', client.companyName || client.name)
-                    console.log('找到的联系人:', clientContacts)
                 }
 
                 // 根据客户的quotationId获取报价单
                 if (client.quotationId) {
-                    console.log('客户有关联报价单，ID:', client.quotationId)
                     try {
                         const quotationResponse = await axios.get(`/api/quotations/${client.quotationId}`)
-                        console.log('报价单API响应:', quotationResponse.data)
 
                         if (quotationResponse.data.success) {
                             const quotation = quotationResponse.data.data
                             setQuotations([quotation])
                             setSelectedQuotation(quotation)
-                            console.log('获取到报价单:', quotation.name, '服务数量:', quotation.selectedServices?.length || 0)
 
                             // 获取服务项目详情
                             if (quotation.selectedServices && quotation.selectedServices.length > 0) {
                                 await fetchServiceDetails(quotation.selectedServices)
                             } else {
-                                console.log('报价单没有关联的服务项目')
                                 setServiceDetails([])
                             }
                         }
@@ -238,7 +228,6 @@ const Orders: React.FC = () => {
                         setServiceDetails([])
                     }
                 } else {
-                    console.log('客户没有关联报价单，尝试获取所有活跃报价单')
                     // 如果客户没有关联报价单，获取所有活跃的报价单
                     const quotationsResponse = await axios.get('/api/quotations', {
                         params: {
@@ -246,27 +235,21 @@ const Orders: React.FC = () => {
                         }
                     })
 
-                    console.log('所有报价单API响应:', quotationsResponse.data)
-
                     if (quotationsResponse.data.success) {
                         const allQuotations = quotationsResponse.data.data
-                        console.log('找到报价单数量:', allQuotations.length)
 
                         setQuotations(allQuotations)
                         if (allQuotations.length > 0) {
                             const quotation = allQuotations[0]
                             setSelectedQuotation(quotation)
-                            console.log('选择第一个报价单:', quotation.name, '服务数量:', quotation.selectedServices?.length || 0)
 
                             // 获取服务项目详情
                             if (quotation.selectedServices && quotation.selectedServices.length > 0) {
                                 await fetchServiceDetails(quotation.selectedServices)
                             } else {
-                                console.log('报价单没有关联的服务项目')
                                 setServiceDetails([])
                             }
                         } else {
-                            console.log('没有找到任何活跃的报价单')
                             setServiceDetails([])
                         }
                     }
@@ -612,6 +595,8 @@ const Orders: React.FC = () => {
                                 }}
                                 onNext={() => setCurrentStep(2)}
                                 onCancel={handleCustomModalCancel}
+                                onClientSearch={fetchClients}
+                                clientLoading={clientLoading}
                             />
                         )}
 

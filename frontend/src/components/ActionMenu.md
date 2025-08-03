@@ -36,6 +36,7 @@ import ActionMenu, { ActionTypes } from '../../components/ActionMenu'
 ## 预定义操作类型
 
 ### 基础操作
+- `ActionTypes.VIEW` - 查看操作
 - `ActionTypes.EDIT` - 编辑操作
 - `ActionTypes.DELETE` - 删除操作（危险操作）
 - `ActionTypes.PASSWORD` - 修改密码

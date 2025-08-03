@@ -27,6 +27,8 @@ import {
   SearchOutlined
 } from '@ant-design/icons'
 import { getOrders, Order, OrderStatus } from '../../api/orders'
+import { getEmployees, User } from '../../api/users'
+import { getActiveEnterprises, Enterprise } from '../../api/enterprises'
 import SpecificationSelector, { Specification } from '../../components/SpecificationSelector'
 
 const { Option } = Select
@@ -39,8 +41,9 @@ interface Project {
   projectName: string
   client: string
   contact: string
-  mainDesigner: string
-  assistantDesigners: string[]
+  team: string // 团队企业ID
+  mainDesigner: string[] // 主创设计师用户ID数组
+  assistantDesigners: string[] // 助理设计师用户ID数组
   relatedContracts: string[]
   relatedOrders: string[]
   relatedSettlements: string[]
@@ -80,6 +83,10 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   const [searchKeyword, setSearchKeyword] = useState('')
   const [selectedOrderVersion, setSelectedOrderVersion] = useState<{ orderId: string; version: number } | null>(null)
   const [taskSpecifications, setTaskSpecifications] = useState<Record<string, Specification>>({})
+  const [employees, setEmployees] = useState<User[]>([])
+  const [employeesLoading, setEmployeesLoading] = useState(false)
+  const [enterprises, setEnterprises] = useState<Enterprise[]>([])
+  const [enterprisesLoading, setEnterprisesLoading] = useState(false)
   const [form] = Form.useForm()
 
   // 获取订单列表
@@ -105,11 +112,61 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     }
   }
 
+  // 获取员工列表
+  const fetchEmployees = async () => {
+    setEmployeesLoading(true)
+    try {
+      const response = await getEmployees()
+      // 过滤掉没有ID的员工，避免key重复问题
+      const validEmployees = response.data.filter(employee => employee._id)
+      setEmployees(validEmployees)
+    } catch (error) {
+      console.error('获取员工列表失败:', error)
+      message.error('获取员工列表失败')
+    } finally {
+      setEmployeesLoading(false)
+    }
+  }
+
+  // 获取企业列表
+  const fetchEnterprises = async () => {
+    setEnterprisesLoading(true)
+    try {
+      const response = await getActiveEnterprises()
+      // 过滤掉没有ID的企业，避免key重复问题
+      const validEnterprises = response.data.filter(enterprise => enterprise.id)
+      setEnterprises(validEnterprises)
+    } catch (error) {
+      console.error('获取企业列表失败:', error)
+      message.error('获取企业列表失败')
+    } finally {
+      setEnterprisesLoading(false)
+    }
+  }
+
   useEffect(() => {
     if (visible && currentStep === 0) {
       fetchOrders()
     }
   }, [visible, currentStep, searchKeyword])
+
+  useEffect(() => {
+    if (visible && currentStep === 2) {
+      fetchEmployees()
+      fetchEnterprises()
+    }
+  }, [visible, currentStep])
+
+  // 当模态窗打开时重置表单
+  useEffect(() => {
+    if (visible) {
+      setCurrentStep(0)
+      setSelectedOrder(null)
+      setSelectedOrderVersion(null)
+      setTaskSpecifications({})
+      form.resetFields()
+    }
+  }, [visible, form])
 
   const steps = [
     {
@@ -244,7 +301,17 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
   const handleSubmit = async () => {
     try {
-      const values = await form.validateFields()
+
+
+      // 先验证表单
+      let values
+      try {
+        values = await form.validateFields()
+      } catch (validationError: any) {
+        console.error('表单验证失败:', validationError)
+        message.error('请检查表单信息，确保所有必填字段都已填写')
+        return
+      }
 
       // 验证是否选择了订单和版本
       if (!selectedOrder || !selectedOrderVersion) {
@@ -252,41 +319,59 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         return
       }
 
-      // 验证是否所有任务都选择了规格
+      // 规格验证（非必填）
       const selectedSnapshot = selectedOrder.snapshots.find(s => s.version === selectedOrderVersion.version)
       if (selectedSnapshot) {
         const missingSpecs = selectedSnapshot.items.filter(item => !taskSpecifications[item.serviceId])
         if (missingSpecs.length > 0) {
-          message.error(`请为以下任务选择规格：${missingSpecs.map(item => item.serviceName).join(', ')}`)
-          return
+          // 不再阻止提交，只是记录日志
         }
       }
 
-      const projectData: Project = {
-        id: Date.now().toString(),
+      // 验证必填字段
+      if (!values.team) {
+        message.error('请选择团队')
+        return
+      }
+
+      if (!values.mainDesigner || values.mainDesigner.length === 0) {
+        message.error('请选择主创设计师')
+        return
+      }
+
+      // 构建任务数据，包含完整的任务信息和规格
+      const relatedTasks = selectedSnapshot ? selectedSnapshot.items.map(item => ({
+        serviceId: item.serviceId,
+        serviceName: item.serviceName,
+        quantity: item.quantity,
+        unit: item.unit,
+        subtotal: item.subtotal,
+        specification: taskSpecifications[item.serviceId] || null // 如果没有规格则为null
+      })) : []
+
+      const projectData = {
         projectName: selectedOrder.projectName,
         client: selectedOrder.clientName,
         contact: selectedOrder.contactNames?.join(', ') || '',
-        mainDesigner: values.mainDesigner,
+        team: values.team,
+        mainDesigner: values.mainDesigner || [],
         assistantDesigners: values.assistantDesigners || [],
-        clientRequirements: values.clientRequirements,
-        status: 'pending',
-        startDate: new Date().toISOString().split('T')[0],
-        createdAt: new Date().toISOString().split('T')[0],
-        relatedContracts: [],
         relatedOrders: [selectedOrder._id],
-        relatedSettlements: [],
-        relatedInvoices: [],
-        relatedFiles: [],
-        relatedTasks: Object.keys(taskSpecifications).map(serviceId => ({
-          serviceId,
-          specification: taskSpecifications[serviceId]
-        })),
-        relatedProposals: []
+        relatedTasks: relatedTasks,
+        clientRequirements: values.clientRequirements,
+        startDate: new Date().toISOString()
       }
-      onOk(projectData)
+
+
+
+      // 调用后端API创建项目
+      const { createProject } = await import('../../api/projects')
+      const response = await createProject(projectData)
+
+      onOk(response.data)
     } catch (error) {
-      console.error('表单验证失败:', error)
+      console.error('创建项目失败:', error)
+      message.error('创建项目失败，请检查表单信息')
     }
   }
 
@@ -324,17 +409,10 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       case 1:
         return (
           <div>
-            <Title level={4}>任务信息</Title>
-            <div style={{ marginBottom: 16 }}>
-              <Text type="secondary">
-                根据订单服务项目生成任务列表，每个服务项目对应一个任务
-              </Text>
-            </div>
-
             {selectedOrder && selectedOrderVersion && (
               <div>
-                <Card title="项目基本信息" style={{ marginBottom: 16 }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <Card style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <Text strong>项目名称：</Text>
                       <Text>{selectedOrder.projectName}</Text>
@@ -351,10 +429,14 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                       <Text strong>订单版本：</Text>
                       <Text>v{selectedOrderVersion.version}.0</Text>
                     </div>
+                    <div>
+                      <Text strong>合计金额：</Text>
+                      <Text>¥{selectedOrder.currentAmount?.toLocaleString() || '0'}</Text>
+                    </div>
                   </div>
                 </Card>
 
-                <Card title="任务列表">
+                <Card>
                   {(() => {
                     const selectedSnapshot = selectedOrder.snapshots.find(s => s.version === selectedOrderVersion.version)
                     if (!selectedSnapshot) return <Text type="secondary">未找到对应版本信息</Text>
@@ -373,12 +455,6 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                             dataIndex: 'categoryName',
                             key: 'categoryName',
                             width: 150,
-                          },
-                          {
-                            title: '数量/单位',
-                            key: 'specification',
-                            width: 120,
-                            render: (_: any, record: any) => `${record.quantity} ${record.unit}`
                           },
                           {
                             title: '规格选择',
@@ -406,6 +482,12 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                                 />
                               </div>
                             )
+                          },
+                          {
+                            title: '数量',
+                            key: 'quantity',
+                            width: 120,
+                            render: (_: any, record: any) => `${record.quantity} ${record.unit}`
                           },
                           {
                             title: '单价',
@@ -439,43 +521,9 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         return (
           <div>
             <Title level={4}>项目团队配置</Title>
-            <Form form={form} layout="vertical">
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <Form.Item
-                  name="mainDesigner"
-                  label="主创设计师"
-                  rules={[{ required: true, message: '请输入主创设计师' }]}
-                >
-                  <Input placeholder="请输入主创设计师" />
-                </Form.Item>
-
-                <Form.Item
-                  name="assistantDesigners"
-                  label="助理设计师"
-                >
-                  <Select
-                    mode="tags"
-                    placeholder="请选择助理设计师"
-                    style={{ width: '100%' }}
-                  >
-                    <Option value="设计师B">设计师B</Option>
-                    <Option value="设计师C">设计师C</Option>
-                    <Option value="设计师D">设计师D</Option>
-                  </Select>
-                </Form.Item>
-              </div>
-
-              <Form.Item
-                name="clientRequirements"
-                label="客户嘱托"
-                rules={[{ required: true, message: '请输入客户嘱托' }]}
-              >
-                <TextArea
-                  rows={4}
-                  placeholder="请输入客户的具体要求和嘱托"
-                />
-              </Form.Item>
-            </Form>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              {/* 团队和设计师字段现在在Modal根级别渲染 */}
+            </div>
           </div>
         )
       case 3:
@@ -491,16 +539,37 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   {selectedOrder?.clientName}
                 </Descriptions.Item>
                 <Descriptions.Item label="联系人">
-                  {selectedOrder?.contactNames?.join(', ') || '无'}
+                  {(() => {
+                    // 优先使用快照中的联系人信息
+                    const selectedSnapshot = selectedOrder?.snapshots.find(s => s.version === selectedOrderVersion?.version)
+                    const contactNames = selectedSnapshot?.clientInfo?.contactNames || selectedOrder?.contactNames
+                    return contactNames?.join(', ') || '无'
+                  })()}
+                </Descriptions.Item>
+                <Descriptions.Item label="团队">
+                  {(() => {
+                    const teamId = form.getFieldValue('team')
+                    const team = enterprises.find(enterprise => enterprise.id === teamId)
+                    return team ? team.enterpriseName : '未选择'
+                  })()}
                 </Descriptions.Item>
                 <Descriptions.Item label="主创设计师">
-                  {form.getFieldValue('mainDesigner')}
+                  {(() => {
+                    const mainDesignerIds = form.getFieldValue('mainDesigner') || []
+                    const mainDesigners = employees.filter(emp => mainDesignerIds.includes(emp._id))
+                    return mainDesigners.length > 0
+                      ? mainDesigners.map(emp => emp.realName).join(', ')
+                      : '未选择'
+                  })()}
                 </Descriptions.Item>
                 <Descriptions.Item label="助理设计师">
-                  {form.getFieldValue('assistantDesigners')?.join(', ') || '无'}
-                </Descriptions.Item>
-                <Descriptions.Item label="项目状态">
-                  待开始
+                  {(() => {
+                    const assistantDesignerIds = form.getFieldValue('assistantDesigners') || []
+                    const assistantDesigners = employees.filter(emp => assistantDesignerIds.includes(emp._id))
+                    return assistantDesigners.length > 0
+                      ? assistantDesigners.map(emp => emp.realName).join(', ')
+                      : '无'
+                  })()}
                 </Descriptions.Item>
                 <Descriptions.Item label="关联订单">
                   {selectedOrder?.orderNo} (v{selectedOrderVersion?.version}.0)
@@ -636,13 +705,98 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       width={1200}
       destroyOnHidden
     >
-      <Steps current={currentStep} style={{ marginBottom: 24 }}>
-        {steps.map((step, index) => (
-          <Step key={index} title={step.title} icon={step.icon} />
-        ))}
-      </Steps>
+      <Form form={form} layout="vertical">
+        <Steps current={currentStep} style={{ marginBottom: 24 }}>
+          {steps.map((step, index) => (
+            <Step key={index} title={step.title} icon={step.icon} />
+          ))}
+        </Steps>
 
-      {renderStepContent()}
+        {renderStepContent()}
+
+        {/* 条件渲染Form.Item，确保表单实例始终连接 */}
+        {currentStep >= 2 && (
+          <>
+            <Form.Item
+              name="team"
+              label="团队"
+              rules={[{ required: true, message: '请选择团队' }]}
+              style={{ display: currentStep === 2 ? 'block' : 'none' }}
+            >
+              <Select
+                placeholder="请选择承接团队"
+                loading={enterprisesLoading}
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {enterprises.map((enterprise, index) => (
+                  <Option key={enterprise.id || `enterprise-${index}`} value={enterprise.id}>
+                    {enterprise.enterpriseName}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="mainDesigner"
+              label="主创设计师"
+              rules={[{ required: true, message: '请选择主创设计师' }]}
+              style={{ display: currentStep === 2 ? 'block' : 'none' }}
+            >
+              <Select
+                mode="multiple"
+                placeholder="请选择主创设计师"
+                loading={employeesLoading}
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {employees.map((employee, index) => (
+                  <Option key={employee._id || `employee-${index}`} value={employee._id}>
+                    {employee.realName} ({employee.department}) - {employee.role}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="assistantDesigners"
+              label="助理设计师"
+              style={{ display: currentStep === 2 ? 'block' : 'none' }}
+            >
+              <Select
+                mode="multiple"
+                placeholder="请选择助理设计师"
+                loading={employeesLoading}
+                showSearch
+                filterOption={(input, option) =>
+                  (option?.children as unknown as string)?.toLowerCase().includes(input.toLowerCase())
+                }
+              >
+                {employees.map((employee, index) => (
+                  <Option key={employee._id || `employee-${index}`} value={employee._id}>
+                    {employee.realName} ({employee.department}) - {employee.role}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="clientRequirements"
+              label="客户嘱托"
+              style={{ display: currentStep === 2 ? 'block' : 'none' }}
+            >
+              <TextArea
+                rows={4}
+                placeholder="请输入客户的具体要求和嘱托（可选）"
+              />
+            </Form.Item>
+          </>
+        )}
+      </Form>
     </Modal>
   )
 }

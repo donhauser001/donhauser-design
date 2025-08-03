@@ -182,145 +182,52 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   const prevValueRef = useRef<(UploadFile | string | { path: string; originalName: string; size: number })[]>([])
 
-  const [fileList, setFileList] = useState<UploadFile[]>(() => {
-    // 确保传入的文件列表中每个文件都有唯一的uid
-    return value.map((item, index) => {
-      if (typeof item === 'string') {
-        const filePath = item
-        const urlFileName = filePath.split('/').pop() || 'file'
-        let fileName = urlFileName
-
-        // 如果是生成的文件名格式，提取原始文件名
-        if (urlFileName.includes('-')) {
-          const parts = urlFileName.split('-')
-          if (parts.length >= 3) {
-            const lastPart = parts[parts.length - 1]
-            const extension = lastPart.split('.').pop()
-            const originalName = parts[0]
-            fileName = `${originalName}.${extension}`
-          }
-        }
-
-        return {
-          uid: `initial-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
-          name: fileName,
-          size: 1024, // 设置一个合理的默认大小，避免显示0B
-          status: 'done' as const,
-          url: filePath,
-          response: { data: { url: filePath } }
-        }
-      } else if (typeof item === 'object' && 'path' in item && 'originalName' in item && 'size' in item) {
-        // 新的文件格式：{ path, originalName, size }
-        return {
-          uid: `initial-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
-          name: item.originalName,
-          size: item.size,
-          status: 'done' as const,
-          url: item.path,
-          response: { data: { url: item.path } }
-        }
-      } else {
-        return {
-          ...item,
-          uid: item.uid || `initial-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`
-        }
-      }
-    })
-  })
+  const [fileList, setFileList] = useState<UploadFile[]>([])
 
   // 监听value变化，更新文件列表
   useEffect(() => {
-    // 只有当value真正变化时才更新fileList
-    const currentValue = JSON.stringify(value.map(f => {
-      if (typeof f === 'string') return f
-      if (typeof f === 'object' && 'path' in f) return f.path
-      return f.url
-    }))
-    const prevValue = JSON.stringify(prevValueRef.current.map(f => {
-      if (typeof f === 'string') return f
-      if (typeof f === 'object' && 'path' in f) return f.path
-      return f.url
-    }))
+    if (!value || value.length === 0) {
+      setFileList([])
+      return
+    }
 
-    if (currentValue !== prevValue) {
-      // 处理value，可能是字符串数组或对象数组
-      const processedValue = value.map((item, index) => {
-        // 如果是字符串，转换为对象
-        if (typeof item === 'string') {
-          const filePath = item
-          const urlFileName = filePath.split('/').pop() || 'file'
-          let fileName = urlFileName
-
-          // 如果是生成的文件名格式，提供更友好的显示
-          if (urlFileName.includes('-')) {
-            const parts = urlFileName.split('-')
-            if (parts.length >= 3) {
-              const lastPart = parts[parts.length - 1]
-              const extension = lastPart.split('.').pop()
-              // 使用更有意义的文件名，比如"图片1.png"
-              fileName = `图片${index + 1}.${extension}`
-            } else {
-              fileName = urlFileName
+    // 处理不同格式的文件数据
+    const processedFiles = value.map((file: any, index: number) => {
+      if (typeof file === 'string') {
+        // 处理字符串格式
+        return {
+          uid: `file-${Date.now()}-${index}`,
+          name: file.split('/').pop() || '未知文件',
+          status: 'done' as const,
+          url: file,
+          size: 0
+        }
+      } else if (file.path) {
+        // 处理对象格式 { path, originalName, size }
+        return {
+          uid: `file-${Date.now()}-${index}`,
+          name: file.originalName || file.path.split('/').pop() || '未知文件',
+          status: 'done' as const,
+          url: file.path,
+          size: file.size || 0,
+          response: {
+            data: {
+              url: file.path,
+              originalname: file.originalName
             }
-          } else {
-            fileName = urlFileName
-          }
-
-          return {
-            uid: `string-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
-            name: fileName,
-            size: 1024, // 设置一个合理的默认大小，避免显示0B
-            status: 'done' as const,
-            url: filePath,
-            response: { data: { url: filePath } }
-          }
-        } else if (typeof item === 'object' && 'path' in item && 'originalName' in item && 'size' in item) {
-          // 新的文件格式：{ path, originalName, size }
-          return {
-            uid: `object-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
-            name: item.originalName,
-            size: item.size,
-            status: 'done' as const,
-            url: item.path,
-            response: { data: { url: item.path } }
-          }
-        } else {
-          // UploadFile格式
-          let fileName = item.name
-          let fileSize = item.size
-
-          // 如果没有文件名，尝试从URL中提取
-          if (!fileName && item.url) {
-            const urlFileName = item.url.split('/').pop() || 'file'
-
-            // 如果是生成的文件名格式，提供更友好的显示
-            if (urlFileName.includes('-')) {
-              const parts = urlFileName.split('-')
-              if (parts.length >= 3) {
-                const lastPart = parts[parts.length - 1]
-                const extension = lastPart.split('.').pop()
-                // 使用更有意义的文件名，比如"图片1.png"
-                fileName = `图片${index + 1}.${extension}`
-              } else {
-                fileName = urlFileName
-              }
-            } else {
-              fileName = urlFileName
-            }
-          }
-
-          return {
-            ...item,
-            uid: item.uid || `object-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`,
-            name: fileName,
-            size: fileSize || 0
           }
         }
-      })
+      } else {
+        // 已经是 UploadFile 格式
+        return {
+          ...file,
+          uid: file.uid || `file-${Date.now()}-${index}`,
+          status: file.status || 'done'
+        }
+      }
+    })
 
-      setFileList(processedValue)
-      prevValueRef.current = value
-    }
+    setFileList(processedFiles)
   }, [value])
 
   const [uploading, setUploading] = useState(false)
@@ -334,15 +241,40 @@ const FileUpload: React.FC<FileUploadProps> = ({
     const fileName = file.name || ''
     const extension = fileName.split('.').pop()?.toLowerCase()
 
-    if (file.type?.startsWith('image/')) return <PictureOutlined />
-    if (file.type?.startsWith('video/')) return <VideoCameraOutlined />
-    if (file.type?.startsWith('audio/')) return <AudioOutlined />
-    if (file.type?.includes('pdf') || extension === 'pdf') return <FileTextOutlined />
-    if (file.type?.includes('word') || extension === 'doc' || extension === 'docx') return <FileTextOutlined />
-    if (file.type?.includes('excel') || extension === 'xls' || extension === 'xlsx') return <FileTextOutlined />
-    if (file.type?.includes('powerpoint') || extension === 'ppt' || extension === 'pptx') return <FileTextOutlined />
+    // 图片类型
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']
+    if (imageExtensions.includes(extension || '') || file.type?.startsWith('image/')) {
+      return <FileOutlined style={{ color: '#8c8c8c' }} />
+    }
 
-    return <FileOutlined />
+    // 视频类型
+    const videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv']
+    if (videoExtensions.includes(extension || '') || file.type?.startsWith('video/')) {
+      return <FileOutlined style={{ color: '#8c8c8c' }} />
+    }
+
+    // 音频类型
+    const audioExtensions = ['mp3', 'wav', 'ogg', 'aac']
+    if (audioExtensions.includes(extension || '') || file.type?.startsWith('audio/')) {
+      return <FileOutlined style={{ color: '#8c8c8c' }} />
+    }
+
+    // 文档类型
+    if (extension === 'pdf' || file.type?.includes('pdf')) {
+      return <FileOutlined style={{ color: '#8c8c8c' }} />
+    }
+    if (['doc', 'docx'].includes(extension || '') || file.type?.includes('word')) {
+      return <FileOutlined style={{ color: '#8c8c8c' }} />
+    }
+    if (['xls', 'xlsx'].includes(extension || '') || file.type?.includes('excel')) {
+      return <FileOutlined style={{ color: '#8c8c8c' }} />
+    }
+    if (['ppt', 'pptx'].includes(extension || '') || file.type?.includes('powerpoint')) {
+      return <FileOutlined style={{ color: '#8c8c8c' }} />
+    }
+
+    // 默认图标
+    return <FileOutlined style={{ color: '#8c8c8c' }} />
   }
 
   // 文件大小格式化
@@ -356,17 +288,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   // 文件类型标签颜色
   const getFileTypeColor = (file: UploadFile) => {
-    const fileName = file.name || ''
-    const extension = fileName.split('.').pop()?.toLowerCase()
-
-    if (file.type?.startsWith('image/')) return 'green'
-    if (file.type?.startsWith('video/')) return 'blue'
-    if (file.type?.startsWith('audio/')) return 'purple'
-    if (file.type?.includes('pdf') || extension === 'pdf') return 'red'
-    if (file.type?.includes('word') || extension === 'doc' || extension === 'docx') return 'blue'
-    if (file.type?.includes('excel') || extension === 'xls' || extension === 'xlsx') return 'green'
-    if (file.type?.includes('powerpoint') || extension === 'ppt' || extension === 'pptx') return 'orange'
-
     return 'default'
   }
 
@@ -500,25 +421,34 @@ const FileUpload: React.FC<FileUploadProps> = ({
         file.uid = `file-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`
       }
 
-      // 确保文件名和大小信息正确设置
-      if (!file.name && file.originFileObj) {
+      // 优先使用后端返回的原始文件名，如果没有则使用本地文件名
+      if (file.response?.data?.originalname) {
+        file.name = file.response.data.originalname
+      } else if (file.originFileObj) {
         file.name = file.originFileObj.name
       }
+
+      // 设置文件大小
       if (!file.size && file.originFileObj) {
         file.size = file.originFileObj.size
       }
 
-      if (file.response) {
-        file.url = file.response.url
+      // 设置文件URL
+      if (file.response?.data?.url) {
+        file.url = file.response.data.url
       }
+
+      // 设置文件状态
+      if (file.response) {
+        file.status = 'done'
+      }
+
       return file
     })
 
+    console.log('文件列表更新:', newFileList)
     setFileList(newFileList)
     onChange?.(newFileList)
-
-    // 注意：自动上传逻辑已移除，因为customUploadRequest已经处理了上传
-    // 这里只处理文件列表的更新，避免重复上传
   }, [maxCount, onChange])
 
   // 处理预览
@@ -559,19 +489,29 @@ const FileUpload: React.FC<FileUploadProps> = ({
     handleUpload(file).then((response) => {
       // 设置文件的上传响应
       if (response && response.data) {
-        file.response = response.data
-        file.status = 'done'
-        file.url = response.data.url
-        // 确保文件名和大小信息正确设置
-        if (!file.name && file.originFileObj) {
-          file.name = file.originFileObj.name
+        const responseData = {
+          success: true,
+          data: {
+            url: response.data.data?.url || response.data.url,
+            originalname: file.name,
+            size: file.size
+          }
         }
-        if (!file.size && file.originFileObj) {
-          file.size = file.originFileObj.size
+
+        // 创建新的文件对象而不是修改原始文件
+        const newFile = {
+          ...file,
+          response: responseData,
+          status: 'done',
+          url: responseData.data.url,
+          name: file.name
         }
+
+        console.log('文件上传成功:', responseData)
+        onSuccess?.(responseData)
       }
-      onSuccess?.(response?.data)
     }).catch((error) => {
+      console.error('文件上传失败:', error)
       file.status = 'error'
       onError?.(error)
     })
@@ -589,11 +529,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
     withCredentials,
     listType,
     fileList,
-    showUploadList: {
-      showPreviewIcon,
-      showRemoveIcon,
-      showDownloadIcon
-    },
+    showUploadList: false,
     beforeUpload: handleBeforeUpload,
     onChange: handleChange,
     onPreview: handlePreview,
@@ -605,7 +541,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         <Card
           size="small"
           style={{ marginBottom: 8 }}
-          bodyStyle={{ padding: 8 }}
+          styles={{ body: { padding: 8 } }}
         >
           <Row gutter={8} align="middle">
             <Col flex="none">
@@ -699,6 +635,200 @@ const FileUpload: React.FC<FileUploadProps> = ({
   return (
     <div style={style} className={className}>
       {renderUploadArea()}
+
+      {/* 空状态显示 */}
+      {fileList.length === 0 && (
+        <div style={{
+          marginTop: 20,
+          padding: '40px 20px',
+          textAlign: 'center',
+          background: '#fafafa',
+          borderRadius: '12px',
+          border: '2px dashed #d9d9d9'
+        }}>
+          <FileOutlined style={{
+            fontSize: 48,
+            color: '#d9d9d9',
+            marginBottom: 16
+          }} />
+          <div style={{ color: '#8c8c8c', fontSize: 14 }}>
+            暂无文件，请上传文件
+          </div>
+        </div>
+      )}
+
+      {/* 自定义文件列表显示 */}
+      {fileList.length > 0 && (
+        <div style={{ marginTop: 20 }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            marginBottom: 16,
+            padding: '12px 16px',
+            background: '#f5f5f5',
+            borderRadius: '6px',
+            color: '#333',
+            border: '1px solid #e8e8e8'
+          }}>
+            <FileOutlined style={{ marginRight: 8, fontSize: 16, color: '#666' }} />
+            <Text style={{ color: '#333', fontWeight: 500, fontSize: 14 }}>
+              已上传文件 ({fileList.length})
+            </Text>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gap: 12,
+            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
+          }}>
+            {fileList.map((file) => (
+              <Card
+                key={file.uid}
+                size="small"
+                style={{
+                  border: '1px solid #e8e8e8',
+                  borderRadius: '6px',
+                  boxShadow: 'none',
+                  transition: 'all 0.2s ease',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                styles={{
+                  body: {
+                    padding: 16,
+                    position: 'relative'
+                  }
+                }}
+                hoverable
+              >
+
+
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  {/* 文件图标 */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 48,
+                    height: 48,
+                    borderRadius: '6px',
+                    background: '#f5f5f5',
+                    border: '1px solid #e8e8e8',
+                    flexShrink: 0
+                  }}>
+                    <div style={{ fontSize: 24, color: '#666' }}>
+                      {getFileIcon(file)}
+                    </div>
+                  </div>
+
+                  {/* 文件信息 */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      marginBottom: 6
+                    }}>
+                      <Text
+                        strong
+                        style={{
+                          fontSize: 12,
+                          color: '#262626',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          display: 'block',
+                          marginBottom: 6
+                        }}
+                      >
+                        {file.name}
+                      </Text>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8
+                      }}>
+                        <Tag
+                          color={getFileTypeColor(file)}
+                          style={{
+                            borderRadius: '12px',
+                            fontSize: '11px',
+                            fontWeight: 500,
+                            border: 'none'
+                          }}
+                        >
+                          {formatFileSize(file.size || 0)}
+                        </Tag>
+                        {showPreviewIcon && (file.type?.startsWith('image/') || file.url) && (
+                          <Tooltip title="预览">
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<EyeOutlined />}
+                              onClick={() => handlePreview(file)}
+                              style={{
+                                width: 24,
+                                height: 24,
+                                borderRadius: '4px',
+                                color: '#666',
+                                padding: 0
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                        {showDownloadIcon && file.url && (
+                          <Tooltip title="下载">
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<DownloadOutlined />}
+                              onClick={() => window.open(file.url, '_blank')}
+                              style={{
+                                width: 24,
+                                height: 24,
+                                borderRadius: '4px',
+                                color: '#666',
+                                padding: 0
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                        {showRemoveIcon && (
+                          <Tooltip title="删除">
+                            <Button
+                              type="text"
+                              size="small"
+                              danger
+                              icon={<DeleteOutlined />}
+                              onClick={() => handleRemove(file)}
+                              style={{
+                                width: 24,
+                                height: 24,
+                                borderRadius: '4px',
+                                color: '#666',
+                                padding: 0
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 上传进度 */}
+                    {showProgress && uploadProgress[file.uid || ''] !== undefined && (
+                      <Progress
+                        percent={uploadProgress[file.uid || '']}
+                        size="small"
+                        strokeColor="#1890ff"
+                        style={{ marginTop: 4 }}
+                        showInfo={false}
+                      />
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {errorText && (
         <Text type="danger" style={{ fontSize: 12, marginTop: 8 }}>

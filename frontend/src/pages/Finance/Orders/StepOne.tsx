@@ -17,6 +17,8 @@ interface StepOneProps {
     onProjectNameChange: (name: string) => void
     onNext: () => void
     onCancel: () => void
+    onClientSearch?: (search: string) => void
+    clientLoading?: boolean
 }
 
 const StepOne: React.FC<StepOneProps> = ({
@@ -30,15 +32,13 @@ const StepOne: React.FC<StepOneProps> = ({
     onContactSelect,
     onProjectNameChange,
     onNext,
-    onCancel
+    onCancel,
+    onClientSearch,
+    clientLoading = false
 }) => {
     // 监听状态变化，确保表单字段同步
     React.useEffect(() => {
-        console.log('StepOne状态变化:', {
-            selectedClientId,
-            selectedContactIds,
-            projectName
-        })
+
 
         // 同步表单字段值
         form.setFieldsValue({
@@ -59,17 +59,17 @@ const StepOne: React.FC<StepOneProps> = ({
                     placeholder="请选择客户"
                     showSearch
                     value={selectedClientId}
+                    loading={clientLoading}
                     onChange={(value: string | undefined) => {
                         onClientSelect(value || '')
                         form.setFieldsValue({ clientId: value })
                     }}
-                    filterOption={(input, option) => {
-                        const children = option?.children
-                        if (typeof children === 'string') {
-                            return children.toLowerCase().includes(input.toLowerCase())
+                    onSearch={(value: string) => {
+                        if (onClientSearch) {
+                            onClientSearch(value)
                         }
-                        return false
                     }}
+                    filterOption={false}
                 >
                     {clients.map(client => (
                         <Option
@@ -109,8 +109,7 @@ const StepOne: React.FC<StepOneProps> = ({
                     mode="multiple"
                     value={selectedContactIds || []}
                     onChange={(values: string[]) => {
-                        console.log('联系人选择变化:', values)
-                        console.log('当前selectedContactIds:', selectedContactIds)
+                        
                         onContactSelect(values)
                         form.setFieldsValue({ contactId: values }) // 直接使用数组
                     }}

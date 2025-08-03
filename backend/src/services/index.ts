@@ -11,6 +11,7 @@ export * from './PricingPolicyService';
 export * from './ServicePricingService';
 export * from './QuotationService';
 export * from './SpecificationService';
+export * from './ProjectService';
 
 export const projectService = {
   // 项目相关业务逻辑

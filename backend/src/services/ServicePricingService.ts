@@ -65,7 +65,7 @@ export class ServicePricingService {
                     // 如果没有价格政策名称，但有价格政策ID，则获取名称
                     if (service.pricingPolicyIds && service.pricingPolicyIds.length > 0) {
                         const policies = await PricingPolicy.find({ _id: { $in: service.pricingPolicyIds } })
-                        const pricingPolicyNames = policies.map(policy => policy.name)
+                        const pricingPolicyNames = policies.map(policy => policy.alias)
 
                         // 更新服务定价的价格政策名称
                         await ServicePricing.findByIdAndUpdate(service._id, {
@@ -92,8 +92,7 @@ export class ServicePricingService {
     static async createServicePricing(data: CreateServicePricingData): Promise<IServicePricing> {
         try {
             // 获取关联数据的名称
-            const pricingCategoryService = new PricingCategoryService()
-            const category = pricingCategoryService.getCategoryById(data.categoryId)
+            const category = await PricingCategoryService.getCategoryById(data.categoryId)
             const additionalConfig = data.additionalConfigId ? await AdditionalConfig.findById(data.additionalConfigId) : null
             const serviceProcess = data.serviceProcessId ? await ServiceProcess.findById(data.serviceProcessId) : null
 
@@ -101,7 +100,7 @@ export class ServicePricingService {
             let pricingPolicyNames: string[] = []
             if (data.pricingPolicyIds && data.pricingPolicyIds.length > 0) {
                 const policies = await PricingPolicy.find({ _id: { $in: data.pricingPolicyIds } })
-                pricingPolicyNames = policies.map(policy => policy.name)
+                pricingPolicyNames = policies.map(policy => policy.alias)
             }
 
             const servicePricing = new ServicePricing({
@@ -124,8 +123,7 @@ export class ServicePricingService {
             console.log('更新服务定价 - 输入数据:', { id, data })
 
             // 获取关联数据的名称
-            const pricingCategoryService = new PricingCategoryService()
-            const category = pricingCategoryService.getCategoryById(data.categoryId)
+            const category = await PricingCategoryService.getCategoryById(data.categoryId)
             console.log('获取到的分类:', category)
 
             const additionalConfig = data.additionalConfigId ? await AdditionalConfig.findById(data.additionalConfigId) : null
@@ -135,7 +133,7 @@ export class ServicePricingService {
             let pricingPolicyNames: string[] = []
             if (data.pricingPolicyIds && data.pricingPolicyIds.length > 0) {
                 const policies = await PricingPolicy.find({ _id: { $in: data.pricingPolicyIds } })
-                pricingPolicyNames = policies.map(policy => policy.name)
+                pricingPolicyNames = policies.map(policy => policy.alias)
             }
 
             const updateData = {

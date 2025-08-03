@@ -13,6 +13,7 @@ export * from './ServicePricing';
 export * from './Quotation';
 export * from './OrderVersion';
 export * from './Specification';
+export * from './Project';
 
 export interface Project {
   id: string;

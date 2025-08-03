@@ -65,7 +65,7 @@ router.post('/single', createUpload('general').single('file'), (req: Request, re
         filename: req.file.filename,
         originalname: req.file.originalname,
         size: req.file.size,
-        url: `/uploads/general/${req.file.filename}`
+        url: `/uploads/general/${req.file.filename}?originalname=${encodeURIComponent(req.file.originalname)}`
       }
     });
   } catch (error) {
@@ -133,6 +133,99 @@ router.post('/avatar', createUpload('avatars').single('avatar'), (req: Request, 
       error: error instanceof Error ? error.message : '未知错误'
     });
   }
+});
+
+// 通用业务类型上传路由
+router.post('/:businessType', (req: Request, res: Response) => {
+  const { businessType } = req.params;
+
+  // 根据业务类型创建对应的上传中间件
+  const upload = createUpload(businessType);
+
+  return upload.single('file')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        message: '文件上传失败',
+        error: err.message
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: '没有上传文件'
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: '文件上传成功',
+      data: {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        size: req.file.size,
+        url: `/uploads/${businessType}/${req.file.filename}`
+      }
+    });
+  });
+});
+
+// 带子目录的通用上传路由
+router.post('/:businessType/:subDirectory', (req: Request, res: Response) => {
+  const { businessType, subDirectory } = req.params;
+
+  // 创建带子目录的存储
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = path.join(__dirname, '../../uploads', businessType, subDirectory);
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = path.extname(file.originalname);
+      cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+    }
+  });
+
+  const upload = multer({
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: {
+      fileSize: 50 * 1024 * 1024 // 50MB for projects
+    }
+  });
+
+  return upload.single('file')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        message: '文件上传失败',
+        error: err.message
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: '没有上传文件'
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: '文件上传成功',
+      data: {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        size: req.file.size,
+        url: `/uploads/${businessType}/${subDirectory}/${req.file.filename}`
+      }
+    });
+  });
 });
 
 // 上传项目文件（项目板块）

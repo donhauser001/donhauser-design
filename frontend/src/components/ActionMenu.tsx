@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button, Dropdown } from 'antd'
-import { MoreOutlined, EditOutlined, DeleteOutlined, LockOutlined, SettingOutlined, StopOutlined, CopyOutlined } from '@ant-design/icons'
+import { MoreOutlined, EditOutlined, DeleteOutlined, LockOutlined, SettingOutlined, StopOutlined, CopyOutlined, EyeOutlined } from '@ant-design/icons'
 
 export interface ActionItem {
     key: string
@@ -44,6 +44,11 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ actions, width = 80 }) => {
 
 // 预定义的操作类型
 export const ActionTypes = {
+    VIEW: {
+        key: 'view',
+        label: '查看',
+        icon: <EyeOutlined />
+    },
     EDIT: {
         key: 'edit',
         label: '编辑',

@@ -9,12 +9,17 @@ import {
     Descriptions,
     Divider,
     List,
-    Avatar,
     Typography,
     message,
     Spin,
     Tabs,
-    Table
+    Table,
+    Progress,
+    Tooltip,
+    Modal,
+    Slider,
+    InputNumber,
+    Select
 } from 'antd'
 import {
     ArrowLeftOutlined,
@@ -28,46 +33,44 @@ import {
     CustomerServiceOutlined
 } from '@ant-design/icons'
 import { useNavigate, useParams } from 'react-router-dom'
+import { getProjectById, Project as ApiProject } from '../../api/projects'
+import { getActiveEnterprises, Enterprise } from '../../api/enterprises'
+import { getEmployees, User } from '../../api/users'
+import { getTasksByProject, Task } from '../../api/tasks'
+import SpecificationSelector, { Specification } from '../../components/SpecificationSelector'
+import FileUpload from '../../components/FileUpload'
+import type { UploadFile } from 'antd/es/upload/interface'
+
+// 文件信息接口
+interface FileInfo {
+    path: string
+    originalName: string
+    size: number
+}
 
 const { Title, Text } = Typography
-const { TabPane } = Tabs
 
-interface Project {
-    id: string
-    projectName: string
-    client: string
-    contact: string
-    mainDesigner: string
-    assistantDesigners: string[]
-    relatedContracts: string[]
-    relatedOrders: string[]
-    relatedSettlements: string[]
-    relatedInvoices: string[]
-    relatedFiles: string[]
-    relatedTasks: string[]
-    relatedProposals: string[]
-    clientRequirements: string
-    status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold'
-    startDate: string
-    endDate?: string
-    createdAt: string
-}
 
-interface Task {
-    id: string
-    taskName: string
-    specification: string
-    quantity: number
-    urgency: 'low' | 'medium' | 'high' | 'urgent'
-    orderTime: string
-    designer: string
-}
+
+
 
 const ProjectDetail: React.FC = () => {
     const navigate = useNavigate()
     const { id } = useParams<{ id: string }>()
-    const [project, setProject] = useState<Project | null>(null)
+    const [project, setProject] = useState<ApiProject | null>(null)
+    const [tasks, setTasks] = useState<Task[]>([])
+    const [enterprises, setEnterprises] = useState<Enterprise[]>([])
+    const [employees, setEmployees] = useState<User[]>([])
     const [loading, setLoading] = useState(true)
+    const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null)
+    const [progressModalVisible, setProgressModalVisible] = useState(false)
+    const [editingTask, setEditingTask] = useState<Task | null>(null)
+    const [editingProgress, setEditingProgress] = useState(0)
+    const [editingPriority, setEditingPriority] = useState<'low' | 'medium' | 'high' | 'urgent'>('medium')
+
+    // 文件管理状态
+    const [projectFiles, setProjectFiles] = useState<UploadFile[]>([])
+    const [clientFiles, setClientFiles] = useState<UploadFile[]>([])
 
     const statusColors = {
         pending: 'orange',
@@ -85,129 +88,63 @@ const ProjectDetail: React.FC = () => {
         'on-hold': '暂停中'
     }
 
-    const urgencyColors = {
-        low: 'green',
-        medium: 'blue',
-        high: 'orange',
-        urgent: 'red'
-    }
 
-    const urgencyText = {
-        low: '低',
-        medium: '中',
-        high: '高',
-        urgent: '紧急'
-    }
 
-    // 模拟任务数据
-    const mockTasks: Task[] = [
-        {
-            id: '1',
-            taskName: '首页设计',
-            specification: '1920x1080px',
-            quantity: 1,
-            urgency: 'high',
-            orderTime: '2024-01-15',
-            designer: '设计师A'
-        },
-        {
-            id: '2',
-            taskName: '产品页面设计',
-            specification: '1920x1080px',
-            quantity: 5,
-            urgency: 'medium',
-            orderTime: '2024-01-16',
-            designer: '设计师B'
-        },
-        {
-            id: '3',
-            taskName: '移动端适配',
-            specification: '375x667px',
-            quantity: 3,
-            urgency: 'urgent',
-            orderTime: '2024-01-17',
-            designer: '设计师C'
+
+
+
+
+    // 获取项目详情和相关数据
+    const fetchProjectData = async () => {
+        if (!id) return
+
+        try {
+            setLoading(true)
+            const [projectResponse, tasksResponse, enterprisesResponse, employeesResponse] = await Promise.all([
+                getProjectById(id),
+                getTasksByProject(id),
+                getActiveEnterprises(),
+                getEmployees()
+            ])
+
+            setProject(projectResponse.data)
+            setTasks(tasksResponse.data)
+            setEnterprises(enterprisesResponse.data)
+            setEmployees(employeesResponse.data)
+
+            // 初始化文件列表
+            if (projectResponse.data.relatedFiles && Array.isArray(projectResponse.data.relatedFiles)) {
+                const files = projectResponse.data.relatedFiles.map((file: FileInfo, index: number) => ({
+                    uid: `project-file-${Date.now()}-${index}`,
+                    name: file.originalName,
+                    status: 'done' as const,
+                    url: file.path,
+                    size: file.size,
+                    type: file.path.split('.').pop()?.toLowerCase() || '',
+                    response: {
+                        data: {
+                            url: file.path,
+                            originalname: file.originalName,
+                            size: file.size
+                        }
+                    }
+                }))
+                setProjectFiles(files)
+            } else {
+                setProjectFiles([])
+            }
+        } catch (error) {
+            console.error('获取项目详情失败:', error)
+            message.error('项目不存在或获取失败')
+            navigate('/projects')
+        } finally {
+            setLoading(false)
         }
-    ]
-
-    // 模拟数据
-    const mockProjects: Project[] = [
-        {
-            id: '1',
-            projectName: '企业官网设计',
-            client: 'ABC科技有限公司',
-            contact: '张三',
-            mainDesigner: '设计师A',
-            assistantDesigners: ['设计师B', '设计师C'],
-            relatedContracts: ['合同001'],
-            relatedOrders: ['订单001'],
-            relatedSettlements: ['结算单001'],
-            relatedInvoices: ['发票001'],
-            relatedFiles: ['设计稿.pdf', '需求文档.docx'],
-            relatedTasks: ['任务1', '任务2', '任务3'],
-            relatedProposals: ['提案001'],
-            clientRequirements: '需要现代化的企业官网设计，突出公司科技感和专业性',
-            status: 'in-progress',
-            startDate: '2024-01-15',
-            endDate: '2024-02-15',
-            createdAt: '2024-01-10'
-        },
-        {
-            id: '2',
-            projectName: '品牌设计项目',
-            client: 'XYZ设计工作室',
-            contact: '李四',
-            mainDesigner: '设计师B',
-            assistantDesigners: ['设计师D'],
-            relatedContracts: ['合同002'],
-            relatedOrders: ['订单002'],
-            relatedSettlements: ['结算单002'],
-            relatedInvoices: ['发票002'],
-            relatedFiles: ['品牌手册.pdf'],
-            relatedTasks: ['任务4', '任务5'],
-            relatedProposals: ['提案002'],
-            clientRequirements: '完整的品牌视觉识别系统设计，包括logo、色彩、字体等',
-            status: 'completed',
-            startDate: '2024-01-01',
-            endDate: '2024-01-30',
-            createdAt: '2023-12-25'
-        },
-        {
-            id: '3',
-            projectName: '移动应用UI设计',
-            client: '创新科技公司',
-            contact: '王五',
-            mainDesigner: '设计师C',
-            assistantDesigners: ['设计师A'],
-            relatedContracts: ['合同003'],
-            relatedOrders: ['订单003'],
-            relatedSettlements: ['结算单003'],
-            relatedInvoices: ['发票003'],
-            relatedFiles: ['UI设计稿.sketch', '原型图.fig'],
-            relatedTasks: ['任务6', '任务7', '任务8'],
-            relatedProposals: ['提案003'],
-            clientRequirements: '设计一套现代化的移动应用UI，注重用户体验和视觉美感',
-            status: 'pending',
-            startDate: '2024-02-01',
-            endDate: '2024-03-01',
-            createdAt: '2024-01-20'
-        }
-    ]
+    }
 
     useEffect(() => {
-        // 模拟API调用
-        setLoading(true)
-        setTimeout(() => {
-            const foundProject = mockProjects.find(p => p.id === id)
-            if (foundProject) {
-                setProject(foundProject)
-            } else {
-                message.error('项目不存在')
-                navigate('/projects')
-            }
-            setLoading(false)
-        }, 500)
-    }, [id, navigate])
+        fetchProjectData()
+    }, [id])
 
 
 
@@ -215,59 +152,137 @@ const ProjectDetail: React.FC = () => {
         navigate('/projects')
     }
 
-    const taskColumns = [
-        {
-            title: '任务名称',
-            dataIndex: 'taskName',
-            key: 'taskName',
-            width: 150,
-        },
-        {
-            title: '规格',
-            dataIndex: 'specification',
-            key: 'specification',
-            width: 120,
-        },
-        {
-            title: '数量',
-            dataIndex: 'quantity',
-            key: 'quantity',
-            width: 80,
-        },
-        {
-            title: '紧急度',
-            dataIndex: 'urgency',
-            key: 'urgency',
-            width: 100,
-            render: (urgency: keyof typeof urgencyColors) => (
-                <Tag color={urgencyColors[urgency]}>{urgencyText[urgency]}</Tag>
-            )
-        },
-        {
-            title: '下单时间',
-            dataIndex: 'orderTime',
-            key: 'orderTime',
-            width: 120,
-        },
-        {
-            title: '设计师',
-            dataIndex: 'designer',
-            key: 'designer',
-            width: 120,
-            render: (designer: string) => {
-                const isMainDesigner = project?.mainDesigner === designer
-                const isAssistantDesigner = project?.assistantDesigners?.includes(designer)
+    // 处理规格更新
+    const handleSpecificationChange = async (taskId: string, specification: Specification | undefined) => {
+        try {
+            setUpdatingTaskId(taskId)
 
-                return (
-                    <Space>
-                        <span>{designer}</span>
-                        {isMainDesigner && <Tag color="blue" size="small">主创</Tag>}
-                        {isAssistantDesigner && <Tag color="green" size="small">助理</Tag>}
-                    </Space>
-                )
-            }
+            // 导入任务更新API
+            const { updateTask } = await import('../../api/tasks')
+
+            // 更新任务规格
+            await updateTask(taskId, {
+                specification: specification ? {
+                    id: specification.id,
+                    name: specification.name,
+                    length: specification.length,
+                    width: specification.width,
+                    height: specification.height,
+                    unit: specification.unit,
+                    resolution: specification.resolution
+                } : undefined
+            })
+
+            // 刷新任务列表
+            await fetchProjectData()
+            message.success('规格更新成功')
+        } catch (error) {
+            console.error('更新规格失败:', error)
+            message.error('更新规格失败')
+        } finally {
+            setUpdatingTaskId(null)
         }
-    ]
+    }
+
+    // 打开进度编辑模态框
+    const handleOpenProgressModal = (task: Task) => {
+        setEditingTask(task)
+        setEditingProgress(task.progress || 0)
+        setEditingPriority(task.priority || 'medium')
+        setProgressModalVisible(true)
+    }
+
+    // 处理进度更新
+    const handleProgressChange = async (taskId: string, progress: number) => {
+        try {
+            setUpdatingTaskId(taskId)
+
+            // 导入任务更新API
+            const { updateTaskStatus } = await import('../../api/tasks')
+
+            // 更新任务进度
+            await updateTaskStatus(taskId, 'in-progress', progress)
+
+            // 刷新任务列表
+            await fetchProjectData()
+            message.success('进度更新成功')
+        } catch (error) {
+            console.error('更新进度失败:', error)
+            message.error('更新进度失败')
+        } finally {
+            setUpdatingTaskId(null)
+        }
+    }
+
+    // 确认进度和紧急度更新
+    const handleConfirmProgress = async () => {
+        if (!editingTask) return
+
+        try {
+            setUpdatingTaskId(editingTask._id)
+
+            // 导入任务更新API
+            const { updateTask } = await import('../../api/tasks')
+
+            // 同时更新进度和紧急度
+            await updateTask(editingTask._id, {
+                progress: editingProgress,
+                priority: editingPriority
+            })
+
+            // 刷新任务列表
+            await fetchProjectData()
+            message.success('更新成功')
+
+            setProgressModalVisible(false)
+            setEditingTask(null)
+            setEditingProgress(0)
+            setEditingPriority('medium')
+        } catch (error) {
+            console.error('更新失败:', error)
+            message.error('更新失败')
+        } finally {
+            setUpdatingTaskId(null)
+        }
+    }
+
+    // 处理项目文件变化
+    const handleProjectFilesChange = async (fileList: UploadFile[]) => {
+        setProjectFiles(fileList)
+
+        // 保存文件列表到项目
+        try {
+            const files = fileList
+                .filter(file => file.status === 'done')
+                .map(file => {
+                    const fileInfo: FileInfo = {
+                        path: file.response?.data?.url || file.url || '',
+                        originalName: file.name || '未知文件',
+                        size: file.size || 0
+                    }
+                    return fileInfo
+                })
+                .filter(file => file.path !== '')
+
+            if (files.length > 0) {
+                // 更新项目文件列表
+                const { updateProject } = await import('../../api/projects')
+                await updateProject(project!._id, {
+                    relatedFiles: files
+                })
+
+                message.success('文件列表已保存')
+            }
+        } catch (error) {
+            console.error('保存文件列表失败:', error)
+            message.error('保存文件列表失败')
+        }
+    }
+
+    // 处理客户文件变化
+    const handleClientFilesChange = async (fileList: UploadFile[]) => {
+        setClientFiles(fileList)
+    }
 
     if (loading) {
         return (
@@ -302,7 +317,7 @@ const ProjectDetail: React.FC = () => {
                             创建时间: {project.createdAt}
                         </Text>
                     </div>
-                    <Tag color={statusColors[project.status]} size="large">
+                    <Tag color={statusColors[project.status]}>
                         {statusText[project.status]}
                     </Tag>
                 </Space>
@@ -311,7 +326,7 @@ const ProjectDetail: React.FC = () => {
 
             <Row gutter={16}>
                 {/* 基本信息 */}
-                <Col span={16}>
+                <Col span={20}>
                     <Card title="基本信息" style={{ marginBottom: 16 }}>
                         <Descriptions column={2} bordered>
                             <Descriptions.Item label="客户">
@@ -320,11 +335,27 @@ const ProjectDetail: React.FC = () => {
                             <Descriptions.Item label="联系人">
                                 <Text>{project.contact}</Text>
                             </Descriptions.Item>
+                            <Descriptions.Item label="团队">
+                                <Text>{(() => {
+                                    const team = enterprises.find(enterprise => enterprise.id === project.team)
+                                    return team ? team.enterpriseName : '未选择'
+                                })()}</Text>
+                            </Descriptions.Item>
                             <Descriptions.Item label="主创设计师">
-                                <Text>{project.mainDesigner}</Text>
+                                <Text>{(() => {
+                                    const mainDesigners = employees.filter(emp => project.mainDesigner?.includes(emp._id))
+                                    return mainDesigners.length > 0
+                                        ? mainDesigners.map(emp => emp.realName).join(', ')
+                                        : '未选择'
+                                })()}</Text>
                             </Descriptions.Item>
                             <Descriptions.Item label="助理设计师">
-                                <Text>{project.assistantDesigners?.join(', ') || '无'}</Text>
+                                <Text>{(() => {
+                                    const assistantDesigners = employees.filter(emp => project.assistantDesigners?.includes(emp._id))
+                                    return assistantDesigners.length > 0
+                                        ? assistantDesigners.map(emp => emp.realName).join(', ')
+                                        : '无'
+                                })()}</Text>
                             </Descriptions.Item>
                         </Descriptions>
                     </Card>
@@ -332,130 +363,372 @@ const ProjectDetail: React.FC = () => {
                     {/* 任务列表 */}
                     <Card title="任务列表" style={{ marginBottom: 16 }}>
                         <Table
-                            columns={taskColumns}
-                            dataSource={mockTasks}
-                            rowKey="id"
+                            columns={[
+                                {
+                                    title: '任务名称',
+                                    dataIndex: 'taskName',
+                                    key: 'taskName',
+                                    width: 200,
+                                },
+                                {
+                                    title: '规格信息',
+                                    key: 'specification',
+                                    width: 300,
+                                    render: (_, record: Task) => {
+                                        const spec = record.specification
+
+                                        // 如果正在更新该任务，显示加载状态
+                                        if (updatingTaskId === record._id) {
+                                            return <Spin size="small" />
+                                        }
+
+                                        // 转换规格格式以适配 SpecificationSelector
+                                        const specification: Specification | undefined = spec ? {
+                                            id: spec.id,
+                                            name: spec.name,
+                                            length: spec.length,
+                                            width: spec.width,
+                                            height: spec.height,
+                                            unit: spec.unit,
+                                            resolution: spec.resolution
+                                        } : undefined
+
+                                        return (
+                                            <SpecificationSelector
+                                                value={specification}
+                                                onChange={(newSpec) => handleSpecificationChange(record._id, newSpec)}
+                                                placeholder="点击选择规格"
+                                            />
+                                        )
+                                    }
+                                },
+                                {
+                                    title: '数量',
+                                    dataIndex: 'quantity',
+                                    key: 'quantity',
+                                    width: 100,
+                                    render: (quantity: number, record: Task) => `${quantity} ${record.unit}`
+                                },
+                                {
+                                    title: '紧急度',
+                                    key: 'priority',
+                                    width: 120,
+                                    render: (_, record: Task) => {
+                                        const priority = record.priority || 'medium'
+
+                                        const priorityConfig = {
+                                            low: { color: '#52c41a', text: '低', icon: '🟢' },
+                                            medium: { color: '#faad14', text: '中', icon: '🟡' },
+                                            high: { color: '#ff7a45', text: '高', icon: '🟠' },
+                                            urgent: { color: '#ff4d4f', text: '紧急', icon: '🔴' }
+                                        }
+
+                                        const config = priorityConfig[priority as keyof typeof priorityConfig]
+
+                                        return (
+                                            <Tag color={config.color} style={{ margin: 0 }}>
+                                                {config.icon} {config.text}
+                                            </Tag>
+                                        )
+                                    }
+                                },
+                                {
+                                    title: '进度',
+                                    key: 'progress',
+                                    width: 200,
+                                    render: (_, record: Task) => {
+                                        // 如果正在更新该任务，显示加载状态
+                                        if (updatingTaskId === record._id) {
+                                            return <Spin size="small" />
+                                        }
+
+                                        const progress = record.progress || 0
+                                        const status = record.status
+
+                                        // 根据状态和进度确定进度条颜色
+                                        let strokeColor = '#1890ff'
+                                        let statusText = '进行中'
+
+                                        if (status === 'completed') {
+                                            strokeColor = '#52c41a'
+                                            statusText = '已完成'
+                                        } else if (status === 'cancelled') {
+                                            strokeColor = '#ff4d4f'
+                                            statusText = '已取消'
+                                        } else if (status === 'on-hold') {
+                                            strokeColor = '#faad14'
+                                            statusText = '暂停中'
+                                        } else if (status === 'pending') {
+                                            strokeColor = '#d9d9d9'
+                                            statusText = '待开始'
+                                        }
+
+                                        return (
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 8,
+                                                    cursor: 'pointer',
+                                                    padding: '4px',
+                                                    borderRadius: '4px',
+                                                    transition: 'background-color 0.2s'
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.backgroundColor = '#f5f5f5'
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.backgroundColor = 'transparent'
+                                                }}
+                                                onClick={() => handleOpenProgressModal(record)}
+                                            >
+                                                <Tooltip title={`点击编辑进度 - ${statusText} - ${progress}%`}>
+                                                    <Progress
+                                                        percent={progress}
+                                                        size="small"
+                                                        strokeColor={strokeColor}
+                                                        showInfo={false}
+                                                        style={{ flex: 1, marginRight: 8 }}
+                                                    />
+                                                </Tooltip>
+                                                <span style={{ fontSize: '12px', color: '#666', minWidth: '35px' }}>
+                                                    {progress}%
+                                                </span>
+                                            </div>
+                                        )
+                                    }
+                                }
+                            ]}
+                            dataSource={tasks}
+                            rowKey="_id"
                             pagination={false}
                             size="small"
-                            scroll={{ x: 700 }}
+                            scroll={{ x: 800 }}
                         />
                     </Card>
 
                     {/* 选项卡 */}
                     <Card>
-                        <Tabs defaultActiveKey="requirements">
-                            <TabPane tab="客户嘱托" key="requirements">
-                                <Text>{project.clientRequirements}</Text>
-                            </TabPane>
-                            <TabPane tab="项目提案" key="proposals">
-                                <List
-                                    size="small"
-                                    dataSource={project.relatedProposals}
-                                    renderItem={(item) => (
-                                        <List.Item>
-                                            <FileTextOutlined style={{ marginRight: 8 }} />
-                                            {item}
-                                        </List.Item>
-                                    )}
-                                />
-                            </TabPane>
-                            <TabPane tab="关联信息" key="related">
-                                <Row gutter={16}>
-                                    <Col span={12}>
-                                        <Card size="small" title="合同信息" style={{ marginBottom: 16 }}>
-                                            <List
-                                                size="small"
-                                                dataSource={project.relatedContracts}
-                                                renderItem={(item) => (
-                                                    <List.Item>
-                                                        <FileTextOutlined style={{ marginRight: 8 }} />
-                                                        {item}
-                                                    </List.Item>
-                                                )}
-                                            />
-                                        </Card>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Card size="small" title="订单信息" style={{ marginBottom: 16 }}>
-                                            <List
-                                                size="small"
-                                                dataSource={project.relatedOrders}
-                                                renderItem={(item) => (
-                                                    <List.Item>
-                                                        <DollarOutlined style={{ marginRight: 8 }} />
-                                                        {item}
-                                                    </List.Item>
-                                                )}
-                                            />
-                                        </Card>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Card size="small" title="结算单信息" style={{ marginBottom: 16 }}>
-                                            <List
-                                                size="small"
-                                                dataSource={project.relatedSettlements}
-                                                renderItem={(item) => (
-                                                    <List.Item>
-                                                        <DollarOutlined style={{ marginRight: 8 }} />
-                                                        {item}
-                                                    </List.Item>
-                                                )}
-                                            />
-                                        </Card>
-                                    </Col>
-                                    <Col span={12}>
-                                        <Card size="small" title="发票信息" style={{ marginBottom: 16 }}>
-                                            <List
-                                                size="small"
-                                                dataSource={project.relatedInvoices}
-                                                renderItem={(item) => (
-                                                    <List.Item>
-                                                        <FileTextOutlined style={{ marginRight: 8 }} />
-                                                        {item}
-                                                    </List.Item>
-                                                )}
-                                            />
-                                        </Card>
-                                    </Col>
-                                </Row>
-                            </TabPane>
-                        </Tabs>
+                        <Tabs
+                            defaultActiveKey="requirements"
+                            items={[
+                                {
+                                    key: 'requirements',
+                                    label: '客户嘱托',
+                                    children: <Text>{project.clientRequirements}</Text>
+                                },
+                                {
+                                    key: 'proposals',
+                                    label: '项目提案',
+                                    children: (
+                                        <List
+                                            size="small"
+                                            dataSource={project.relatedProposals}
+                                            renderItem={(item) => (
+                                                <List.Item>
+                                                    <FileTextOutlined style={{ marginRight: 8 }} />
+                                                    {item}
+                                                </List.Item>
+                                            )}
+                                        />
+                                    )
+                                },
+                                {
+                                    key: 'related',
+                                    label: '关联信息',
+                                    children: (
+                                        <Row gutter={16}>
+                                            <Col span={12}>
+                                                <Card size="small" title="合同信息" style={{ marginBottom: 16 }}>
+                                                    <List
+                                                        size="small"
+                                                        dataSource={project.relatedContracts}
+                                                        renderItem={(item) => (
+                                                            <List.Item>
+                                                                <FileTextOutlined style={{ marginRight: 8 }} />
+                                                                {item}
+                                                            </List.Item>
+                                                        )}
+                                                    />
+                                                </Card>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Card size="small" title="订单信息" style={{ marginBottom: 16 }}>
+                                                    <List
+                                                        size="small"
+                                                        dataSource={project.relatedOrders}
+                                                        renderItem={(item) => (
+                                                            <List.Item>
+                                                                <DollarOutlined style={{ marginRight: 8 }} />
+                                                                {item}
+                                                            </List.Item>
+                                                        )}
+                                                    />
+                                                </Card>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Card size="small" title="结算单信息" style={{ marginBottom: 16 }}>
+                                                    <List
+                                                        size="small"
+                                                        dataSource={project.relatedSettlements}
+                                                        renderItem={(item) => (
+                                                            <List.Item>
+                                                                <DollarOutlined style={{ marginRight: 8 }} />
+                                                                {item}
+                                                            </List.Item>
+                                                        )}
+                                                    />
+                                                </Card>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Card size="small" title="发票信息" style={{ marginBottom: 16 }}>
+                                                    <List
+                                                        size="small"
+                                                        dataSource={project.relatedInvoices}
+                                                        renderItem={(item) => (
+                                                            <List.Item>
+                                                                <FileTextOutlined style={{ marginRight: 8 }} />
+                                                                {item}
+                                                            </List.Item>
+                                                        )}
+                                                    />
+                                                </Card>
+                                            </Col>
+                                        </Row>
+                                    )
+                                }
+                            ]}
+                        />
                     </Card>
                 </Col>
 
                 {/* 侧边栏 */}
-                <Col span={8}>
-                    {/* 文件选项卡 */}
-                    <Card title="文件管理">
-                        <Tabs defaultActiveKey="projectFiles">
-                            <TabPane tab="项目文件" key="projectFiles">
-                                <List
-                                    size="small"
-                                    dataSource={project.relatedFiles}
-                                    renderItem={(item) => (
-                                        <List.Item>
-                                            <FileOutlined style={{ marginRight: 8 }} />
-                                            {item}
-                                        </List.Item>
-                                    )}
-                                />
-                            </TabPane>
-                            <TabPane tab="客户常驻文件" key="clientFiles">
-                                <List
-                                    size="small"
-                                    dataSource={['客户需求文档.pdf', '客户品牌手册.pdf', '客户联系方式.docx']}
-                                    renderItem={(item) => (
-                                        <List.Item>
-                                            <FileOutlined style={{ marginRight: 8 }} />
-                                            {item}
-                                        </List.Item>
-                                    )}
-                                />
-                            </TabPane>
-                        </Tabs>
+                <Col span={4}>
+                    {/* 文件管理 */}
+                    <Card title="文件管理" style={{ marginBottom: 16 }}>
+                        <Tabs
+                            defaultActiveKey="projectFiles"
+                            size="small"
+                            items={[
+                                {
+                                    key: 'projectFiles',
+                                    label: '项目文件',
+                                    children: (
+                                        <FileUpload
+                                            value={projectFiles}
+                                            onChange={handleProjectFilesChange}
+                                            businessType="projects"
+                                            subDirectory={project._id}
+                                            maxCount={20}
+                                            multiple={true}
+                                            placeholder="上传项目相关文件"
+                                            helpText="支持文档、设计稿、视频等，单个文件不超过50MB"
+                                            style={{ marginBottom: 8 }}
+                                        />
+                                    )
+                                },
+                                {
+                                    key: 'clientFiles',
+                                    label: '客户文件',
+                                    children: (
+                                        <FileUpload
+                                            value={clientFiles}
+                                            onChange={handleClientFilesChange}
+                                            businessType="clients"
+                                            subDirectory={project.client}
+                                            maxCount={10}
+                                            multiple={true}
+                                            placeholder="上传客户相关文件"
+                                            helpText="支持客户需求文档、品牌手册等，单个文件不超过10MB"
+                                            style={{ marginBottom: 8 }}
+                                        />
+                                    )
+                                }
+                            ]}
+                        />
                     </Card>
                 </Col>
             </Row>
+
+            {/* 进度和紧急度编辑模态框 */}
+            <Modal
+                title="编辑任务进度和紧急度"
+                open={progressModalVisible}
+                onOk={handleConfirmProgress}
+                onCancel={() => {
+                    setProgressModalVisible(false)
+                    setEditingTask(null)
+                    setEditingProgress(0)
+                    setEditingPriority('medium')
+                }}
+                okText="确定"
+                cancelText="取消"
+                width={500}
+            >
+                {editingTask && (
+                    <div>
+                        <div style={{ marginBottom: 16 }}>
+                            <Text strong>任务：</Text>
+                            <Text>{editingTask.taskName}</Text>
+                        </div>
+                        <div style={{ marginBottom: 16 }}>
+                            <Text strong>当前进度：</Text>
+                            <Text>{editingProgress}%</Text>
+                        </div>
+                        <div style={{ marginBottom: 16 }}>
+                            <Text strong>调整进度：</Text>
+                            <div style={{ marginTop: 8 }}>
+                                <Slider
+                                    min={0}
+                                    max={100}
+                                    value={editingProgress}
+                                    onChange={setEditingProgress}
+                                    marks={{
+                                        0: '0%',
+                                        25: '25%',
+                                        50: '50%',
+                                        75: '75%',
+                                        100: '100%'
+                                    }}
+                                />
+                            </div>
+                            <div style={{ marginTop: 8, textAlign: 'center' }}>
+                                <InputNumber
+                                    min={0}
+                                    max={100}
+                                    value={editingProgress}
+                                    onChange={(value) => setEditingProgress(value || 0)}
+                                    style={{ width: 80 }}
+                                    addonAfter="%"
+                                />
+                            </div>
+                        </div>
+                        <div style={{ marginBottom: 16 }}>
+                            <Text strong>设置紧急度：</Text>
+                            <div style={{ marginTop: 8 }}>
+                                <Select
+                                    value={editingPriority}
+                                    onChange={setEditingPriority}
+                                    style={{ width: '100%' }}
+                                    options={[
+                                        { value: 'low', label: '🟢 低' },
+                                        { value: 'medium', label: '🟡 中' },
+                                        { value: 'high', label: '🟠 高' },
+                                        { value: 'urgent', label: '🔴 紧急' }
+                                    ]}
+                                />
+                            </div>
+                        </div>
+                        <div style={{ marginTop: 16 }}>
+                            <Progress
+                                percent={editingProgress}
+                                strokeColor={editingProgress === 100 ? '#52c41a' : '#1890ff'}
+                                showInfo={false}
+                            />
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </div>
     )
 }

@@ -249,6 +249,21 @@ const Employee: React.FC = () => {
             const enterprise = enterprises.find(e => e.id === values.enterpriseId)
             const department = departments.find(d => d.id === values.departmentId && d.enterpriseId === values.enterpriseId)
 
+            // 检查邮箱唯一性（如果邮箱不为空）
+            if (values.email && values.email.trim() !== '') {
+                try {
+                    const response = await axios.get(`/api/users/check-email/${encodeURIComponent(values.email.trim())}`)
+                    if (response.data.exists && (!editingEmployee || response.data.userId !== editingEmployee.id)) {
+                        message.error('该邮箱已被其他用户使用')
+                        setLoading(false)
+                        return
+                    }
+                } catch (error) {
+                    console.error('检查邮箱唯一性失败:', error)
+                    // 继续执行，让后端处理邮箱冲突
+                }
+            }
+
             if (editingEmployee) {
                 // 编辑员工 - 不更新密码
                 const { password, ...updateValues } = values
@@ -256,8 +271,12 @@ const Employee: React.FC = () => {
                     ...updateValues,
                     enterpriseName: enterprise?.enterpriseName || '',
                     departmentName: department?.name || '',
-                    role: '员工'
+                    role: '员工',
+                    // 处理空的邮箱字段 - 明确发送空字符串以表示要清除邮箱
+                    email: values.email ? values.email.trim() : ''
                 }
+
+                console.log('发送的更新数据:', updatedEmployee)
 
                 // 调用API更新员工信息
                 await axios.put(`/api/users/${editingEmployee.id}`, updatedEmployee)
@@ -269,8 +288,12 @@ const Employee: React.FC = () => {
                     role: '员工',
                     department: department?.name || '',
                     enterpriseName: enterprise?.enterpriseName || '',
-                    departmentName: department?.name || ''
+                    departmentName: department?.name || '',
+                    // 处理空的邮箱字段 - 明确发送空字符串以表示要清除邮箱
+                    email: values.email ? values.email.trim() : ''
                 }
+
+                console.log('发送的创建数据:', newEmployee)
 
                 // 调用API创建员工
                 await axios.post('/api/users', newEmployee)
@@ -281,8 +304,35 @@ const Employee: React.FC = () => {
 
             setIsModalVisible(false)
             form.resetFields()
-        } catch (error) {
+        } catch (error: any) {
             console.error('员工表单验证失败:', error)
+
+            // 处理API错误响应
+            if (error.response) {
+                const { status, data } = error.response
+                console.log('API错误响应:', { status, data })
+                console.log('错误详情:', JSON.stringify(data, null, 2))
+
+                if (status === 400) {
+                    // 显示后端返回的具体错误信息
+                    const errorMessage = data.error || data.message || '请求参数错误'
+                    console.log('显示错误信息:', errorMessage)
+                    message.error(errorMessage)
+                } else if (status === 409) {
+                    // 冲突错误（如用户名或邮箱已存在）
+                    const errorMessage = data.error || data.message || '数据冲突，请检查输入信息'
+                    message.error(errorMessage)
+                } else {
+                    const errorMessage = data.error || data.message || '未知错误'
+                    message.error(`操作失败: ${errorMessage}`)
+                }
+            } else if (error.request) {
+                // 网络错误
+                message.error('网络连接失败，请检查网络设置')
+            } else {
+                // 其他错误
+                message.error('操作失败，请稍后重试')
+            }
         } finally {
             setLoading(false)
         }
@@ -627,13 +677,14 @@ const Employee: React.FC = () => {
                 okText="确认"
                 cancelText="取消"
             >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    initialValues={{
-                        status: 'active'
-                    }}
-                >
+                {isModalVisible && (
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        initialValues={{
+                            status: 'active'
+                        }}
+                    >
                     <Form.Item
                         name="username"
                         label="用户名"
@@ -671,10 +722,18 @@ const Employee: React.FC = () => {
                         name="email"
                         label="邮箱"
                         rules={[
-                            { type: 'email', message: '请输入正确的邮箱地址' }
+                            { type: 'email', message: '请输入正确的邮箱地址' },
+                            {
+                                validator: (_, value) => {
+                                    if (!value || value.trim() === '') {
+                                        return Promise.resolve();
+                                    }
+                                    return Promise.resolve();
+                                }
+                            }
                         ]}
                     >
-                        <Input placeholder="请输入邮箱" />
+                        <Input placeholder="请输入邮箱（可选）" />
                     </Form.Item>
 
                     <Form.Item
@@ -758,6 +817,7 @@ const Employee: React.FC = () => {
                         </Select>
                     </Form.Item>
                 </Form>
+                )}
             </Modal>
 
             {/* 修改密码模态窗 */}
@@ -771,10 +831,11 @@ const Employee: React.FC = () => {
                 okText="确认"
                 cancelText="取消"
             >
-                <Form
-                    form={passwordForm}
-                    layout="vertical"
-                >
+                {isPasswordModalVisible && (
+                    <Form
+                        form={passwordForm}
+                        layout="vertical"
+                    >
                     <Form.Item
                         name="newPassword"
                         label="新密码"
@@ -803,6 +864,7 @@ const Employee: React.FC = () => {
                         <Input.Password placeholder="请确认新密码" />
                     </Form.Item>
                 </Form>
+                )}
             </Modal>
 
             {/* 用户权限设置模态窗 */}
@@ -816,12 +878,14 @@ const Employee: React.FC = () => {
                 okText="保存"
                 cancelText="取消"
             >
-                <div style={{ marginBottom: 16 }}>
-                    <p><strong>员工：</strong>{selectedUser?.realName} ({selectedUser?.role})</p>
-                    <p><strong>说明：</strong>请选择该员工可以访问的功能权限</p>
-                </div>
+                {isPermissionModalVisible && (
+                    <>
+                        <div style={{ marginBottom: 16 }}>
+                            <p><strong>员工：</strong>{selectedUser?.realName} ({selectedUser?.role})</p>
+                            <p><strong>说明：</strong>请选择该员工可以访问的功能权限</p>
+                        </div>
 
-                <Form form={permissionForm} layout="vertical">
+                        <Form form={permissionForm} layout="vertical">
                     <Form.Item
                         name="permissionGroups"
                         label="权限组设置"
@@ -856,6 +920,8 @@ const Employee: React.FC = () => {
                         />
                     </Form.Item>
                 </Form>
+                        </>
+                )}
             </Modal>
         </div>
     )

@@ -7,12 +7,13 @@ import ActionMenu, { ActionTypes } from '../../components/ActionMenu'
 const { Option } = Select
 
 interface PricingCategory {
-    id: string
+    _id: string
     name: string
     description: string
     status: 'active' | 'inactive'
     serviceCount: number
     createTime: string
+    updateTime: string
 }
 
 const PricingCategories: React.FC = () => {
@@ -20,7 +21,6 @@ const PricingCategories: React.FC = () => {
     const [loading, setLoading] = useState(false)
     const [modalVisible, setModalVisible] = useState(false)
     const [editing, setEditing] = useState<PricingCategory | null>(null)
-    const [form] = Form.useForm()
     const [search, setSearch] = useState('')
     const [statusFilter, setStatusFilter] = useState<string>('all')
 
@@ -42,19 +42,13 @@ const PricingCategories: React.FC = () => {
     const showModal = (record?: PricingCategory) => {
         setEditing(record || null)
         setModalVisible(true)
-        if (record) {
-            form.setFieldsValue(record)
-        } else {
-            form.resetFields()
-        }
     }
 
     // 保存
-    const handleOk = async () => {
+    const handleOk = async (values: any) => {
         try {
-            const values = await form.validateFields()
             if (editing) {
-                await axios.put(`/api/pricing-categories/${editing.id}`, values)
+                await axios.put(`/api/pricing-categories/${editing._id}`, values)
                 message.success('分类更新成功')
             } else {
                 await axios.post('/api/pricing-categories', values)
@@ -78,7 +72,7 @@ const PricingCategories: React.FC = () => {
             cancelText: '取消',
             onOk: async () => {
                 try {
-                    await axios.delete(`/api/pricing-categories/${record.id}`)
+                    await axios.delete(`/api/pricing-categories/${record._id}`)
                     message.success('删除成功')
                     fetchData()
                 } catch (e: any) {
@@ -91,7 +85,7 @@ const PricingCategories: React.FC = () => {
     // 状态切换
     const handleStatusChange = async (checked: boolean, record: PricingCategory) => {
         try {
-            await axios.put(`/api/pricing-categories/${record.id}`, { status: checked ? 'active' : 'inactive' })
+            await axios.put(`/api/pricing-categories/${record._id}`, { status: checked ? 'active' : 'inactive' })
             fetchData()
         } catch (e) {
             message.error('状态更新失败')
@@ -101,7 +95,7 @@ const PricingCategories: React.FC = () => {
     // 唯一性校验
     const checkNameUnique = async (_: any, value: string) => {
         if (!value) return Promise.resolve()
-        const exists = data.some(item => item.name === value && (!editing || item.id !== editing.id))
+        const exists = data.some(item => item.name === value && (!editing || item._id !== editing._id))
         if (exists) return Promise.reject('分类名称已存在')
         return Promise.resolve()
     }
@@ -143,6 +137,7 @@ const PricingCategories: React.FC = () => {
             title: '创建时间',
             dataIndex: 'createTime',
             key: 'createTime',
+            render: (createTime: string) => new Date(createTime).toLocaleDateString('zh-CN')
         },
         {
             title: '操作',
@@ -196,9 +191,9 @@ const PricingCategories: React.FC = () => {
                             value={statusFilter}
                             onChange={setStatusFilter}
                         >
-                            <Option value="all">全部状态</Option>
-                            <Option value="active">启用</Option>
-                            <Option value="inactive">禁用</Option>
+                            <Option key="all" value="all">全部状态</Option>
+                            <Option key="active" value="active">启用</Option>
+                            <Option key="inactive" value="inactive">禁用</Option>
                         </Select>
                     </Space>
                 </div>
@@ -206,51 +201,71 @@ const PricingCategories: React.FC = () => {
                 <Table
                     columns={columns}
                     dataSource={filteredData}
-                    rowKey="id"
+                    rowKey="_id"
                     loading={loading}
                     pagination={{ pageSize: 10 }}
                 />
             </Card>
 
-            <Modal
-                title={editing ? '编辑分类' : '新增分类'}
-                open={modalVisible}
-                onOk={handleOk}
-                onCancel={() => { setModalVisible(false); setEditing(null); form.resetFields() }}
-                destroyOnHidden
-                okText="保存"
-                cancelText="取消"
-            >
-                <Form form={form} layout="vertical">
-                    <Form.Item
-                        name="name"
-                        label="分类名称"
-                        rules={[
-                            { required: true, message: '请输入分类名称' },
-                            { validator: checkNameUnique }
-                        ]}
+            {modalVisible && (
+                <Modal
+                    title={editing ? '编辑分类' : '新增分类'}
+                    open={modalVisible}
+                    onCancel={() => {
+                        setModalVisible(false)
+                    }}
+                    afterClose={() => {
+                        setEditing(null)
+                    }}
+                    destroyOnHidden
+                    okText="保存"
+                    cancelText="取消"
+                    footer={null}
+                >
+                    <Form
+                        layout="vertical"
+                        initialValues={editing || { status: 'active' }}
+                        onFinish={handleOk}
                     >
-                        <Input placeholder="请输入分类名称" />
-                    </Form.Item>
-                    <Form.Item
-                        name="description"
-                        label="描述"
-                    >
-                        <Input.TextArea placeholder="请输入描述" />
-                    </Form.Item>
-                    <Form.Item
-                        name="status"
-                        label="状态"
-                        initialValue="active"
-                        rules={[{ required: true, message: '请选择状态' }]}
-                    >
-                        <Select>
-                            <Option value="active">启用</Option>
-                            <Option value="inactive">禁用</Option>
-                        </Select>
-                    </Form.Item>
-                </Form>
-            </Modal>
+                        <Form.Item
+                            name="name"
+                            label="分类名称"
+                            rules={[
+                                { required: true, message: '请输入分类名称' },
+                                { validator: checkNameUnique }
+                            ]}
+                        >
+                            <Input placeholder="请输入分类名称" />
+                        </Form.Item>
+                        <Form.Item
+                            name="description"
+                            label="描述"
+                        >
+                            <Input.TextArea placeholder="请输入描述" />
+                        </Form.Item>
+                        <Form.Item
+                            name="status"
+                            label="状态"
+                            rules={[{ required: true, message: '请选择状态' }]}
+                        >
+                            <Select>
+                                <Option key="active" value="active">启用</Option>
+                                <Option key="inactive" value="inactive">禁用</Option>
+                            </Select>
+                        </Form.Item>
+                        <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+                            <Space>
+                                <Button onClick={() => setModalVisible(false)}>
+                                    取消
+                                </Button>
+                                <Button type="primary" htmlType="submit">
+                                    保存
+                                </Button>
+                            </Space>
+                        </Form.Item>
+                    </Form>
+                </Modal>
+            )}
         </div>
     )
 }

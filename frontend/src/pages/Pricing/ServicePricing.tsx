@@ -395,7 +395,7 @@ const ServicePricing: React.FC = () => {
                     >
                         <Option value="all">全部分类</Option>
                         {categories.map(category => (
-                            <Option key={category.id} value={category.id}>
+                            <Option key={category._id} value={category._id}>
                                 {category.name}
                             </Option>
                         ))}
@@ -457,8 +457,8 @@ const ServicePricing: React.FC = () => {
                                 <Select placeholder="请选择分类">
                                     {categories.map(category => (
                                         <Option
-                                            key={category.id}
-                                            value={category.id}
+                                            key={category._id}
+                                            value={category._id}
                                             disabled={category.status === 'inactive'}
                                         >
                                             {category.name}{category.status === 'inactive' ? '（已禁用）' : ''}
@@ -572,7 +572,7 @@ const ServicePricing: React.FC = () => {
                                             value={policy._id}
                                             disabled={policy.status === 'inactive'}
                                         >
-                                            {policy.name}{policy.status === 'inactive' ? '（已禁用）' : ''}
+                                            {policy.alias}{policy.status === 'inactive' ? '（已禁用）' : ''}
                                         </Option>
                                     ))}
                                 </Select>
@@ -704,7 +704,7 @@ const ServicePricing: React.FC = () => {
                                     <h5 style={{ marginBottom: 8 }}>价格政策</h5>
                                     {getSelectedPricingPolicies().map((policy, index) => (
                                         <div key={policy._id} style={{ marginBottom: 8, padding: 8, backgroundColor: 'white', borderRadius: 4 }}>
-                                            <div style={{ fontWeight: 500, marginBottom: 4 }}>{policy.name}</div>
+                                            <div style={{ fontWeight: 500, marginBottom: 4 }}>{policy.alias}</div>
                                             <div style={{ fontSize: '12px', color: '#666' }}>{policy.summary}</div>
                                             {policy.type === 'uniform_discount' && (
                                                 <div style={{ fontSize: '12px', color: '#1890ff' }}>
@@ -785,8 +785,8 @@ const ServicePricing: React.FC = () => {
                                 <Select placeholder="请选择分类">
                                     {categories.map(category => (
                                         <Option
-                                            key={category.id}
-                                            value={category.id}
+                                            key={category._id}
+                                            value={category._id}
                                             disabled={category.status === 'inactive'}
                                         >
                                             {category.name}{category.status === 'inactive' ? '（已禁用）' : ''}
@@ -900,7 +900,7 @@ const ServicePricing: React.FC = () => {
                                             value={policy._id}
                                             disabled={policy.status === 'inactive'}
                                         >
-                                            {policy.name}{policy.status === 'inactive' ? '（已禁用）' : ''}
+                                            {policy.alias}{policy.status === 'inactive' ? '（已禁用）' : ''}
                                         </Option>
                                     ))}
                                 </Select>
@@ -1032,7 +1032,7 @@ const ServicePricing: React.FC = () => {
                                     <h5 style={{ marginBottom: 8 }}>价格政策</h5>
                                     {getSelectedPricingPolicies().map((policy, index) => (
                                         <div key={policy._id} style={{ marginBottom: 8, padding: 8, backgroundColor: 'white', borderRadius: 4 }}>
-                                            <div style={{ fontWeight: 500, marginBottom: 4 }}>{policy.name}</div>
+                                            <div style={{ fontWeight: 500, marginBottom: 4 }}>{policy.alias}</div>
                                             <div style={{ fontSize: '12px', color: '#666' }}>{policy.summary}</div>
                                             {policy.type === 'uniform_discount' && (
                                                 <div style={{ fontSize: '12px', color: '#1890ff' }}>
@@ -1232,7 +1232,7 @@ const ServicePricing: React.FC = () => {
                                         border: '1px solid #e9ecef'
                                     }}>
                                         <div style={{ fontWeight: 600, fontSize: '13px', marginBottom: 6, color: '#262626' }}>
-                                            {policy.name}
+                                            {policy.alias}
                                         </div>
                                         <div style={{ fontSize: '12px', color: '#666', marginBottom: 8 }}>
                                             {policy.summary}

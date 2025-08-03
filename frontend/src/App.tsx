@@ -67,6 +67,7 @@ import Employee from './pages/Organization/Employee'
 import GeneralSettings from './pages/Settings/GeneralSettings'
 import AdvancedSettings from './pages/Settings/AdvancedSettings'
 import LoginSettings from './pages/Settings/LoginSettings'
+import FileUploadTest from './components/FileUploadTest'
 
 function App() {
   return (
@@ -75,6 +76,9 @@ function App() {
         <Routes>
           {/* 仪表盘 */}
           <Route path="/" element={<Dashboard />} />
+
+          {/* 文件上传测试 */}
+          <Route path="/test-upload" element={<FileUploadTest />} />
 
           {/* 项目管理 */}
           <Route path="/projects" element={<Projects />} />

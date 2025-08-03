@@ -3,22 +3,25 @@ import axios from 'axios'
 const API_BASE_URL = 'http://localhost:3000/api'
 
 export interface PricingCategory {
-    id: string
+    _id: string
     name: string
     description: string
     status: 'active' | 'inactive'
     serviceCount: number
     createTime: string
+    updateTime: string
 }
 
 export interface CreateCategoryData {
     name: string
-    description: string
+    description?: string
+    status?: 'active' | 'inactive'
 }
 
 export interface UpdateCategoryData {
-    name: string
-    description: string
+    name?: string
+    description?: string
+    status?: 'active' | 'inactive'
 }
 
 // 获取所有定价分类
@@ -89,7 +92,7 @@ export const deletePricingCategory = async (id: string): Promise<void> => {
 // 搜索定价分类
 export const searchPricingCategories = async (searchTerm: string): Promise<PricingCategory[]> => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/pricing-categories/search?search=${encodeURIComponent(searchTerm)}`)
+        const response = await axios.get(`${API_BASE_URL}/pricing-categories/search?q=${encodeURIComponent(searchTerm)}`)
         return response.data.data
     } catch (error) {
         console.error('搜索定价分类失败:', error)

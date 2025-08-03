@@ -8,7 +8,18 @@
     "build": "tsc",
     "start": "node dist/app.js",
     "test": "jest",
-    "seed:quotations": "ts-node src/scripts/seedQuotationsReal.ts"
+    "seed:quotations": "ts-node src/scripts/seedQuotationsReal.ts",
+    "seed:enterprises": "ts-node src/scripts/seedEnterprises.ts",
+    "seed:departments": "ts-node src/scripts/seedDepartments.ts",
+    "import:customers": "ts-node src/scripts/importCustomerContacts.ts",
+    "import:customer-companies": "ts-node src/scripts/importCustomers.ts",
+    "import:companies-to-db": "ts-node src/scripts/importCustomerCompaniesToDB.ts",
+    "import:companies-to-client": "ts-node src/scripts/importCompaniesToClientTable.ts",
+    "force-import:companies": "ts-node src/scripts/forceImportCompaniesToClient.ts",
+    "delete:test-clients": "ts-node src/scripts/deleteTestClients.ts",
+    "import:service-pricing": "ts-node src/scripts/importServicePricing.ts",
+    "cleanup:company-users": "ts-node src/scripts/cleanupCompanyUsers.ts",
+    "match:customers": "ts-node src/scripts/matchCustomersToCompanies.ts"
   },
   "keywords": [
     "design",

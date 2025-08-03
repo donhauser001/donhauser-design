@@ -14,9 +14,6 @@ import {
 import {
   SearchOutlined,
   PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  EyeOutlined,
   UserOutlined,
   FileTextOutlined,
   DollarOutlined,
@@ -26,99 +23,26 @@ import {
 } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import CreateProjectModal from './Projects/CreateProjectModal'
+import ActionMenu, { ActionTypes } from '../components/ActionMenu'
+import { getProjects, deleteProject, Project as ApiProject, ProjectQuery } from '../api/projects'
+import { getActiveEnterprises, Enterprise } from '../api/enterprises'
+import { getEmployees, User } from '../api/users'
 
-interface Project {
-  id: string
-  projectName: string
-  client: string
-  contact: string
-  mainDesigner: string
-  assistantDesigners: string[]
-  relatedContracts: string[]
-  relatedOrders: string[]
-  relatedSettlements: string[]
-  relatedInvoices: string[]
-  relatedFiles: string[]
-  relatedTasks: string[]
-  relatedProposals: string[]
-  clientRequirements: string
-  status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold'
-  startDate: string
-  endDate?: string
-  createdAt: string
-}
+// 使用API中的Project类型
+type Project = ApiProject
 
 const Projects: React.FC = () => {
   const navigate = useNavigate()
   const [isModalVisible, setIsModalVisible] = useState(false)
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: '1',
-      projectName: '企业官网设计',
-      client: 'ABC科技有限公司',
-      contact: '张三',
-      mainDesigner: '设计师A',
-      assistantDesigners: ['设计师B', '设计师C'],
-      relatedContracts: ['合同001'],
-      relatedOrders: ['订单001'],
-      relatedSettlements: ['结算单001'],
-      relatedInvoices: ['发票001'],
-      relatedFiles: ['设计稿.pdf', '需求文档.docx'],
-      relatedTasks: ['任务1', '任务2', '任务3'],
-      relatedProposals: ['提案001'],
-      clientRequirements: '需要现代化的企业官网设计，突出公司科技感和专业性',
-      status: 'in-progress',
-      startDate: '2024-01-15',
-      endDate: '2024-02-15',
-      createdAt: '2024-01-10'
-    },
-    {
-      id: '2',
-      projectName: '品牌设计项目',
-      client: 'XYZ设计工作室',
-      contact: '李四',
-      mainDesigner: '设计师B',
-      assistantDesigners: ['设计师D'],
-      relatedContracts: ['合同002'],
-      relatedOrders: ['订单002'],
-      relatedSettlements: ['结算单002'],
-      relatedInvoices: ['发票002'],
-      relatedFiles: ['品牌手册.pdf'],
-      relatedTasks: ['任务4', '任务5'],
-      relatedProposals: ['提案002'],
-      clientRequirements: '完整的品牌视觉识别系统设计，包括logo、色彩、字体等',
-      status: 'completed',
-      startDate: '2024-01-01',
-      endDate: '2024-01-30',
-      createdAt: '2023-12-25'
-    },
-    {
-      id: '3',
-      projectName: '移动应用UI设计',
-      client: '创新科技公司',
-      contact: '王五',
-      mainDesigner: '设计师C',
-      assistantDesigners: ['设计师A'],
-      relatedContracts: ['合同003'],
-      relatedOrders: ['订单003'],
-      relatedSettlements: ['结算单003'],
-      relatedInvoices: ['发票003'],
-      relatedFiles: ['UI设计稿.sketch', '原型图.fig'],
-      relatedTasks: ['任务6', '任务7', '任务8'],
-      relatedProposals: ['提案003'],
-      clientRequirements: '设计一套现代化的移动应用UI，注重用户体验和视觉美感',
-      status: 'pending',
-      startDate: '2024-02-01',
-      endDate: '2024-03-01',
-      createdAt: '2024-01-20'
-    }
-  ])
+  const [projects, setProjects] = useState<Project[]>([])
+  const [enterprises, setEnterprises] = useState<Enterprise[]>([])
+  const [employees, setEmployees] = useState<User[]>([])
 
   const [loading, setLoading] = useState(false)
-  const [searchParams, setSearchParams] = useState({
+  const [searchParams, setSearchParams] = useState<ProjectQuery>({
     search: '',
     status: '',
-    mainDesigner: '',
+    team: '',
     client: ''
   })
 
@@ -138,18 +62,38 @@ const Projects: React.FC = () => {
     'on-hold': '暂停中'
   }
 
-  // 过滤项目数据
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = !searchParams.search ||
-      project.projectName.toLowerCase().includes(searchParams.search.toLowerCase()) ||
-      project.client.toLowerCase().includes(searchParams.search.toLowerCase())
+  // 获取项目数据
+  const fetchProjects = async () => {
+    try {
+      setLoading(true)
+      const response = await getProjects(searchParams)
+      setProjects(response.data)
+    } catch (error) {
+      console.error('获取项目列表失败:', error)
+      message.error('获取项目列表失败')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    const matchesStatus = !searchParams.status || project.status === searchParams.status
-    const matchesDesigner = !searchParams.mainDesigner || project.mainDesigner === searchParams.mainDesigner
-    const matchesClient = !searchParams.client || project.client === searchParams.client
+  // 获取企业和员工数据
+  const fetchData = async () => {
+    try {
+      const [enterprisesResponse, employeesResponse] = await Promise.all([
+        getActiveEnterprises(),
+        getEmployees()
+      ])
+      setEnterprises(enterprisesResponse.data)
+      setEmployees(employeesResponse.data)
+    } catch (error) {
+      console.error('获取数据失败:', error)
+    }
+  }
 
-    return matchesSearch && matchesStatus && matchesDesigner && matchesClient
-  })
+  useEffect(() => {
+    fetchProjects()
+    fetchData()
+  }, [searchParams])
 
   const columns = [
     {
@@ -161,7 +105,7 @@ const Projects: React.FC = () => {
         <div>
           <div style={{ fontWeight: 'bold', marginBottom: 4 }}>{text}</div>
           <div style={{ fontSize: '12px', color: '#666' }}>
-            创建时间: {record.createdAt}
+            创建时间: {new Date(record.createdAt).toLocaleDateString()}
           </div>
         </div>
       )
@@ -186,12 +130,20 @@ const Projects: React.FC = () => {
       render: (_: any, record: Project) => (
         <div>
           <div style={{ marginBottom: 4 }}>
-            <span style={{ fontSize: '12px' }}>主创: {record.mainDesigner}</span>
+            <span style={{ fontSize: '12px' }}>
+              主创: {(() => {
+                const mainDesigners = employees.filter(emp => record.mainDesigner.includes(emp._id))
+                return mainDesigners.map(emp => emp.realName).join(', ')
+              })()}
+            </span>
           </div>
           {record.assistantDesigners && record.assistantDesigners.length > 0 && (
             <div>
               <span style={{ fontSize: '12px', color: '#666' }}>
-                助理: {record.assistantDesigners.join(', ')}
+                助理: {(() => {
+                  const assistantDesigners = employees.filter(emp => record.assistantDesigners.includes(emp._id))
+                  return assistantDesigners.map(emp => emp.realName).join(', ')
+                })()}
               </span>
             </div>
           )}
@@ -218,7 +170,7 @@ const Projects: React.FC = () => {
           </div>
           <div>
             <CheckCircleOutlined style={{ marginRight: 4 }} />
-            任务: {record.relatedTasks?.length || 0}个
+            任务: {record.relatedTaskIds?.length || 0}个
           </div>
         </div>
       )
@@ -246,36 +198,25 @@ const Projects: React.FC = () => {
     {
       title: '操作',
       key: 'action',
-      width: 150,
-      render: (_: any, record: Project) => (
-        <Space size="small">
-          <Button
-            type="link"
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => handleView(record)}
-          >
-            查看
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            编辑
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record.id)}
-          >
-            删除
-          </Button>
-        </Space>
-      )
+      width: 80,
+      render: (_: any, record: Project) => {
+        const actions = [
+          {
+            ...ActionTypes.VIEW,
+            onClick: () => handleView(record)
+          },
+          {
+            ...ActionTypes.EDIT,
+            onClick: () => handleEdit(record)
+          },
+          {
+            ...ActionTypes.DELETE,
+            onClick: () => handleDelete(record._id)
+          }
+        ]
+
+        return <ActionMenu actions={actions} />
+      }
     }
   ]
 
@@ -289,21 +230,29 @@ const Projects: React.FC = () => {
   }
 
   const handleView = (project: Project) => {
-    navigate(`/projects/${project.id}`)
+    navigate(`/projects/${project._id}`)
   }
 
-  const handleDelete = (id: string) => {
-    // 使用简单的确认对话框
-    if (window.confirm('确定要删除这个项目吗？删除后无法恢复。')) {
-      setProjects(projects.filter(project => project.id !== id))
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteProject(id)
       message.success('项目删除成功')
+      fetchProjects() // 重新获取项目列表
+    } catch (error) {
+      console.error('删除项目失败:', error)
+      message.error('删除项目失败')
     }
   }
 
-  const handleCreateProject = (projectData: Project) => {
-    setProjects([...projects, projectData])
-    setIsModalVisible(false)
-    message.success('项目创建成功')
+  const handleCreateProject = async (projectData: any) => {
+    try {
+      await fetchProjects() // 重新获取项目列表
+      setIsModalVisible(false)
+      message.success('项目创建成功')
+    } catch (error) {
+      console.error('创建项目失败:', error)
+      message.error('创建项目失败')
+    }
   }
 
   const handleSearch = (value: string) => {
@@ -314,8 +263,8 @@ const Projects: React.FC = () => {
     setSearchParams(prev => ({ ...prev, status: value === 'all' ? '' : value }))
   }
 
-  const handleDesignerChange = (value: string) => {
-    setSearchParams(prev => ({ ...prev, mainDesigner: value === 'all' ? '' : value }))
+  const handleTeamChange = (value: string) => {
+    setSearchParams(prev => ({ ...prev, team: value === 'all' ? '' : value }))
   }
 
   const handleClientChange = (value: string) => {
@@ -323,12 +272,9 @@ const Projects: React.FC = () => {
   }
 
   const handleRefresh = () => {
-    setLoading(true)
-    // 模拟加载
-    setTimeout(() => {
-      setLoading(false)
-      message.success('数据已刷新')
-    }, 1000)
+    fetchProjects()
+    fetchData()
+    message.success('数据已刷新')
   }
 
   return (
@@ -382,15 +328,16 @@ const Projects: React.FC = () => {
               ]}
             />
             <Select
-              placeholder="主创设计师"
+              placeholder="团队"
               style={{ width: 150 }}
-              onChange={handleDesignerChange}
+              onChange={handleTeamChange}
               allowClear
               options={[
-                { value: 'all', label: '全部设计师' },
-                { value: '设计师A', label: '设计师A' },
-                { value: '设计师B', label: '设计师B' },
-                { value: '设计师C', label: '设计师C' }
+                { value: 'all', label: '全部团队' },
+                ...enterprises.map(enterprise => ({
+                  value: enterprise.id,
+                  label: enterprise.enterpriseName
+                }))
               ]}
             />
             <Select
@@ -410,8 +357,8 @@ const Projects: React.FC = () => {
 
         <Table
           columns={columns}
-          dataSource={filteredProjects}
-          rowKey="id"
+          dataSource={projects}
+          rowKey="_id"
           loading={loading}
           pagination={{
             pageSize: 10,

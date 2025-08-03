@@ -10,6 +10,7 @@ import clientCategoryRoutes from './clientCategories';
 import serviceProcessRoutes from './serviceProcesses';
 import additionalConfigRoutes from './additionalConfigs';
 import pricingPolicyRoutes from './pricingPolicies';
+import pricingCategoryRoutes from './pricingCategories';
 import servicePricingRoutes from './servicePricing';
 import quotationRoutes from './quotations';
 import orderRoutes from './orders';
@@ -50,6 +51,9 @@ router.use('/additional-configs', additionalConfigRoutes);
 
 // 价格政策路由
 router.use('/pricing-policies', pricingPolicyRoutes);
+
+// 定价分类路由
+router.use('/pricing-categories', pricingCategoryRoutes);
 
 // 服务定价路由
 router.use('/service-pricing', servicePricingRoutes);

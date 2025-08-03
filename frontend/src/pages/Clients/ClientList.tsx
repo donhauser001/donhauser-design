@@ -393,6 +393,13 @@ const ClientList: React.FC = () => {
               originalName: file.name || '未知文件',
               size: file.size || 0
             }
+          } else if (file.response?.url) {
+            // 兼容旧格式
+            return {
+              path: file.response.url,
+              originalName: file.name || '未知文件',
+              size: file.size || 0
+            }
           } else if (file.url) {
             // 已存在的文件
             return {

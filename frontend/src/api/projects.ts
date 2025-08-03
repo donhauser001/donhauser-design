@@ -3,20 +3,21 @@ import axios from 'axios'
 const API_BASE_URL = 'http://localhost:3000/api'
 
 export interface Project {
-    id: string
+    _id: string
     projectName: string
     client: string
     contact: string
-    mainDesigner: string
+    team: string
+    mainDesigner: string[]
     assistantDesigners: string[]
     relatedContracts: string[]
     relatedOrders: string[]
     relatedSettlements: string[]
     relatedInvoices: string[]
-    relatedFiles: string[]
-    relatedTasks: string[]
+    relatedFiles: Array<{ path: string; originalName: string; size: number }>
+    relatedTaskIds: string[] // 关联的任务ID数组
     relatedProposals: string[]
-    clientRequirements: string
+    clientRequirements?: string
     status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold'
     startDate: string
     endDate?: string
@@ -28,20 +29,39 @@ export interface CreateProjectRequest {
     projectName: string
     client: string
     contact: string
-    mainDesigner: string
-    assistantDesigners?: string[]
-    clientRequirements: string
-    status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold'
-    startDate?: string
-    endDate?: string
+    team: string
+    mainDesigner: string[]
+    assistantDesigners: string[]
+    relatedOrders: string[]
+    relatedTasks: Array<{
+        serviceId: string
+        serviceName: string
+        quantity: number
+        unit: string
+        subtotal: number
+        specification?: {
+            id: string
+            name: string
+            length: number
+            width: number
+            height?: number
+            unit: string
+            resolution?: string
+        }
+    }>
+    clientRequirements?: string
+    startDate: string
 }
 
 export interface UpdateProjectRequest {
     projectName?: string
     client?: string
     contact?: string
-    mainDesigner?: string
+    team?: string
+    mainDesigner?: string[]
     assistantDesigners?: string[]
+    relatedTaskIds?: string[]
+    relatedFiles?: Array<{ path: string; originalName: string; size: number }>
     clientRequirements?: string
     status?: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold'
     startDate?: string
@@ -53,7 +73,7 @@ export interface ProjectQuery {
     limit?: number
     search?: string
     status?: string
-    mainDesigner?: string
+    team?: string
     client?: string
 }
 

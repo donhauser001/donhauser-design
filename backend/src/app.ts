@@ -24,6 +24,8 @@ import quotationRoutes from './routes/quotations';
 import orderRoutes from './routes/orders';
 import contractElementRoutes from './routes/contractElements';
 import specificationRoutes from './routes/specifications';
+import projectRoutes from './routes/projects';
+import taskRoutes from './routes/tasks';
 
 // 加载环境变量
 dotenv.config();
@@ -85,7 +87,9 @@ app.get('/', (req, res) => {
       quotations: '/api/quotations',
       orders: '/api/orders',
       contractElements: '/api/contract-elements',
-      specifications: '/api/specifications'
+      specifications: '/api/specifications',
+      projects: '/api/projects',
+      tasks: '/api/tasks'
     }
   });
 });
@@ -113,6 +117,8 @@ app.use('/api/quotations', quotationRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/contract-elements', contractElementRoutes);
 app.use('/api/specifications', specificationRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/tasks', taskRoutes);
 
 // 错误处理中间件
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
