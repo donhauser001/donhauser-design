@@ -1,5 +1,5 @@
 import React from 'react'
-import { Modal, Descriptions, Table, Tag, Typography, Card, Space, Divider } from 'antd'
+import { Modal, Descriptions, Table, Typography, Card, Space } from 'antd'
 import { Order } from '../../../api/orders'
 import { calculatePriceWithPolicies, formatCalculationDetails } from '../../../components/PricePolicyCalculator'
 
@@ -21,6 +21,7 @@ interface OrderItem {
         policyName: string
         policyType: string
         discountRatio: number
+        calculationDetails?: string
     }>
     discountedPrice: number
 }
@@ -140,9 +141,16 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                                 const mockPolicy = {
                                     _id: policy.policyName,
                                     name: policy.policyName,
-                                    type: policy.policyType,
+                                    type: (policy.policyType === 'tiered_discount' || policy.policyType === 'uniform_discount')
+                                        ? policy.policyType as 'tiered_discount' | 'uniform_discount'
+                                        : 'uniform_discount' as 'uniform_discount',
                                     discountRatio: policy.discountRatio,
-                                    status: 'active'
+                                    status: 'active' as 'active',
+                                    alias: '',
+                                    summary: '',
+                                    validUntil: new Date().toISOString(),
+                                    createTime: new Date().toISOString(),
+                                    updateTime: new Date().toISOString()
                                 }
 
                                 const calculationResult = calculatePriceWithPolicies(
