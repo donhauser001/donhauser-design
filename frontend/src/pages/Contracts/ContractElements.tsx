@@ -11,33 +11,31 @@ import {
     message,
     Tag,
     Tooltip,
-    Popconfirm,
     Row,
     Col,
-    Typography,
-    Divider
+    Typography
 } from 'antd'
 import {
     PlusOutlined,
     SearchOutlined
 } from '@ant-design/icons'
 import ActionMenu, { ActionTypes } from '../../components/ActionMenu'
+import {
+    getContractElements,
+    createContractElement,
+    updateContractElement,
+    deleteContractElement,
+    ContractElement,
+    CreateContractElementData,
+    UpdateContractElementData,
+    ContractElementQuery
+} from '../../api/contractElements'
 
 const { Option } = Select
 const { TextArea } = Input
 const { Text, Title } = Typography
 
-// 合同元素接口
-export interface ContractElement {
-    id: string
-    name: string
-    type: 'header' | 'signature' | 'order' | 'quotation' | 'short_text' | 'paragraph_text' | 'preset_text' | 'dropdown' | 'radio' | 'checkbox' | 'money' | 'money_cn' | 'number' | 'date' | 'project' | 'task'
-    description: string
-    status: 'active' | 'inactive'
-    createTime: string
-    updateTime: string
-    createdBy: string
-}
+
 
 // 元素类型配置
 const ELEMENT_TYPES = {
@@ -71,104 +69,34 @@ const ContractElements: React.FC = () => {
     const [editingElement, setEditingElement] = useState<ContractElement | null>(null)
     const [form] = Form.useForm()
 
-    // 模拟数据
+    // 加载数据
     useEffect(() => {
-        const mockData: ContractElement[] = [
-            {
-                id: '1',
-                name: '公司抬头',
-                type: 'header',
-                description: '公司名称、地址、联系方式等抬头信息',
-                status: 'active',
-                createTime: '2025-01-18',
-                updateTime: '2025-01-18',
-                createdBy: '管理员'
-            },
-            {
-                id: '2',
-                name: '甲乙双方签章',
-                type: 'signature',
-                description: '合同结尾的甲乙双方签名盖章区域',
-                status: 'active',
-                createTime: '2025-01-18',
-                updateTime: '2025-01-18',
-                createdBy: '管理员'
-            },
-            {
-                id: '3',
-                name: '订单服务明细',
-                type: 'order',
-                description: '从订单中获取服务项目明细表格',
-                status: 'active',
-                createTime: '2025-01-18',
-                updateTime: '2025-01-18',
-                createdBy: '管理员'
-            },
-            {
-                id: '4',
-                name: '项目描述',
-                type: 'paragraph_text',
-                description: '项目具体描述的多行文本输入',
-                status: 'active',
-                createTime: '2025-01-18',
-                updateTime: '2025-01-18',
-                createdBy: '管理员'
-            },
-            {
-                id: '5',
-                name: '合同金额',
-                type: 'money',
-                description: '合同总金额的数字格式显示',
-                status: 'active',
-                createTime: '2025-01-18',
-                updateTime: '2025-01-18',
-                createdBy: '管理员'
-            },
-            {
-                id: '6',
-                name: '交付日期',
-                type: 'date',
-                description: '项目交付日期选择器',
-                status: 'active',
-                createTime: '2025-01-18',
-                updateTime: '2025-01-18',
-                createdBy: '管理员'
-            },
-            {
-                id: '7',
-                name: '服务类型',
-                type: 'dropdown',
-                description: '服务类型下拉选择框',
-                status: 'active',
-                createTime: '2025-01-18',
-                updateTime: '2025-01-18',
-                createdBy: '管理员'
-            },
-            {
-                id: '8',
-                name: '标准条款',
-                type: 'preset_text',
-                description: '固定的标准合同条款文本',
-                status: 'active',
-                createTime: '2025-01-18',
-                updateTime: '2025-01-18',
-                createdBy: '管理员'
+        loadElements()
+    }, [searchText, typeFilter, statusFilter])
+
+    const loadElements = async () => {
+        setLoading(true)
+        try {
+            const query: ContractElementQuery = {
+                search: searchText || undefined,
+                type: typeFilter !== 'all' ? typeFilter : undefined,
+                status: statusFilter !== 'all' ? statusFilter : undefined
             }
-        ]
-        setElements(mockData)
-    }, [])
+            const response = await getContractElements(query)
+            if (response.success) {
+                setElements(response.data)
+            } else {
+                message.error('加载数据失败')
+            }
+        } catch (error) {
+            console.error('加载合同元素失败:', error)
+            message.error('加载数据失败')
+        } finally {
+            setLoading(false)
+        }
+    }
 
-    // 过滤数据
-    const filteredElements = elements.filter(element => {
-        const matchSearch = !searchText ||
-            element.name.toLowerCase().includes(searchText.toLowerCase()) ||
-            element.description.toLowerCase().includes(searchText.toLowerCase())
 
-        const matchType = typeFilter === 'all' || element.type === typeFilter
-        const matchStatus = statusFilter === 'all' || element.status === statusFilter
-
-        return matchSearch && matchType && matchStatus
-    })
 
     // 操作函数
     const handleCreate = () => {
@@ -188,15 +116,25 @@ const ContractElements: React.FC = () => {
         setIsModalVisible(true)
     }
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         Modal.confirm({
             title: '确认删除',
             content: '确定要删除这个合同元素吗？删除后无法恢复。',
             okText: '确定',
             cancelText: '取消',
-            onOk: () => {
-                setElements(elements.filter(el => el.id !== id))
-                message.success('删除成功')
+            onOk: async () => {
+                try {
+                    const response = await deleteContractElement(id)
+                    if (response.success) {
+                        message.success('删除成功')
+                        loadElements() // 重新加载数据
+                    } else {
+                        message.error(response.message || '删除失败')
+                    }
+                } catch (error) {
+                    console.error('删除合同元素失败:', error)
+                    message.error('删除失败')
+                }
             }
         })
     }
@@ -207,30 +145,40 @@ const ContractElements: React.FC = () => {
 
             if (editingElement) {
                 // 更新
-                setElements(elements.map(el =>
-                    el.id === editingElement.id
-                        ? { ...el, ...values, updateTime: new Date().toISOString().split('T')[0] }
-                        : el
-                ))
-                message.success('更新成功')
-            } else {
-                // 新建
-                const newElement: ContractElement = {
-                    id: Date.now().toString(),
+                const updateData: UpdateContractElementData = {
                     name: values.name,
                     type: values.type,
                     description: values.description,
-                    status: values.status || 'active',
-                    createTime: new Date().toISOString().split('T')[0],
-                    updateTime: new Date().toISOString().split('T')[0],
-                    createdBy: '当前用户'
+                    status: values.status
                 }
-                setElements([...elements, newElement])
-                message.success('创建成功')
+                const response = await updateContractElement(editingElement._id, updateData)
+                if (response.success) {
+                    message.success('更新成功')
+                    setIsModalVisible(false)
+                    loadElements() // 重新加载数据
+                } else {
+                    message.error(response.message || '更新失败')
+                }
+            } else {
+                // 新建
+                const createData: CreateContractElementData = {
+                    name: values.name,
+                    type: values.type,
+                    description: values.description,
+                    status: values.status
+                }
+                const response = await createContractElement(createData)
+                if (response.success) {
+                    message.success('创建成功')
+                    setIsModalVisible(false)
+                    loadElements() // 重新加载数据
+                } else {
+                    message.error(response.message || '创建失败')
+                }
             }
-            setIsModalVisible(false)
         } catch (error) {
-            console.error('表单验证失败:', error)
+            console.error('保存合同元素失败:', error)
+            message.error('操作失败')
         }
     }
 
@@ -258,9 +206,9 @@ const ContractElements: React.FC = () => {
             dataIndex: 'description',
             key: 'description',
             ellipsis: true,
-            render: (text: string) => (
-                <Tooltip title={text}>
-                    <Text type="secondary">{text}</Text>
+            render: (text: string | undefined) => (
+                <Tooltip title={text || ''}>
+                    <Text type="secondary">{text || '-'}</Text>
                 </Tooltip>
             )
         },
@@ -293,7 +241,7 @@ const ContractElements: React.FC = () => {
                     },
                     {
                         ...ActionTypes.DELETE,
-                        onClick: () => handleDelete(record.id)
+                        onClick: () => handleDelete(record._id)
                     }
                 ]
 
@@ -356,12 +304,12 @@ const ContractElements: React.FC = () => {
                     </Col>
                 </Row>
 
-                <Divider />
+
 
                 <Table
                     columns={columns}
-                    dataSource={filteredElements}
-                    rowKey="id"
+                    dataSource={elements}
+                    rowKey="_id"
                     loading={loading}
                     pagination={{
                         pageSize: 10,

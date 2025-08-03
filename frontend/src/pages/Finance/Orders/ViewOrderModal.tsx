@@ -272,15 +272,15 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                             {order.status === 'normal' ? '正常' : '已取消'}
                         </Descriptions.Item>
                         <Descriptions.Item label="当前版本">
-                                                        {hasMultipleVersions ? (
-                                <Dropdown 
+                            {hasMultipleVersions ? (
+                                <Dropdown
                                     menu={{ items: versionMenuItems }}
                                     trigger={['click']}
                                     placement="bottomLeft"
                                 >
-                                    <Button 
-                                        size="small" 
-                                        style={{ 
+                                    <Button
+                                        size="small"
+                                        style={{
                                             padding: '4px 8px',
                                             height: 'auto',
                                             border: '1px solid #d9d9d9',
@@ -304,9 +304,9 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                                             e.currentTarget.style.borderColor = '#d9d9d9'
                                         }}
                                     >
-                                        v{displayData.version} 
-                                        <DownOutlined style={{ 
-                                            marginLeft: 6, 
+                                        v{displayData.version}
+                                        <DownOutlined style={{
+                                            marginLeft: 6,
                                             fontSize: 10,
                                             color: '#8c8c8c'
                                         }} />
