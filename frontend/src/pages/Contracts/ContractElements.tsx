@@ -215,7 +215,16 @@ const ContractElements: React.FC = () => {
                 <Space>
                     <Text strong>{text}</Text>
                     {record.status === 'inactive' && (
-                        <Tag color="default">已禁用</Tag>
+                        <Tag
+                            style={{
+                                color: '#ff4d4f',
+                                border: '1px solid #ffccc7',
+                                backgroundColor: 'transparent',
+                                borderRadius: '4px'
+                            }}
+                        >
+                            已禁用
+                        </Tag>
                     )}
                 </Space>
             )
