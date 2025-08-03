@@ -6,7 +6,7 @@ class ContractElementController {
     async getList(req: Request, res: Response) {
         try {
             const { page, limit, search, type, status } = req.query
-            
+
             const result = await ContractElementService.getList({
                 page: page ? parseInt(page as string) : 1,
                 limit: limit ? parseInt(limit as string) : 100,
@@ -38,9 +38,9 @@ class ContractElementController {
     async getById(req: Request, res: Response) {
         try {
             const { id } = req.params
-            
+
             const element = await ContractElementService.getById(id)
-            
+
             if (!element) {
                 return res.status(404).json({
                     success: false,
@@ -65,7 +65,7 @@ class ContractElementController {
     async create(req: Request, res: Response) {
         try {
             const { name, type, description, status } = req.body
-            
+
             // 验证必填字段
             if (!name || !type) {
                 return res.status(400).json({
@@ -91,9 +91,14 @@ class ContractElementController {
                 createdBy: req.user?.username || 'system'
             })
 
+            // 格式化时间显示
+            const formattedElement = element.toObject()
+            formattedElement.createTime = element.createTime
+            formattedElement.updateTime = element.updateTime
+
             res.status(201).json({
                 success: true,
-                data: element,
+                data: formattedElement,
                 message: '合同元素创建成功'
             })
         } catch (error) {
@@ -110,7 +115,7 @@ class ContractElementController {
         try {
             const { id } = req.params
             const { name, type, description, status } = req.body
-            
+
             // 检查元素是否存在
             const existingElement = await ContractElementService.getById(id)
             if (!existingElement) {
@@ -138,9 +143,16 @@ class ContractElementController {
                 status
             })
 
+            // 格式化时间显示
+            const formattedElement = updatedElement?.toObject()
+            if (formattedElement) {
+                formattedElement.createTime = updatedElement.createTime
+                formattedElement.updateTime = updatedElement.updateTime
+            }
+
             res.json({
                 success: true,
-                data: updatedElement,
+                data: formattedElement,
                 message: '合同元素更新成功'
             })
         } catch (error) {
@@ -156,7 +168,7 @@ class ContractElementController {
     async delete(req: Request, res: Response) {
         try {
             const { id } = req.params
-            
+
             // 检查元素是否存在
             const existingElement = await ContractElementService.getById(id)
             if (!existingElement) {
@@ -167,7 +179,7 @@ class ContractElementController {
             }
 
             const deleted = await ContractElementService.delete(id)
-            
+
             if (deleted) {
                 res.json({
                     success: true,
@@ -192,7 +204,7 @@ class ContractElementController {
     async getActiveElements(req: Request, res: Response) {
         try {
             const elements = await ContractElementService.getActiveElements()
-            
+
             res.json({
                 success: true,
                 data: elements

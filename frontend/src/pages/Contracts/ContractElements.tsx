@@ -227,7 +227,24 @@ const ContractElements: React.FC = () => {
             title: '更新时间',
             dataIndex: 'updateTime',
             key: 'updateTime',
-            width: 120
+            width: 160,
+            render: (text: string) => {
+                if (!text) return '-'
+                try {
+                    const date = new Date(text)
+                    return date.toLocaleString('zh-CN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    })
+                } catch (error) {
+                    return text
+                }
+            }
         },
         {
             title: '操作',

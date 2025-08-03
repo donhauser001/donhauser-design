@@ -36,7 +36,7 @@ class ContractElementService {
             id,
             { ...data, updateTime: new Date() },
             { new: true, runValidators: true }
-        )
+        ).exec()
     }
 
     // 删除合同元素
@@ -47,7 +47,14 @@ class ContractElementService {
 
     // 根据ID获取合同元素
     async getById(id: string): Promise<IContractElement | null> {
-        return await ContractElement.findById(id)
+        const element = await ContractElement.findById(id)
+        if (element) {
+            const elementObj = element.toObject()
+            elementObj.createTime = element.createTime
+            elementObj.updateTime = element.updateTime
+            return elementObj as IContractElement
+        }
+        return null
     }
 
     // 获取合同元素列表
@@ -62,18 +69,18 @@ class ContractElementService {
 
         // 构建查询条件
         const filter: any = {}
-        
+
         if (search) {
             filter.$or = [
                 { name: { $regex: search, $options: 'i' } },
                 { description: { $regex: search, $options: 'i' } }
             ]
         }
-        
+
         if (type && type !== 'all') {
             filter.type = type
         }
-        
+
         if (status && status !== 'all') {
             filter.status = status
         }
@@ -82,13 +89,20 @@ class ContractElementService {
             ContractElement.find(filter)
                 .sort({ createTime: -1 })
                 .skip(skip)
-                .limit(limit)
-                .lean(),
+                .limit(limit),
             ContractElement.countDocuments(filter)
         ])
 
+        // 格式化时间显示
+        const formattedElements = elements.map(element => {
+            const elementObj = element.toObject()
+            elementObj.createTime = element.createTime
+            elementObj.updateTime = element.updateTime
+            return elementObj
+        })
+
         return {
-            elements,
+            elements: formattedElements,
             total,
             page,
             limit
@@ -97,9 +111,16 @@ class ContractElementService {
 
     // 获取所有启用的合同元素
     async getActiveElements(): Promise<IContractElement[]> {
-        return await ContractElement.find({ status: 'active' })
+        const elements = await ContractElement.find({ status: 'active' })
             .sort({ createTime: -1 })
-            .lean()
+
+        // 格式化时间显示
+        return elements.map(element => {
+            const elementObj = element.toObject()
+            elementObj.createTime = element.createTime
+            elementObj.updateTime = element.updateTime
+            return elementObj as IContractElement
+        })
     }
 
     // 检查名称是否已存在

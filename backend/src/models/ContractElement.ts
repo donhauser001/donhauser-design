@@ -38,11 +38,33 @@ const ContractElementSchema = new Schema<IContractElement>({
     },
     createTime: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+        get: function(date: Date) {
+            return date ? date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }) : ''
+        }
     },
     updateTime: {
         type: Date,
-        default: Date.now
+        default: Date.now,
+        get: function(date: Date) {
+            return date ? date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            }) : ''
+        }
     }
 }, {
     timestamps: { createdAt: 'createTime', updatedAt: 'updateTime' }
