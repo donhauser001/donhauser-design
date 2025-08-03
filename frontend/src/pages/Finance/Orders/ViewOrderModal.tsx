@@ -275,7 +275,6 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
 
                 {/* 金额汇总 */}
                 <Card>
-                    <Title level={5}>金额汇总</Title>
                     <div style={{ textAlign: 'center' }}>
                         <Space size="large">
                             <Text>项目数量: {displayData.items?.length || 0} 项</Text>

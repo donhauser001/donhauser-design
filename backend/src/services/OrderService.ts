@@ -333,7 +333,7 @@ export class OrderService {
                 // 生成完整的格式化详情
                 let formattedDetails = ''
                 const actualDiscountRatio = 100 - calculationResult.discountRatio // 实际优惠比例
-                
+
                 if (calculationResult.appliedPolicy.type === 'uniform_discount') {
                     // 统一折扣详情
                     formattedDetails = `优惠折扣: 按${calculationResult.discountRatio}%计费<br/>原价: ¥${calculationResult.originalPrice.toLocaleString()}<br/>优惠比例: ${actualDiscountRatio}%<br/>优惠金额: ¥${calculationResult.discountAmount.toLocaleString()}<br/>最终价格: ¥${calculationResult.discountedPrice.toLocaleString()}`
@@ -341,7 +341,7 @@ export class OrderService {
                     // 阶梯折扣详情
                     formattedDetails = `计费方式:<br/>${calculationResult.calculationDetails.replace('阶梯折扣: ', '')}<br/>原价: ¥${calculationResult.originalPrice.toLocaleString()}<br/>优惠金额: ¥${calculationResult.discountAmount.toLocaleString()}<br/>最终价格: ¥${calculationResult.discountedPrice.toLocaleString()}`
                 }
-                
+
                 pricingPolicies.push({
                     policyId: calculationResult.appliedPolicy._id,
                     policyName: calculationResult.appliedPolicy.name,
