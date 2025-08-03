@@ -62,7 +62,7 @@ const ContractElements: React.FC = () => {
     const [loading, setLoading] = useState(false)
     const [searchText, setSearchText] = useState('')
     const [typeFilter, setTypeFilter] = useState<string>('all')
-    const [statusFilter, setStatusFilter] = useState<string>('all')
+
 
     // 模态窗状态
     const [isModalVisible, setIsModalVisible] = useState(false)
@@ -72,15 +72,14 @@ const ContractElements: React.FC = () => {
     // 加载数据
     useEffect(() => {
         loadElements()
-    }, [searchText, typeFilter, statusFilter])
+    }, [searchText, typeFilter])
 
     const loadElements = async () => {
         setLoading(true)
         try {
             const query: ContractElementQuery = {
                 search: searchText || undefined,
-                type: typeFilter !== 'all' ? typeFilter : undefined,
-                status: statusFilter !== 'all' ? statusFilter : undefined
+                type: typeFilter !== 'all' ? typeFilter : undefined
             }
             const response = await getContractElements(query)
             if (response.success) {
@@ -110,10 +109,35 @@ const ContractElements: React.FC = () => {
         form.setFieldsValue({
             name: element.name,
             type: element.type,
-            description: element.description,
-            status: element.status
+            description: element.description
         })
         setIsModalVisible(true)
+    }
+
+    const handleToggleStatus = async (id: string, currentStatus: string) => {
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active'
+        const actionText = newStatus === 'active' ? '启用' : '停用'
+
+        Modal.confirm({
+            title: `确认${actionText}`,
+            content: `确定要${actionText}这个合同元素吗？`,
+            okText: '确定',
+            cancelText: '取消',
+            onOk: async () => {
+                try {
+                    const response = await updateContractElement(id, { status: newStatus })
+                    if (response.success) {
+                        message.success(`${actionText}成功`)
+                        loadElements() // 重新加载数据
+                    } else {
+                        message.error(response.message || `${actionText}失败`)
+                    }
+                } catch (error) {
+                    console.error(`${actionText}合同元素失败:`, error)
+                    message.error(`${actionText}失败`)
+                }
+            }
+        })
     }
 
     const handleDelete = async (id: string) => {
@@ -148,8 +172,7 @@ const ContractElements: React.FC = () => {
                 const updateData: UpdateContractElementData = {
                     name: values.name,
                     type: values.type,
-                    description: values.description,
-                    status: values.status
+                    description: values.description
                 }
                 const response = await updateContractElement(editingElement._id, updateData)
                 if (response.success) {
@@ -164,8 +187,7 @@ const ContractElements: React.FC = () => {
                 const createData: CreateContractElementData = {
                     name: values.name,
                     type: values.type,
-                    description: values.description,
-                    status: values.status
+                    description: values.description
                 }
                 const response = await createContractElement(createData)
                 if (response.success) {
@@ -189,7 +211,14 @@ const ContractElements: React.FC = () => {
             dataIndex: 'name',
             key: 'name',
             width: 200,
-            render: (text: string) => <Text strong>{text}</Text>
+            render: (text: string, record: ContractElement) => (
+                <Space>
+                    <Text strong>{text}</Text>
+                    {record.status === 'inactive' && (
+                        <Tag color="default">已禁用</Tag>
+                    )}
+                </Space>
+            )
         },
         {
             title: '元素类型',
@@ -212,17 +241,7 @@ const ContractElements: React.FC = () => {
                 </Tooltip>
             )
         },
-        {
-            title: '状态',
-            dataIndex: 'status',
-            key: 'status',
-            width: 80,
-            render: (status: string) => (
-                <Tag color={status === 'active' ? 'success' : 'default'}>
-                    {status === 'active' ? '启用' : '禁用'}
-                </Tag>
-            )
-        },
+
         {
             title: '更新时间',
             dataIndex: 'updateTime',
@@ -249,12 +268,17 @@ const ContractElements: React.FC = () => {
         {
             title: '操作',
             key: 'action',
-            width: 80,
+            width: 100,
             render: (_: any, record: ContractElement) => {
                 const actions = [
                     {
                         ...ActionTypes.EDIT,
                         onClick: () => handleEdit(record)
+                    },
+                    {
+                        ...ActionTypes.TOGGLE_STATUS,
+                        label: record.status === 'active' ? '停用' : '启用',
+                        onClick: () => handleToggleStatus(record._id, record.status)
                     },
                     {
                         ...ActionTypes.DELETE,
@@ -307,18 +331,7 @@ const ContractElements: React.FC = () => {
                             ))}
                         </Select>
                     </Col>
-                    <Col xs={12} sm={4}>
-                        <Select
-                            placeholder="状态"
-                            style={{ width: '100%' }}
-                            value={statusFilter}
-                            onChange={setStatusFilter}
-                        >
-                            <Option value="all">全部状态</Option>
-                            <Option value="active">启用</Option>
-                            <Option value="inactive">禁用</Option>
-                        </Select>
-                    </Col>
+
                 </Row>
 
 
@@ -334,7 +347,7 @@ const ContractElements: React.FC = () => {
                         showQuickJumper: true,
                         showTotal: (total) => `共 ${total} 个元素`
                     }}
-                    scroll={{ x: 800 }}
+                    scroll={{ x: 700 }}
                 />
             </Card>
 
@@ -391,15 +404,7 @@ const ContractElements: React.FC = () => {
                         />
                     </Form.Item>
 
-                    <Form.Item
-                        name="status"
-                        label="状态"
-                    >
-                        <Select>
-                            <Option value="active">启用</Option>
-                            <Option value="inactive">禁用</Option>
-                        </Select>
-                    </Form.Item>
+
                 </Form>
             </Modal>
         </div>
