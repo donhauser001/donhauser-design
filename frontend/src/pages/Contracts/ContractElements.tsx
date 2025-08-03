@@ -426,11 +426,10 @@ const ContractElements: React.FC = () => {
                     <Form.Item
                         name="description"
                         label="元素说明"
-                        rules={[{ required: true, message: '请输入元素说明' }]}
                     >
                         <TextArea
                             rows={3}
-                            placeholder="描述这个元素的用途和特点"
+                            placeholder="描述这个元素的用途和特点（可选）"
                         />
                     </Form.Item>
 
