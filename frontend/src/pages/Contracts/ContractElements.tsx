@@ -19,11 +19,9 @@ import {
 } from 'antd'
 import {
     PlusOutlined,
-    SearchOutlined,
-    EditOutlined,
-    DeleteOutlined,
-    EyeOutlined
+    SearchOutlined
 } from '@ant-design/icons'
+import ActionMenu, { ActionTypes } from '../../components/ActionMenu'
 
 const { Option } = Select
 const { TextArea } = Input
@@ -191,8 +189,16 @@ const ContractElements: React.FC = () => {
     }
 
     const handleDelete = (id: string) => {
-        setElements(elements.filter(el => el.id !== id))
-        message.success('删除成功')
+        Modal.confirm({
+            title: '确认删除',
+            content: '确定要删除这个合同元素吗？删除后无法恢复。',
+            okText: '确定',
+            cancelText: '取消',
+            onOk: () => {
+                setElements(elements.filter(el => el.id !== id))
+                message.success('删除成功')
+            }
+        })
     }
 
     const handleSave = async () => {
@@ -278,34 +284,21 @@ const ContractElements: React.FC = () => {
         {
             title: '操作',
             key: 'action',
-            width: 120,
-            render: (_: any, record: ContractElement) => (
-                <Space>
-                    <Tooltip title="编辑">
-                        <Button
-                            type="text"
-                            icon={<EditOutlined />}
-                            size="small"
-                            onClick={() => handleEdit(record)}
-                        />
-                    </Tooltip>
-                    <Popconfirm
-                        title="确定要删除这个元素吗？"
-                        onConfirm={() => handleDelete(record.id)}
-                        okText="确定"
-                        cancelText="取消"
-                    >
-                        <Tooltip title="删除">
-                            <Button
-                                type="text"
-                                icon={<DeleteOutlined />}
-                                size="small"
-                                danger
-                            />
-                        </Tooltip>
-                    </Popconfirm>
-                </Space>
-            )
+            width: 80,
+            render: (_: any, record: ContractElement) => {
+                const actions = [
+                    {
+                        ...ActionTypes.EDIT,
+                        onClick: () => handleEdit(record)
+                    },
+                    {
+                        ...ActionTypes.DELETE,
+                        onClick: () => handleDelete(record.id)
+                    }
+                ]
+
+                return <ActionMenu actions={actions} />
+            }
         }
     ]
 
