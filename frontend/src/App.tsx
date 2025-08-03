@@ -38,6 +38,11 @@ import ContractList from './pages/Contracts/ContractList'
 import ContractTemplates from './pages/Contracts/ContractTemplates'
 import ContractElements from './pages/Contracts/ContractElements'
 
+// 表单系统相关页面
+import Forms from './pages/Forms'
+import FormList from './pages/Forms/FormList'
+import FormSettings from './pages/Forms/FormSettings'
+
 // 内容中心相关页面
 import Pages from './pages/Content/Pages'
 import Articles from './pages/Content/Articles'
@@ -101,6 +106,11 @@ function App() {
           <Route path="/contracts/list" element={<ContractList />} />
           <Route path="/contracts/templates" element={<ContractTemplates />} />
           <Route path="/contracts/elements" element={<ContractElements />} />
+
+          {/* 表单系统 */}
+          <Route path="/forms" element={<Forms />} />
+          <Route path="/forms/list" element={<FormList />} />
+          <Route path="/forms/settings" element={<FormSettings />} />
 
           {/* 内容中心 */}
           <Route path="/content/pages" element={<Pages />} />

@@ -17,6 +17,7 @@ import {
   FileProtectOutlined,
   ReadOutlined,
   BankOutlined,
+  FormOutlined,
 } from '@ant-design/icons'
 
 const { Header, Sider, Content } = AntLayout
@@ -149,6 +150,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {
           key: '/contracts/elements',
           label: '合同元素',
+        },
+      ],
+    },
+    {
+      key: 'forms',
+      icon: <FormOutlined />,
+      label: '表单系统',
+      children: [
+        {
+          key: '/forms',
+          label: '表单概览',
+        },
+        {
+          key: '/forms/list',
+          label: '表单列表',
+        },
+        {
+          key: '/forms/settings',
+          label: '表单设置',
         },
       ],
     },
