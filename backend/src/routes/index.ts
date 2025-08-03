@@ -14,6 +14,7 @@ import servicePricingRoutes from './servicePricing';
 import quotationRoutes from './quotations';
 import orderRoutes from './orders';
 import orderVersionRoutes from './orderVersions';
+import specificationRoutes from './specifications';
 
 const router = Router();
 
@@ -61,5 +62,8 @@ router.use('/orders', orderRoutes);
 
 // 订单版本管理路由
 router.use('/order-versions', orderVersionRoutes);
+
+// 规格管理路由
+router.use('/specifications', specificationRoutes);
 
 export default router; 

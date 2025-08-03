@@ -369,7 +369,7 @@ const ContractElements: React.FC = () => {
                 width={600}
                 okText="保存"
                 cancelText="取消"
-                destroyOnClose
+                destroyOnHidden
             >
                 <Form
                     form={form}

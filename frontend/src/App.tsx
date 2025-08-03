@@ -11,8 +11,8 @@ import './App.css'
 
 // 项目管理相关页面
 import TaskBoard from './pages/Projects/TaskBoard'
-import ProjectList from './pages/Projects/ProjectList'
 import ProposalCenter from './pages/Projects/ProposalCenter'
+import ProjectDetail from './pages/Projects/ProjectDetail'
 
 // 客户管理相关页面
 import Contacts from './pages/Clients/Contacts'
@@ -77,9 +77,9 @@ function App() {
           <Route path="/" element={<Dashboard />} />
 
           {/* 项目管理 */}
-          <Route path="/projects" element={<ProjectList />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/projects/task-board" element={<TaskBoard />} />
-          <Route path="/projects/project-list" element={<ProjectList />} />
           <Route path="/projects/proposal-center" element={<ProposalCenter />} />
 
           {/* 客户管理 */}

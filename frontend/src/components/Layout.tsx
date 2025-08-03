@@ -52,10 +52,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           label: '任务看板',
         },
         {
-          key: '/projects/project-list',
-          label: '项目列表',
-        },
-        {
           key: '/projects/proposal-center',
           label: '提案中心',
         },

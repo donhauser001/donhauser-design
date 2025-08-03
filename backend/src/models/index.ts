@@ -12,6 +12,7 @@ export * from './PricingPolicy';
 export * from './ServicePricing';
 export * from './Quotation';
 export * from './OrderVersion';
+export * from './Specification';
 
 export interface Project {
   id: string;

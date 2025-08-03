@@ -211,7 +211,8 @@ export class OrderService {
             filter.$or = [
                 { orderNo: { $regex: search, $options: 'i' } },
                 { clientName: { $regex: search, $options: 'i' } },
-                { projectName: { $regex: search, $options: 'i' } }
+                { projectName: { $regex: search, $options: 'i' } },
+                { contactNames: { $regex: search, $options: 'i' } }
             ]
         }
         if (status) filter.status = status

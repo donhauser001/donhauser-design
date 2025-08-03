@@ -1,0 +1,650 @@
+import React, { useState, useEffect } from 'react'
+import {
+  Modal,
+  Steps,
+  Form,
+  Input,
+  Select,
+  DatePicker,
+  Button,
+  Space,
+  Table,
+  Tag,
+  message,
+  Card,
+  Typography,
+  Descriptions,
+  Spin,
+  Dropdown,
+  Menu
+} from 'antd'
+import {
+  ShoppingCartOutlined,
+  UserOutlined,
+  TeamOutlined,
+  FileTextOutlined,
+  CheckCircleOutlined,
+  SearchOutlined
+} from '@ant-design/icons'
+import { getOrders, Order, OrderStatus } from '../../api/orders'
+import SpecificationSelector, { Specification } from '../../components/SpecificationSelector'
+
+const { Option } = Select
+const { TextArea } = Input
+const { Title, Text } = Typography
+const { Step } = Steps
+
+interface Project {
+  id: string
+  projectName: string
+  client: string
+  contact: string
+  mainDesigner: string
+  assistantDesigners: string[]
+  relatedContracts: string[]
+  relatedOrders: string[]
+  relatedSettlements: string[]
+  relatedInvoices: string[]
+  relatedFiles: string[]
+  relatedTasks: Array<{
+    serviceId: string
+    specification: Specification
+  }>
+  relatedProposals: string[]
+  clientRequirements: string
+  status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold'
+  startDate: string
+  endDate?: string
+  createdAt: string
+}
+
+interface CreateProjectModalProps {
+  visible: boolean
+  onCancel: () => void
+  onOk: (project: Project) => void
+  loading?: boolean
+}
+
+const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
+  visible,
+  onCancel,
+  onOk,
+  loading = false
+}) => {
+  const [currentStep, setCurrentStep] = useState(0)
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [orders, setOrders] = useState<Order[]>([])
+  const [ordersLoading, setOrdersLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize] = useState(5)
+  const [searchKeyword, setSearchKeyword] = useState('')
+  const [selectedOrderVersion, setSelectedOrderVersion] = useState<{ orderId: string; version: number } | null>(null)
+  const [taskSpecifications, setTaskSpecifications] = useState<Record<string, Specification>>({})
+  const [form] = Form.useForm()
+
+  // 获取订单列表
+  const fetchOrders = async () => {
+    setOrdersLoading(true)
+    try {
+      const response = await getOrders({
+        page: 1,
+        limit: 50, // 获取更多数据用于前端排序
+        search: searchKeyword, // 添加搜索关键词
+        // 不设置status参数，获取所有状态的订单
+      })
+      // 按更新时间排序（最新的在前）
+      const sortedOrders = response.data.sort((a, b) =>
+        new Date(b.updateTime).getTime() - new Date(a.updateTime).getTime()
+      )
+      setOrders(sortedOrders)
+    } catch (error) {
+      console.error('获取订单列表失败:', error)
+      message.error('获取订单列表失败')
+    } finally {
+      setOrdersLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (visible && currentStep === 0) {
+      fetchOrders()
+    }
+  }, [visible, currentStep, searchKeyword])
+
+  const steps = [
+    {
+      title: '选择订单',
+      icon: <ShoppingCartOutlined />,
+      content: 'order'
+    },
+    {
+      title: '任务信息',
+      icon: <FileTextOutlined />,
+      content: 'task'
+    },
+    {
+      title: '团队配置',
+      icon: <TeamOutlined />,
+      content: 'team'
+    },
+    {
+      title: '确认创建',
+      icon: <CheckCircleOutlined />,
+      content: 'confirm'
+    }
+  ]
+
+
+
+  const orderColumns = [
+    {
+      title: '项目',
+      key: 'projectInfo',
+      width: 320,
+      render: (_: any, record: Order) => (
+        <div>
+          <div style={{ fontWeight: 'bold', marginBottom: 4 }}>
+            {record.projectName}
+            {record.status === 'cancelled' && (
+              <Tag color="red" style={{ marginLeft: 8, fontSize: '10px' }}>已取消</Tag>
+            )}
+          </div>
+          <div style={{ fontSize: '12px', color: '#666' }}>{record.orderNo}</div>
+        </div>
+      )
+    },
+    {
+      title: '客户信息',
+      key: 'clientInfo',
+      width: 250,
+      render: (_: any, record: Order) => (
+        <div>
+          <div style={{ fontWeight: 'bold', marginBottom: 4 }}>{record.clientName}</div>
+          <div style={{ fontSize: '12px', color: '#666' }}>
+            {record.contactNames?.join(', ') || '无'}
+          </div>
+        </div>
+      )
+    },
+    {
+      title: '订单金额',
+      dataIndex: 'currentAmount',
+      key: 'currentAmount',
+      width: 150,
+      render: (amount: number) => `¥${amount.toLocaleString()}`
+    },
+    {
+      title: '更新时间',
+      dataIndex: 'updateTime',
+      key: 'updateTime',
+      width: 150,
+      render: (updateTime: string) => new Date(updateTime).toLocaleDateString()
+    },
+    {
+      title: '操作',
+      key: 'action',
+      width: 130,
+      render: (_: any, record: Order) => {
+        const isSelected = selectedOrder?._id === record._id
+        const isCancelled = record.status === 'cancelled'
+
+        // 生成版本菜单项（新版本在前）
+        const versionMenuItems = record.snapshots
+          .sort((a, b) => b.version - a.version) // 按版本号降序排列
+          .map((snapshot, index) => ({
+            key: `${record._id}-${snapshot.version}`,
+            label: `v${snapshot.version}.0 (${new Date(snapshot.createdAt).toLocaleDateString()})`,
+            onClick: () => {
+              setSelectedOrder(record)
+              setSelectedOrderVersion({ orderId: record._id, version: snapshot.version })
+              message.success(`已选择 ${record.projectName} v${snapshot.version}.0`)
+            }
+          }))
+
+        const menu = {
+          items: versionMenuItems
+        }
+
+        return (
+          <Dropdown
+            menu={menu}
+            disabled={isCancelled}
+            trigger={['click']}
+          >
+            <Button
+              type={isSelected ? 'primary' : 'default'}
+              size="small"
+              disabled={isCancelled}
+            >
+              {isSelected ? '已选择' : isCancelled ? '已取消' : '选择'}
+            </Button>
+          </Dropdown>
+        )
+      }
+    }
+  ]
+
+  const handleNext = () => {
+    if (currentStep === 0) {
+      if (!selectedOrder) {
+        message.error('请先选择一个订单')
+        return
+      }
+      if (!selectedOrderVersion) {
+        message.error('请先选择订单版本')
+        return
+      }
+    }
+    setCurrentStep(currentStep + 1)
+  }
+
+  const handlePrev = () => {
+    setCurrentStep(currentStep - 1)
+  }
+
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields()
+
+      // 验证是否选择了订单和版本
+      if (!selectedOrder || !selectedOrderVersion) {
+        message.error('请先选择订单和版本')
+        return
+      }
+
+      // 验证是否所有任务都选择了规格
+      const selectedSnapshot = selectedOrder.snapshots.find(s => s.version === selectedOrderVersion.version)
+      if (selectedSnapshot) {
+        const missingSpecs = selectedSnapshot.items.filter(item => !taskSpecifications[item.serviceId])
+        if (missingSpecs.length > 0) {
+          message.error(`请为以下任务选择规格：${missingSpecs.map(item => item.serviceName).join(', ')}`)
+          return
+        }
+      }
+
+      const projectData: Project = {
+        id: Date.now().toString(),
+        projectName: selectedOrder.projectName,
+        client: selectedOrder.clientName,
+        contact: selectedOrder.contactNames?.join(', ') || '',
+        mainDesigner: values.mainDesigner,
+        assistantDesigners: values.assistantDesigners || [],
+        clientRequirements: values.clientRequirements,
+        status: 'pending',
+        startDate: new Date().toISOString().split('T')[0],
+        createdAt: new Date().toISOString().split('T')[0],
+        relatedContracts: [],
+        relatedOrders: [selectedOrder._id],
+        relatedSettlements: [],
+        relatedInvoices: [],
+        relatedFiles: [],
+        relatedTasks: Object.keys(taskSpecifications).map(serviceId => ({
+          serviceId,
+          specification: taskSpecifications[serviceId]
+        })),
+        relatedProposals: []
+      }
+      onOk(projectData)
+    } catch (error) {
+      console.error('表单验证失败:', error)
+    }
+  }
+
+  const renderStepContent = () => {
+    switch (currentStep) {
+      case 0:
+        return (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <Title level={4} style={{ margin: 0 }}>选择关联订单</Title>
+              <Input.Search
+                placeholder="搜索客户、联系人、项目名称、订单号"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                onSearch={(value) => setSearchKeyword(value)}
+                style={{ width: 400 }}
+                allowClear
+                enterButton
+              />
+            </div>
+
+            <Spin spinning={ordersLoading}>
+              <Table
+                columns={orderColumns}
+                dataSource={orders.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+                rowKey="_id"
+                pagination={false}
+                size="small"
+                scroll={{ x: 1000 }}
+                loading={ordersLoading}
+              />
+            </Spin>
+          </div>
+        )
+      case 1:
+        return (
+          <div>
+            <Title level={4}>任务信息</Title>
+            <div style={{ marginBottom: 16 }}>
+              <Text type="secondary">
+                根据订单服务项目生成任务列表，每个服务项目对应一个任务
+              </Text>
+            </div>
+
+            {selectedOrder && selectedOrderVersion && (
+              <div>
+                <Card title="项目基本信息" style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <div>
+                      <Text strong>项目名称：</Text>
+                      <Text>{selectedOrder.projectName}</Text>
+                    </div>
+                    <div>
+                      <Text strong>客户：</Text>
+                      <Text>{selectedOrder.clientName}</Text>
+                    </div>
+                    <div>
+                      <Text strong>联系人：</Text>
+                      <Text>{selectedOrder.contactNames?.join(', ') || '无'}</Text>
+                    </div>
+                    <div>
+                      <Text strong>订单版本：</Text>
+                      <Text>v{selectedOrderVersion.version}.0</Text>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card title="任务列表">
+                  {(() => {
+                    const selectedSnapshot = selectedOrder.snapshots.find(s => s.version === selectedOrderVersion.version)
+                    if (!selectedSnapshot) return <Text type="secondary">未找到对应版本信息</Text>
+
+                    return (
+                      <Table
+                        columns={[
+                          {
+                            title: '任务名称',
+                            dataIndex: 'serviceName',
+                            key: 'serviceName',
+                            width: 200,
+                          },
+                          {
+                            title: '服务类别',
+                            dataIndex: 'categoryName',
+                            key: 'categoryName',
+                            width: 150,
+                          },
+                          {
+                            title: '数量/单位',
+                            key: 'specification',
+                            width: 120,
+                            render: (_: any, record: any) => `${record.quantity} ${record.unit}`
+                          },
+                          {
+                            title: '规格选择',
+                            key: 'specificationSelector',
+                            width: 250,
+                            render: (_: any, record: any) => (
+                              <div>
+                                <SpecificationSelector
+                                  value={taskSpecifications[record.serviceId]}
+                                  onChange={(spec) => {
+                                    if (spec) {
+                                      setTaskSpecifications(prev => ({
+                                        ...prev,
+                                        [record.serviceId]: spec
+                                      }))
+                                    } else {
+                                      setTaskSpecifications(prev => {
+                                        const newSpecs = { ...prev }
+                                        delete newSpecs[record.serviceId]
+                                        return newSpecs
+                                      })
+                                    }
+                                  }}
+                                  placeholder={`为"${record.serviceName}"选择规格`}
+                                />
+                              </div>
+                            )
+                          },
+                          {
+                            title: '单价',
+                            dataIndex: 'unitPrice',
+                            key: 'unitPrice',
+                            width: 100,
+                            render: (price: number) => `¥${price.toLocaleString()}`
+                          },
+                          {
+                            title: '小计',
+                            dataIndex: 'subtotal',
+                            key: 'subtotal',
+                            width: 120,
+                            render: (subtotal: number) => `¥${subtotal.toLocaleString()}`
+                          }
+                        ]}
+                        dataSource={selectedSnapshot.items}
+                        rowKey={(record) => `${record.serviceId}`}
+                        pagination={false}
+                        size="small"
+                        scroll={{ x: 900 }}
+                      />
+                    )
+                  })()}
+                </Card>
+              </div>
+            )}
+          </div>
+        )
+      case 2:
+        return (
+          <div>
+            <Title level={4}>项目团队配置</Title>
+            <Form form={form} layout="vertical">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <Form.Item
+                  name="mainDesigner"
+                  label="主创设计师"
+                  rules={[{ required: true, message: '请输入主创设计师' }]}
+                >
+                  <Input placeholder="请输入主创设计师" />
+                </Form.Item>
+
+                <Form.Item
+                  name="assistantDesigners"
+                  label="助理设计师"
+                >
+                  <Select
+                    mode="tags"
+                    placeholder="请选择助理设计师"
+                    style={{ width: '100%' }}
+                  >
+                    <Option value="设计师B">设计师B</Option>
+                    <Option value="设计师C">设计师C</Option>
+                    <Option value="设计师D">设计师D</Option>
+                  </Select>
+                </Form.Item>
+              </div>
+
+              <Form.Item
+                name="clientRequirements"
+                label="客户嘱托"
+                rules={[{ required: true, message: '请输入客户嘱托' }]}
+              >
+                <TextArea
+                  rows={4}
+                  placeholder="请输入客户的具体要求和嘱托"
+                />
+              </Form.Item>
+            </Form>
+          </div>
+        )
+      case 3:
+        return (
+          <div>
+            <Title level={4}>确认项目信息</Title>
+            <Card style={{ marginBottom: 16 }}>
+              <Descriptions column={2} bordered>
+                <Descriptions.Item label="项目名称">
+                  {selectedOrder?.projectName}
+                </Descriptions.Item>
+                <Descriptions.Item label="客户">
+                  {selectedOrder?.clientName}
+                </Descriptions.Item>
+                <Descriptions.Item label="联系人">
+                  {selectedOrder?.contactNames?.join(', ') || '无'}
+                </Descriptions.Item>
+                <Descriptions.Item label="主创设计师">
+                  {form.getFieldValue('mainDesigner')}
+                </Descriptions.Item>
+                <Descriptions.Item label="助理设计师">
+                  {form.getFieldValue('assistantDesigners')?.join(', ') || '无'}
+                </Descriptions.Item>
+                <Descriptions.Item label="项目状态">
+                  待开始
+                </Descriptions.Item>
+                <Descriptions.Item label="关联订单">
+                  {selectedOrder?.orderNo} (v{selectedOrderVersion?.version}.0)
+                </Descriptions.Item>
+                <Descriptions.Item label="客户嘱托">
+                  {form.getFieldValue('clientRequirements')}
+                </Descriptions.Item>
+              </Descriptions>
+            </Card>
+
+            <Card title="任务规格确认">
+              {(() => {
+                const selectedSnapshot = selectedOrder?.snapshots.find(s => s.version === selectedOrderVersion?.version)
+                if (!selectedSnapshot) return <Text type="secondary">未找到对应版本信息</Text>
+
+                return (
+                  <Table
+                    columns={[
+                      {
+                        title: '任务名称',
+                        dataIndex: 'serviceName',
+                        key: 'serviceName',
+                        width: 200,
+                      },
+                      {
+                        title: '选择规格',
+                        key: 'specification',
+                        width: 300,
+                        render: (_: any, record: any) => {
+                          const spec = taskSpecifications[record.serviceId]
+                          return spec ? (
+                            <div>
+                              <div style={{ fontWeight: 'bold' }}>{spec.name}</div>
+                              <div style={{ fontSize: '12px', color: '#666' }}>
+                                {spec.length}×{spec.width}
+                                {spec.height ? `×${spec.height}` : ''} {spec.unit}
+                                {spec.resolution && ` | ${spec.resolution}`}
+                              </div>
+                            </div>
+                          ) : (
+                            <Text type="danger">未选择规格</Text>
+                          )
+                        }
+                      },
+                      {
+                        title: '数量',
+                        dataIndex: 'quantity',
+                        key: 'quantity',
+                        width: 100,
+                        render: (quantity: number, record: any) => `${quantity} ${record.unit}`
+                      },
+                      {
+                        title: '小计',
+                        dataIndex: 'subtotal',
+                        key: 'subtotal',
+                        width: 120,
+                        render: (subtotal: number) => `¥${subtotal.toLocaleString()}`
+                      }
+                    ]}
+                    dataSource={selectedSnapshot.items}
+                    rowKey={(record) => `${record.serviceId}`}
+                    pagination={false}
+                    size="small"
+                  />
+                )
+              })()}
+            </Card>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
+  const getModalTitle = () => {
+    return `新建项目 - ${steps[currentStep].title}`
+  }
+
+  const getModalFooter = () => {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* 分页组件 */}
+        {currentStep === 0 && (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <span style={{ marginRight: 8, fontSize: '12px', color: '#666' }}>
+              第 {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, orders.length)} 条/共 {orders.length} 条
+            </span>
+            <Space size="small">
+              <Button
+                size="small"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                上一页
+              </Button>
+              <Button
+                size="small"
+                disabled={currentPage * pageSize >= orders.length}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                下一页
+              </Button>
+            </Space>
+          </div>
+        )}
+
+        {/* 操作按钮 */}
+        <Space>
+          <Button onClick={onCancel}>取消</Button>
+          {currentStep > 0 && (
+            <Button onClick={handlePrev}>上一步</Button>
+          )}
+          {currentStep < steps.length - 1 ? (
+            <Button type="primary" onClick={handleNext}>
+              下一步
+            </Button>
+          ) : (
+            <Button type="primary" onClick={handleSubmit} loading={loading}>
+              创建项目
+            </Button>
+          )}
+        </Space>
+      </div>
+    )
+  }
+
+  return (
+    <Modal
+      title={getModalTitle()}
+      open={visible}
+      onCancel={onCancel}
+      footer={getModalFooter()}
+      width={1200}
+      destroyOnHidden
+    >
+      <Steps current={currentStep} style={{ marginBottom: 24 }}>
+        {steps.map((step, index) => (
+          <Step key={index} title={step.title} icon={step.icon} />
+        ))}
+      </Steps>
+
+      {renderStepContent()}
+    </Modal>
+  )
+}
+
+export default CreateProjectModal 
