@@ -35,6 +35,18 @@ export interface Service {
     unit: string;
 }
 
+export interface Quotation {
+    _id: string;
+    name: string;
+    status: 'active' | 'inactive';
+    validUntil?: string;
+    description: string;
+    isDefault: boolean;
+    selectedServices: string[];
+    createTime: string;
+    updateTime: string;
+}
+
 export interface Task {
     taskName: string;
     serviceId: string;

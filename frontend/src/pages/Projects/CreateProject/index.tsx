@@ -6,7 +6,7 @@ import { useCreateProject } from './hooks';
 import { createProject, validateProjectData } from './services';
 import { ProjectFormData } from './types';
 import BasicInfoTab from './components/BasicInfoTab';
-import TasksTab from './components/TasksTab';
+import QuotationsTab from './components/QuotationsTab';
 import OrderTab from './components/OrderTab';
 
 const CreateProject: React.FC = () => {
@@ -22,6 +22,7 @@ const CreateProject: React.FC = () => {
         services,
         selectedClient,
         tasks,
+        quotations,
         filteredContacts,
         handleClientChange,
         handleContactChange,
@@ -53,7 +54,7 @@ const CreateProject: React.FC = () => {
 
             // 创建项目
             await createProject(projectData, tasks);
-            
+
             // 跳转到项目列表
             navigate('/projects');
         } catch (error) {
@@ -136,22 +137,18 @@ const CreateProject: React.FC = () => {
                                 )
                             },
                             {
-                                key: 'tasks',
+                                key: 'quotations',
                                 label: (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#eb2f96' }}>📋</span>
-                                        <span>任务信息</span>
-                                        <Tag color="orange">{tasks.length}</Tag>
+                                        <span style={{ color: '#1890ff' }}>📋</span>
+                                        <span>报价单</span>
+                                        <Tag color="blue">{quotations.length}</Tag>
                                     </div>
                                 ),
                                 children: (
-                                    <TasksTab
-                                        tasks={tasks}
-                                        services={services}
-                                        addTask={addTask}
-                                        removeTask={removeTask}
-                                        updateTask={updateTask}
-                                        calculateSubtotal={calculateSubtotal}
+                                    <QuotationsTab
+                                        quotations={quotations}
+                                        selectedClient={selectedClient}
                                     />
                                 )
                             },

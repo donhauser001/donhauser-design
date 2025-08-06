@@ -24,7 +24,7 @@ export class QuotationController {
         try {
             const { id } = req.params
             const quotation = await QuotationService.getQuotationById(id)
-            
+
             if (!quotation) {
                 return res.status(404).json({
                     success: false,
@@ -196,6 +196,47 @@ export class QuotationController {
             res.status(500).json({
                 success: false,
                 message: '搜索报价单失败',
+                error: error instanceof Error ? error.message : '未知错误'
+            })
+        }
+    }
+
+    // 根据客户ID获取关联的报价单
+    async getQuotationsByClientId(req: Request, res: Response) {
+        try {
+            const { clientId } = req.params
+
+            // 先获取客户信息
+            const Client = require('../models/Client').default
+            const client = await Client.findById(clientId)
+
+            if (!client) {
+                return res.status(404).json({
+                    success: false,
+                    message: '客户不存在'
+                })
+            }
+
+            // 如果客户有关联的报价单ID
+            if (client.quotationId) {
+                const quotation = await QuotationService.getQuotationById(client.quotationId)
+                if (quotation) {
+                    return res.json({
+                        success: true,
+                        data: [quotation]
+                    })
+                }
+            }
+
+            // 如果没有关联的报价单，返回空数组
+            res.json({
+                success: true,
+                data: []
+            })
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: '获取客户关联报价单失败',
                 error: error instanceof Error ? error.message : '未知错误'
             })
         }

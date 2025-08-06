@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { message } from 'antd';
-import { Client, Contact, Enterprise, Designer, Service, Task } from './types';
+import { Client, Contact, Enterprise, Designer, Service, Task, Quotation } from './types';
+import { getQuotationsByClientId } from '../../api/quotations';
 
 export const useCreateProject = () => {
     const [clients, setClients] = useState<Client[]>([]);
@@ -10,6 +11,7 @@ export const useCreateProject = () => {
     const [services, setServices] = useState<Service[]>([]);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [quotations, setQuotations] = useState<Quotation[]>([]);
 
     // 根据选择的客户过滤联系人
     const filteredContacts = selectedClient
@@ -60,7 +62,7 @@ export const useCreateProject = () => {
             const response = await fetch('/api/users?limit=100');
             const data = await response.json();
             if (data.success) {
-                const designerUsers = data.data.filter((user: any) => 
+                const designerUsers = data.data.filter((user: any) =>
                     user.role === '员工' || user.role === '超级管理员'
                 );
                 setDesigners(designerUsers);
@@ -84,9 +86,22 @@ export const useCreateProject = () => {
         }
     };
 
-    const handleClientChange = (clientId: string) => {
+    const handleClientChange = async (clientId: string) => {
         const client = clients.find(c => c._id === clientId);
         setSelectedClient(client || null);
+
+        // 获取客户关联的报价单
+        if (client) {
+            try {
+                const clientQuotations = await getQuotationsByClientId(client._id);
+                setQuotations(clientQuotations);
+            } catch (error) {
+                console.error('获取客户报价单失败:', error);
+                setQuotations([]);
+            }
+        } else {
+            setQuotations([]);
+        }
     };
 
     const handleContactChange = (contactIds: string[]) => {
@@ -145,6 +160,7 @@ export const useCreateProject = () => {
         services,
         selectedClient,
         tasks,
+        quotations,
         filteredContacts,
         handleClientChange,
         handleContactChange,
