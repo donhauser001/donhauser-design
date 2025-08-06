@@ -264,7 +264,17 @@ const CreateProject: React.FC = () => {
         try {
             setLoading(true);
 
-            const values = form.getFieldsValue();
+            // 手动获取表单数据
+            const values = {
+                projectName: form.getFieldValue('projectName'),
+                clientId: form.getFieldValue('clientId'),
+                contactIds: form.getFieldValue('contactIds'),
+                undertakingTeam: form.getFieldValue('undertakingTeam'),
+                mainDesigners: form.getFieldValue('mainDesigners'),
+                assistantDesigners: form.getFieldValue('assistantDesigners'),
+                clientRequirements: form.getFieldValue('clientRequirements'),
+                remark: form.getFieldValue('remark')
+            };
 
             // 验证数据
             if (!validateProjectData(values)) {
@@ -311,7 +321,18 @@ const CreateProject: React.FC = () => {
 
     // 显示保存确认模态窗
     const showSaveModal = () => {
-        const values = form.getFieldsValue();
+        // 手动获取表单数据，因为子组件中的字段可能不会自动包含在getFieldsValue中
+        const values = {
+            projectName: form.getFieldValue('projectName'),
+            clientId: form.getFieldValue('clientId'),
+            contactIds: form.getFieldValue('contactIds'),
+            undertakingTeam: form.getFieldValue('undertakingTeam'),
+            mainDesigners: form.getFieldValue('mainDesigners'),
+            assistantDesigners: form.getFieldValue('assistantDesigners'),
+            clientRequirements: form.getFieldValue('clientRequirements'),
+            remark: form.getFieldValue('remark')
+        };
+
         console.log('保存按钮点击，表单数据:', values);
         console.log('选中的服务项目:', selectedServices);
 
@@ -697,7 +718,16 @@ const CreateProject: React.FC = () => {
                 onCancel={() => setSaveModalVisible(false)}
                 onConfirm={handleSaveConfirm}
                 loading={loading}
-                projectData={buildProjectData(form.getFieldsValue(), 'order')}
+                projectData={buildProjectData({
+                    projectName: form.getFieldValue('projectName'),
+                    clientId: form.getFieldValue('clientId'),
+                    contactIds: form.getFieldValue('contactIds'),
+                    undertakingTeam: form.getFieldValue('undertakingTeam'),
+                    mainDesigners: form.getFieldValue('mainDesigners'),
+                    assistantDesigners: form.getFieldValue('assistantDesigners'),
+                    clientRequirements: form.getFieldValue('clientRequirements'),
+                    remark: form.getFieldValue('remark')
+                }, 'order')}
                 selectedServices={selectedServices}
                 {...calculateAmounts()}
             />
