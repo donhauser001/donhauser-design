@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Empty, Tag, Typography, Space, Divider, Checkbox, Row, Col, Collapse } from 'antd';
+import { Card, Empty, Tag, Typography, Space, Divider, Row, Col, Collapse, InputNumber, Button } from 'antd';
 import { FileTextOutlined, CalendarOutlined, DollarOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Quotation, Service } from '../types';
 import dayjs from 'dayjs';
@@ -22,9 +22,8 @@ interface ServiceWithDetails extends Service {
 }
 
 const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClient, services }) => {
-    const [selectedServices, setSelectedServices] = useState<string[]>([]);
     const [serviceDetails, setServiceDetails] = useState<ServiceWithDetails[]>([]);
-    const [categorySelections, setCategorySelections] = useState<Record<string, boolean>>({});
+    const [serviceQuantities, setServiceQuantities] = useState<Record<string, number>>({});
 
     // 获取服务详细信息
     useEffect(() => {
@@ -58,49 +57,15 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
         return acc;
     }, {} as Record<string, ServiceWithDetails[]>);
 
-    const handleServiceToggle = (serviceId: string, checked: boolean) => {
-        if (checked) {
-            setSelectedServices(prev => [...prev, serviceId]);
-        } else {
-            setSelectedServices(prev => prev.filter(id => id !== serviceId));
-        }
+    const handleQuantityChange = (serviceId: string, quantity: number) => {
+        setServiceQuantities(prev => ({ ...prev, [serviceId]: quantity }));
     };
 
-    const handleSelectAll = (checked: boolean) => {
-        if (checked) {
-            setSelectedServices(serviceDetails.map(service => service._id));
-        } else {
-            setSelectedServices([]);
-        }
-    };
-
-    const handleCategorySelectAll = (category: string, checked: boolean) => {
-        const categoryServices = groupedServices[category] || [];
-        const categoryServiceIds = categoryServices.map(service => service._id);
-        
-        if (checked) {
-            setSelectedServices(prev => [...new Set([...prev, ...categoryServiceIds])]);
-        } else {
-            setSelectedServices(prev => prev.filter(id => !categoryServiceIds.includes(id)));
-        }
-        
-        setCategorySelections(prev => ({ ...prev, [category]: checked }));
-    };
-
-    const isAllSelected = serviceDetails.length > 0 && selectedServices.length === serviceDetails.length;
-    const isIndeterminate = selectedServices.length > 0 && selectedServices.length < serviceDetails.length;
-
-    const isCategoryAllSelected = (category: string) => {
-        const categoryServices = groupedServices[category] || [];
-        const categoryServiceIds = categoryServices.map(service => service._id);
-        return categoryServices.length > 0 && categoryServiceIds.every(id => selectedServices.includes(id));
-    };
-
-    const isCategoryIndeterminate = (category: string) => {
-        const categoryServices = groupedServices[category] || [];
-        const categoryServiceIds = categoryServices.map(service => service._id);
-        const selectedInCategory = categoryServiceIds.filter(id => selectedServices.includes(id));
-        return selectedInCategory.length > 0 && selectedInCategory.length < categoryServices.length;
+    const handleAddToOrder = (service: ServiceWithDetails) => {
+        const quantity = serviceQuantities[service._id] || 1;
+        // 这里可以添加将服务添加到订单的逻辑
+        console.log('添加到订单:', { service, quantity });
+        // 可以调用父组件的回调函数或使用其他状态管理方式
     };
     if (!selectedClient) {
         return (
@@ -210,58 +175,31 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
 
                         <div style={{ marginTop: '12px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <Text strong>包含服务项目 ({quotation.selectedServices.length} 项):</Text>
-                                    <Checkbox
-                                        checked={isAllSelected}
-                                        indeterminate={isIndeterminate}
-                                        onChange={(e) => handleSelectAll(e.target.checked)}
-                                    >
-                                        全选
-                                    </Checkbox>
-                                </div>
-                                <div>
-                                    <Tag color="blue">已选择: {selectedServices.length} 项</Tag>
-                                    {selectedServices.length > 0 && (
-                                        <Tag color="green">
-                                            总价: ¥{serviceDetails
-                                                .filter(service => selectedServices.includes(service._id))
-                                                .reduce((sum, service) => sum + service.unitPrice, 0)
-                                                .toLocaleString()}
-                                        </Tag>
-                                    )}
-                                </div>
+                                <Text strong>包含服务项目 ({quotation.selectedServices.length} 项):</Text>
                             </div>
                             <div style={{ marginTop: '12px' }}>
-                                <Collapse 
-                                    ghost 
+                                <Collapse
+                                    ghost
                                     size="small"
                                     style={{ background: 'transparent' }}
                                 >
                                     {Object.entries(groupedServices).map(([category, categoryServices]) => (
-                                        <Panel 
+                                        <Panel
                                             header={
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <Checkbox
-                                                        checked={isCategoryAllSelected(category)}
-                                                        indeterminate={isCategoryIndeterminate(category)}
-                                                        onChange={(e) => handleCategorySelectAll(category, e.target.checked)}
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        style={{ marginRight: '8px' }}
-                                                    />
                                                     <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
                                                         {category}
                                                     </span>
                                                     <Tag color="blue">{categoryServices.length} 项</Tag>
                                                 </div>
-                                            } 
+                                            }
                                             key={category}
                                         >
                                             <div style={{ paddingLeft: '16px' }}>
                                                 {categoryServices.map((service) => (
-                                                    <div 
-                                                        key={service._id} 
-                                                        style={{ 
+                                                    <div
+                                                        key={service._id}
+                                                        style={{
                                                             marginBottom: '12px',
                                                             padding: '12px',
                                                             border: '1px solid #f0f0f0',
@@ -270,13 +208,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                         }}
                                                     >
                                                         <Row gutter={16} align="middle">
-                                                            <Col span={1}>
-                                                                <Checkbox
-                                                                    checked={selectedServices.includes(service._id)}
-                                                                    onChange={(e) => handleServiceToggle(service._id, e.target.checked)}
-                                                                />
-                                                            </Col>
-                                                            <Col span={10}>
+                                                            <Col span={8}>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                                     <Text strong>{service.serviceName}</Text>
                                                                     {service.alias && (
@@ -296,7 +228,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                     </Text>
                                                                 </div>
                                                             </Col>
-                                                            <Col span={6}>
+                                                            <Col span={5}>
                                                                 <div>
                                                                     {service.pricingPolicyIds && service.pricingPolicyIds.length > 0 ? (
                                                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
@@ -314,10 +246,22 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                 </div>
                                                             </Col>
                                                             <Col span={3}>
-                                                                <div style={{ textAlign: 'right' }}>
-                                                                    <Tag color={selectedServices.includes(service._id) ? "green" : "default"} size="small">
-                                                                        {selectedServices.includes(service._id) ? '已选' : '未选'}
-                                                                    </Tag>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <InputNumber
+                                                                        min={1}
+                                                                        max={999}
+                                                                        defaultValue={1}
+                                                                        size="small"
+                                                                        style={{ width: '60px' }}
+                                                                        onChange={(value) => handleQuantityChange(service._id, value || 1)}
+                                                                    />
+                                                                    <Button
+                                                                        type="primary"
+                                                                        size="small"
+                                                                        onClick={() => handleAddToOrder(service)}
+                                                                    >
+                                                                        添加到订单中
+                                                                    </Button>
                                                                 </div>
                                                             </Col>
                                                         </Row>
