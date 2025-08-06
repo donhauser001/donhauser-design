@@ -500,7 +500,7 @@ const ProjectList: React.FC = () => {
                                 value={progressFilter || 'all'}
                                 onChange={setProgressFilter}
                             >
-                                <Option value="all">全部状态</Option>
+                                <Option value="all">进度状态</Option>
                                 <Option value="consulting">咨询中</Option>
                                 <Option value="in-progress">进行中</Option>
                                 <Option value="partial-delivery">部分交付</Option>
@@ -514,7 +514,7 @@ const ProjectList: React.FC = () => {
                                 value={settlementFilter || 'all'}
                                 onChange={setSettlementFilter}
                             >
-                                <Option value="all">全部状态</Option>
+                                <Option value="all">结算状态</Option>
                                 <Option value="unpaid">未付款</Option>
                                 <Option value="prepaid">预付款</Option>
                                 <Option value="partial-paid">部分付款</Option>
