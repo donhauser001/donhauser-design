@@ -177,30 +177,40 @@ const CreateProject: React.FC = () => {
 
     // 数据验证函数
     const validateProjectData = (values: ProjectFormData) => {
-        if (!values.projectName) {
+        console.log('开始验证数据:', values);
+
+        if (!values.projectName || values.projectName.trim() === '') {
             message.error('请输入项目名称');
+            console.log('验证失败: 项目名称为空');
             return false;
         }
         if (!values.clientId) {
             message.error('请选择客户');
+            console.log('验证失败: 未选择客户');
             return false;
         }
-        if (!values.contactIds?.length) {
+        if (!values.contactIds || !Array.isArray(values.contactIds) || values.contactIds.length === 0) {
             message.error('请选择联系人');
+            console.log('验证失败: 未选择联系人');
             return false;
         }
         if (!values.undertakingTeam) {
             message.error('请选择承接团队');
+            console.log('验证失败: 未选择承接团队');
             return false;
         }
-        if (!values.mainDesigners?.length) {
+        if (!values.mainDesigners || !Array.isArray(values.mainDesigners) || values.mainDesigners.length === 0) {
             message.error('请选择主创设计师');
+            console.log('验证失败: 未选择主创设计师');
             return false;
         }
-        if (!selectedServices.length) {
+        if (!selectedServices || !Array.isArray(selectedServices) || selectedServices.length === 0) {
             message.error('请选择至少一个服务项目');
+            console.log('验证失败: 未选择服务项目');
             return false;
         }
+
+        console.log('数据验证通过');
         return true;
     };
 
@@ -302,9 +312,14 @@ const CreateProject: React.FC = () => {
     // 显示保存确认模态窗
     const showSaveModal = () => {
         const values = form.getFieldsValue();
+        console.log('保存按钮点击，表单数据:', values);
+        console.log('选中的服务项目:', selectedServices);
+
         if (!validateProjectData(values)) {
+            console.log('数据验证失败');
             return;
         }
+        console.log('数据验证通过，显示模态窗');
         setSaveModalVisible(true);
     };
 
@@ -495,7 +510,8 @@ const CreateProject: React.FC = () => {
                         progressStatus: 'consulting',
                         settlementStatus: 'unpaid',
                         mainDesigners: [],
-                        assistantDesigners: []
+                        assistantDesigners: [],
+                        contactIds: []
                     }}
                 >
                     <Steps
