@@ -491,9 +491,6 @@ const ProjectDetail: React.FC = () => {
                                         render: (text: string, record: Task) => (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                 <span>{text}</span>
-                                                <Tag color={getPriorityColor(record.priority)} size="small">
-                                                    {getPriorityText(record.priority)}
-                                                </Tag>
                                             </div>
                                         )
                                     },
@@ -504,6 +501,16 @@ const ProjectDetail: React.FC = () => {
                                         render: (_, record: Task) => (
                                             <Tag color={getTaskStatusColor(record.status)} size="small">
                                                 {getTaskStatusText(record.status)}
+                                            </Tag>
+                                        )
+                                    },
+                                    {
+                                        title: '紧急度',
+                                        key: 'priority',
+                                        width: 80,
+                                        render: (_, record: Task) => (
+                                            <Tag color={getPriorityColor(record.priority)} size="small">
+                                                {getPriorityText(record.priority)}
                                             </Tag>
                                         )
                                     },
