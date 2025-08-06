@@ -62,6 +62,9 @@ import AdvancedSettings from './pages/Settings/AdvancedSettings'
 import LoginSettings from './pages/Settings/LoginSettings'
 import FileUploadTest from './components/FileUploadTest'
 
+// 项目管理相关页面
+import Projects from './pages/Projects'
+
 function App() {
   return (
     <ConfigProvider locale={zhCN}>
@@ -72,6 +75,9 @@ function App() {
 
           {/* 文件上传测试 */}
           <Route path="/test-upload" element={<FileUploadTest />} />
+
+          {/* 项目管理 */}
+          <Route path="/projects/*" element={<Projects />} />
 
           {/* 客户管理 */}
           <Route path="/clients" element={<ClientList />} />

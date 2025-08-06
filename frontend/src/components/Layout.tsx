@@ -59,6 +59,21 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       ],
     },
     {
+      key: 'projects',
+      icon: <ProjectOutlined />,
+      label: '项目管理 [新]',
+      children: [
+        {
+          key: '/projects',
+          label: '项目列表',
+        },
+        {
+          key: '/projects/create',
+          label: '新建项目',
+        },
+      ],
+    },
+    {
       key: 'finance',
       icon: <DollarOutlined />,
       label: '财务管理',
