@@ -524,16 +524,16 @@ const ProjectDetail: React.FC = () => {
                                         render: (_, record: Task) => `${record.quantity}${record.unit}`
                                     },
                                     {
-                                        title: '金额',
-                                        key: 'amount',
-                                        width: 100,
-                                        render: (_, record: Task) => `¥${record.subtotal.toFixed(2)}`
-                                    },
-                                    {
                                         title: '进度',
                                         key: 'progress',
                                         width: 80,
                                         render: (_, record: Task) => `${record.progress}%`
+                                    },
+                                    {
+                                        title: '金额',
+                                        key: 'amount',
+                                        width: 100,
+                                        render: (_, record: Task) => `¥${record.subtotal.toFixed(2)}`
                                     },
                                     {
                                         title: '截止日期',
