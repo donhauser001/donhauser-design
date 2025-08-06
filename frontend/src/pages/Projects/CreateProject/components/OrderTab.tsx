@@ -38,11 +38,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
     const calculatePrice = (service: any) => {
         const originalPrice = service.unitPrice * service.quantity;
 
-        // 调试信息
-        console.log('计算价格 - 服务:', service.serviceName);
-        console.log('服务定价政策IDs:', service.pricingPolicyIds);
-        console.log('服务选中的定价政策:', service.selectedPricingPolicies);
-        console.log('可用定价政策:', pricingPolicies.map(p => ({ id: p._id, name: p.name })));
+
 
         // 如果没有选择定价政策，返回原价
         if (!service.selectedPricingPolicies || service.selectedPricingPolicies.length === 0) {
@@ -62,32 +58,23 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
 
             // 首先尝试从pricingPolicies中通过ID查找
             selectedPolicy = pricingPolicies.find(p => p._id === selectedPolicyId);
-            console.log('从pricingPolicies中找到的选中政策:', selectedPolicy);
 
             // 如果从pricingPolicies中找不到，或者找到的政策名称不匹配，则从服务数据中获取
             if (service.pricingPolicyIds && service.pricingPolicyNames) {
                 const selectedIndex = service.pricingPolicyIds.indexOf(selectedPolicyId);
                 if (selectedIndex !== -1) {
                     const expectedPolicyName = service.pricingPolicyNames[selectedIndex];
-                    console.log('从服务数据中找到期望的政策名称:', expectedPolicyName);
 
                     // 检查找到的政策名称是否匹配
                     if (selectedPolicy && selectedPolicy.name !== expectedPolicyName && selectedPolicy.alias !== expectedPolicyName) {
-                        console.log('政策名称不匹配，尝试通过名称重新查找');
+                        // 通过名称重新查找正确的政策
                         selectedPolicy = pricingPolicies.find(p => p.name === expectedPolicyName || p.alias === expectedPolicyName);
-                        console.log('通过名称重新找到的政策:', selectedPolicy);
-                    }
-
-                    // 如果仍然找不到，记录错误并跳过
-                    if (!selectedPolicy) {
-                        console.error('无法找到匹配的定价政策，ID:', selectedPolicyId, '期望名称:', expectedPolicyName);
                     }
                 }
             }
         }
 
         if (!selectedPolicy || selectedPolicy.status !== 'active') {
-            console.log('未找到有效的定价政策，使用原价计算');
             return {
                 originalPrice,
                 discountedPrice: originalPrice,
@@ -242,11 +229,6 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             dataIndex: 'pricingPolicyNames',
             key: 'pricingPolicyNames',
             render: (policies: string[], record: any) => {
-                console.log('渲染定价政策列 - 记录:', record.serviceName);
-                console.log('定价政策IDs:', record.pricingPolicyIds);
-                console.log('定价政策名称:', record.pricingPolicyNames);
-                console.log('选中的定价政策:', record.selectedPricingPolicies);
-
                 return (
                     <div>
                         {record.pricingPolicyIds && record.pricingPolicyIds.length > 0 ? (
@@ -255,14 +237,11 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                                     const policyName = record.pricingPolicyNames?.[index] || '未知政策';
                                     const isChecked = record.selectedPricingPolicies?.includes(policyId) || false;
 
-                                    console.log(`政策 ${policyName} (${policyId}) 是否选中:`, isChecked);
-
                                     return (
                                         <Checkbox
                                             key={policyId}
                                             checked={isChecked}
                                             onChange={(e) => {
-                                                console.log(`政策 ${policyName} 状态改变:`, e.target.checked);
                                                 if (onPricingPolicyChange) {
                                                     // 单选逻辑：如果勾选，则只选择当前政策；如果取消勾选，则清空选择
                                                     const newSelected = e.target.checked ? [policyId] : [];

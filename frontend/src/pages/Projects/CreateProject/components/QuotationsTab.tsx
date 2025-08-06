@@ -49,7 +49,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
                         serviceIds.map(async (serviceId) => {
                             const response = await fetch(`/api/service-pricing/${serviceId}`);
                             const data = await response.json();
-                            console.log(`服务 ${serviceId} 的API返回数据:`, data.data);
+
                             return data.success ? data.data : null;
                         })
                     );
@@ -134,7 +134,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
                     selectedPricingPolicies: []
                 };
             });
-            console.log('传递给父组件的服务数据:', selectedItems);
+
             onServicesChange(selectedItems);
         }
     }, [selectedServiceIds, serviceQuantities, serviceDetails, onServicesChange]);

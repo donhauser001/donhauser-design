@@ -92,7 +92,7 @@ export const useCreateProject = () => {
             const response = await fetch('/api/pricing-policies?status=active&limit=100');
             const data = await response.json();
             if (data.success) {
-                console.log('获取到的定价政策数据:', data.data);
+
                 setPricingPolicies(data.data);
             }
         } catch (error) {

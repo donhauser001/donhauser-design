@@ -143,16 +143,13 @@ const CreateProject: React.FC = () => {
 
     // 处理定价政策变化
     const handlePricingPolicyChange = (serviceId: string, policyIds: string[]) => {
-        console.log('定价政策改变 - 服务ID:', serviceId, '政策IDs:', policyIds);
-        setSelectedServices(prev => {
-            const updated = prev.map(service =>
+        setSelectedServices(prev =>
+            prev.map(service =>
                 service._id === serviceId
                     ? { ...service, selectedPricingPolicies: policyIds }
                     : service
-            );
-            console.log('更新后的服务列表:', updated);
-            return updated;
-        });
+            )
+        );
     };
 
     // 保存状态到 localStorage
