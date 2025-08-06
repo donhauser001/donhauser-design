@@ -375,7 +375,7 @@ const CreateProject: React.FC = () => {
                         style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
                     >
                         <Row gutter={24}>
-                            <Col span={8}>
+                            <Col span={12}>
                                 <Form.Item
                                     name="clientId"
                                     label="客户"
@@ -397,8 +397,6 @@ const CreateProject: React.FC = () => {
                                         ))}
                                     </Select>
                                 </Form.Item>
-                            </Col>
-                            <Col span={8}>
                                 <Form.Item
                                     name="contactIds"
                                     label="联系人"
@@ -423,9 +421,9 @@ const CreateProject: React.FC = () => {
                                     </Select>
                                 </Form.Item>
                             </Col>
-                            <Col span={8}>
+                            <Col span={12}>
                                 <Form.Item name="clientRequirements" label="客户嘱托">
-                                    <TextArea rows={3} placeholder="请输入客户嘱托" />
+                                    <TextArea rows={6} placeholder="请输入客户嘱托" />
                                 </Form.Item>
                             </Col>
                         </Row>
