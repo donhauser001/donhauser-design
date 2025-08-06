@@ -543,18 +543,43 @@ const ProjectDetail: React.FC = () => {
                                         render: (_, record: Task) => {
                                             const hasDesigners = record.assignedDesignerNames && record.assignedDesignerNames.length > 0;
                                             return (
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <div 
+                                                    style={{ 
+                                                        display: 'flex', 
+                                                        alignItems: 'center', 
+                                                        gap: '4px',
+                                                        position: 'relative'
+                                                    }}
+                                                    onMouseEnter={(e) => {
+                                                        const target = e.currentTarget;
+                                                        const editIcon = target.querySelector('.edit-icon') as HTMLElement;
+                                                        if (editIcon) {
+                                                            editIcon.style.opacity = '1';
+                                                        }
+                                                    }}
+                                                    onMouseLeave={(e) => {
+                                                        const target = e.currentTarget;
+                                                        const editIcon = target.querySelector('.edit-icon') as HTMLElement;
+                                                        if (editIcon) {
+                                                            editIcon.style.opacity = '0';
+                                                        }
+                                                    }}
+                                                >
                                                     <span>
                                                         {hasDesigners ? record.assignedDesignerNames!.join('，') : '-'}
                                                     </span>
-                                                    <Button
-                                                        type="link"
-                                                        size="small"
+                                                    <EditOutlined
+                                                        className="edit-icon"
                                                         onClick={() => handleAssignDesigners(record)}
-                                                        style={{ padding: 0, height: 'auto' }}
-                                                    >
-                                                        {hasDesigners ? '修改' : '指定'}
-                                                    </Button>
+                                                        style={{
+                                                            opacity: 0,
+                                                            transition: 'opacity 0.2s',
+                                                            cursor: 'pointer',
+                                                            color: '#1890ff',
+                                                            fontSize: '14px',
+                                                            marginLeft: '4px'
+                                                        }}
+                                                    />
                                                 </div>
                                             );
                                         }
