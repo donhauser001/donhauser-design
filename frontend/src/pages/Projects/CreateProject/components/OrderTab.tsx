@@ -102,10 +102,8 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                                         checked={record.selectedPricingPolicies?.includes(policyId) || false}
                                         onChange={(e) => {
                                             if (onPricingPolicyChange) {
-                                                const currentSelected = record.selectedPricingPolicies || [];
-                                                const newSelected = e.target.checked
-                                                    ? [...currentSelected, policyId]
-                                                    : currentSelected.filter((id: string) => id !== policyId);
+                                                // 单选逻辑：如果勾选，则只选择当前政策；如果取消勾选，则清空选择
+                                                const newSelected = e.target.checked ? [policyId] : [];
                                                 onPricingPolicyChange(record._id, newSelected);
                                             }
                                         }}
