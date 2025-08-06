@@ -55,19 +55,34 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
         }
 
         // 获取选中的定价政策
-        let selectedPolicy = pricingPolicies.find(p => p._id === service.selectedPricingPolicies[0]);
-        console.log('从pricingPolicies中找到的选中政策:', selectedPolicy);
+        let selectedPolicy = null;
 
-        // 如果从pricingPolicies中找不到，尝试从服务数据中构建政策信息
-        if (!selectedPolicy && service.pricingPolicyIds && service.pricingPolicyNames) {
-            const selectedIndex = service.pricingPolicyIds.indexOf(service.selectedPricingPolicies[0]);
-            if (selectedIndex !== -1) {
-                const policyName = service.pricingPolicyNames[selectedIndex];
-                console.log('从服务数据中找到政策名称:', policyName);
+        if (service.selectedPricingPolicies && service.selectedPricingPolicies.length > 0) {
+            const selectedPolicyId = service.selectedPricingPolicies[0];
 
-                // 尝试从pricingPolicies中通过名称查找
-                selectedPolicy = pricingPolicies.find(p => p.name === policyName || p.alias === policyName);
-                console.log('通过名称找到的政策:', selectedPolicy);
+            // 首先尝试从pricingPolicies中通过ID查找
+            selectedPolicy = pricingPolicies.find(p => p._id === selectedPolicyId);
+            console.log('从pricingPolicies中找到的选中政策:', selectedPolicy);
+
+            // 如果从pricingPolicies中找不到，或者找到的政策名称不匹配，则从服务数据中获取
+            if (service.pricingPolicyIds && service.pricingPolicyNames) {
+                const selectedIndex = service.pricingPolicyIds.indexOf(selectedPolicyId);
+                if (selectedIndex !== -1) {
+                    const expectedPolicyName = service.pricingPolicyNames[selectedIndex];
+                    console.log('从服务数据中找到期望的政策名称:', expectedPolicyName);
+
+                    // 检查找到的政策名称是否匹配
+                    if (selectedPolicy && selectedPolicy.name !== expectedPolicyName && selectedPolicy.alias !== expectedPolicyName) {
+                        console.log('政策名称不匹配，尝试通过名称重新查找');
+                        selectedPolicy = pricingPolicies.find(p => p.name === expectedPolicyName || p.alias === expectedPolicyName);
+                        console.log('通过名称重新找到的政策:', selectedPolicy);
+                    }
+
+                    // 如果仍然找不到，记录错误并跳过
+                    if (!selectedPolicy) {
+                        console.error('无法找到匹配的定价政策，ID:', selectedPolicyId, '期望名称:', expectedPolicyName);
+                    }
+                }
             }
         }
 
