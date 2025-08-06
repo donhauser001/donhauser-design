@@ -295,27 +295,38 @@ const CreateProject: React.FC = () => {
     };
 
     return (
-        <div style={{ padding: '24px' }}>
+        <div style={{ padding: '24px', background: '#f5f5f5', minHeight: '100vh' }}>
             <Card
-                title="创建新项目"
+                title={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>创建新项目</span>
+                        <Tag color="blue">项目信息</Tag>
+                    </div>
+                }
                 extra={
                     <Space>
                         <Button
                             icon={<ArrowLeftOutlined />}
                             onClick={() => navigate('/projects')}
                         >
-                            返回
+                            返回列表
                         </Button>
                         <Button
                             type="primary"
                             icon={<SaveOutlined />}
                             loading={loading}
                             onClick={() => form.submit()}
+                            size="large"
                         >
                             保存项目
                         </Button>
                     </Space>
                 }
+                style={{
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    borderRadius: '8px',
+                    marginBottom: '24px'
+                }}
             >
                 <Form
                     form={form}
@@ -329,96 +340,118 @@ const CreateProject: React.FC = () => {
                     }}
                 >
                     {/* 基本信息 */}
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                name="projectName"
-                                label="项目名称"
-                                rules={[{ required: true, message: '请输入项目名称' }]}
-                            >
-                                <Input placeholder="请输入项目名称" />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="undertakingTeam"
-                                label="承接团队"
-                                rules={[{ required: true, message: '请选择承接团队' }]}
-                            >
-                                <Select
-                                    placeholder="请选择承接团队"
-                                    showSearch
-                                    filterOption={(input, option) => {
-                                        const label = option?.label || option?.children;
-                                        return String(label).toLowerCase().includes(input.toLowerCase());
-                                    }}
+                    <Card
+                        size="small"
+                        title={
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ color: '#1890ff' }}>📋</span>
+                                <span>基本信息</span>
+                            </div>
+                        }
+                        style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
+                    >
+                        <Row gutter={24}>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="projectName"
+                                    label="项目名称"
+                                    rules={[{ required: true, message: '请输入项目名称' }]}
                                 >
-                                    {enterprises.map(enterprise => (
-                                        <Option key={enterprise._id} value={enterprise._id}>
-                                            {enterprise.enterpriseAlias || enterprise.enterpriseName}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                                    <Input placeholder="请输入项目名称" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="undertakingTeam"
+                                    label="承接团队"
+                                    rules={[{ required: true, message: '请选择承接团队' }]}
+                                >
+                                    <Select
+                                        placeholder="请选择承接团队"
+                                        showSearch
+                                        filterOption={(input, option) => {
+                                            const label = option?.label || option?.children;
+                                            return String(label).toLowerCase().includes(input.toLowerCase());
+                                        }}
+                                    >
+                                        {enterprises.map(enterprise => (
+                                            <Option key={enterprise._id} value={enterprise._id}>
+                                                {enterprise.enterpriseAlias || enterprise.enterpriseName}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
 
                     {/* 客户信息 */}
-                    <Row gutter={16}>
-                        <Col span={8}>
-                            <Form.Item
-                                name="clientId"
-                                label="客户"
-                                rules={[{ required: true, message: '请选择客户' }]}
-                            >
-                                <Select
-                                    placeholder="请选择客户"
-                                    onChange={handleClientChange}
-                                    showSearch
-                                    filterOption={(input, option) => {
-                                        const label = option?.label || option?.children;
-                                        return String(label).toLowerCase().includes(input.toLowerCase());
-                                    }}
+                    <Card
+                        size="small"
+                        title={
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ color: '#52c41a' }}>👥</span>
+                                <span>客户信息</span>
+                            </div>
+                        }
+                        style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
+                    >
+                        <Row gutter={24}>
+                            <Col span={8}>
+                                <Form.Item
+                                    name="clientId"
+                                    label="客户"
+                                    rules={[{ required: true, message: '请选择客户' }]}
                                 >
-                                    {clients.map(client => (
-                                        <Option key={client._id} value={client._id}>
-                                            {client.name}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item
-                                name="contactIds"
-                                label="联系人"
-                                rules={[{ required: true, message: '请选择联系人' }]}
-                            >
-                                <Select
-                                    mode="multiple"
-                                    placeholder={selectedClient ? `请选择 ${selectedClient.name} 的联系人` : '请先选择客户'}
-                                    onChange={handleContactChange}
-                                    showSearch
-                                    disabled={!selectedClient}
-                                    filterOption={(input, option) => {
-                                        const label = option?.label || option?.children;
-                                        return String(label).toLowerCase().includes(input.toLowerCase());
-                                    }}
+                                    <Select
+                                        placeholder="请选择客户"
+                                        onChange={handleClientChange}
+                                        showSearch
+                                        filterOption={(input, option) => {
+                                            const label = option?.label || option?.children;
+                                            return String(label).toLowerCase().includes(input.toLowerCase());
+                                        }}
+                                    >
+                                        {clients.map(client => (
+                                            <Option key={client._id} value={client._id}>
+                                                {client.name}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={8}>
+                                <Form.Item
+                                    name="contactIds"
+                                    label="联系人"
+                                    rules={[{ required: true, message: '请选择联系人' }]}
                                 >
-                                    {filteredContacts.map(contact => (
-                                        <Option key={contact._id} value={contact._id}>
-                                            {contact.realName} {contact.position ? `(${contact.position})` : ''}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={8}>
-                            <Form.Item name="clientRequirements" label="客户嘱托">
-                                <TextArea rows={3} placeholder="请输入客户嘱托" />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                                    <Select
+                                        mode="multiple"
+                                        placeholder={selectedClient ? `请选择 ${selectedClient.name} 的联系人` : '请先选择客户'}
+                                        onChange={handleContactChange}
+                                        showSearch
+                                        disabled={!selectedClient}
+                                        filterOption={(input, option) => {
+                                            const label = option?.label || option?.children;
+                                            return String(label).toLowerCase().includes(input.toLowerCase());
+                                        }}
+                                    >
+                                        {filteredContacts.map(contact => (
+                                            <Option key={contact._id} value={contact._id}>
+                                                {contact.realName} {contact.position ? `(${contact.position})` : ''}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={8}>
+                                <Form.Item name="clientRequirements" label="客户嘱托">
+                                    <TextArea rows={3} placeholder="请输入客户嘱托" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
 
                     {/* 隐藏字段用于存储客户和联系人信息 */}
                     <Form.Item name="clientName" hidden>
@@ -432,199 +465,301 @@ const CreateProject: React.FC = () => {
                     </Form.Item>
 
                     {/* 团队信息 */}
-                    <Row gutter={16}>
-                        <Col span={12}>
-                            <Form.Item
-                                name="mainDesigners"
-                                label="主创设计师"
-                                rules={[{ required: true, message: '请选择主创设计师' }]}
-                            >
-                                <Select
-                                    mode="multiple"
-                                    placeholder="请选择主创设计师"
-                                    showSearch
-                                    filterOption={(input, option) => {
-                                        const label = option?.label || option?.children;
-                                        return String(label).toLowerCase().includes(input.toLowerCase());
-                                    }}
+                    <Card
+                        size="small"
+                        title={
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ color: '#fa8c16' }}>👨‍🎨</span>
+                                <span>团队信息</span>
+                            </div>
+                        }
+                        style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
+                    >
+                        <Row gutter={24}>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="mainDesigners"
+                                    label="主创设计师"
+                                    rules={[{ required: true, message: '请选择主创设计师' }]}
                                 >
-                                    {designers.map(designer => (
-                                        <Option key={designer._id} value={designer._id}>
-                                            {designer.realName} {designer.position ? `(${designer.position})` : ''}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item
-                                name="assistantDesigners"
-                                label="助理设计师"
-                            >
-                                <Select
-                                    mode="multiple"
-                                    placeholder="请选择助理设计师"
-                                    showSearch
-                                    filterOption={(input, option) => {
-                                        const label = option?.label || option?.children;
-                                        return String(label).toLowerCase().includes(input.toLowerCase());
-                                    }}
+                                    <Select
+                                        mode="multiple"
+                                        placeholder="请选择主创设计师"
+                                        showSearch
+                                        filterOption={(input, option) => {
+                                            const label = option?.label || option?.children;
+                                            return String(label).toLowerCase().includes(input.toLowerCase());
+                                        }}
+                                    >
+                                        {designers.map(designer => (
+                                            <Option key={designer._id} value={designer._id}>
+                                                {designer.realName} {designer.position ? `(${designer.position})` : ''}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item
+                                    name="assistantDesigners"
+                                    label="助理设计师"
                                 >
-                                    {designers.map(designer => (
-                                        <Option key={designer._id} value={designer._id}>
-                                            {designer.realName} {designer.position ? `(${designer.position})` : ''}
-                                        </Option>
-                                    ))}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                                    <Select
+                                        mode="multiple"
+                                        placeholder="请选择助理设计师"
+                                        showSearch
+                                        filterOption={(input, option) => {
+                                            const label = option?.label || option?.children;
+                                            return String(label).toLowerCase().includes(input.toLowerCase());
+                                        }}
+                                    >
+                                        {designers.map(designer => (
+                                            <Option key={designer._id} value={designer._id}>
+                                                {designer.realName} {designer.position ? `(${designer.position})` : ''}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
 
                     {/* 备注 */}
-                    <Form.Item name="remark" label="备注">
-                        <TextArea rows={3} placeholder="请输入备注信息" />
-                    </Form.Item>
-
-                    <Divider>任务信息</Divider>
-
-                    {/* 任务列表 */}
-                    {tasks.map((task, index) => (
-                        <Card
-                            key={index}
-                            size="small"
-                            style={{ marginBottom: 16 }}
-                            title={`任务 ${index + 1}`}
-                            extra={
-                                <Button
-                                    type="text"
-                                    danger
-                                    icon={<DeleteOutlined />}
-                                    onClick={() => removeTask(index)}
-                                />
-                            }
-                        >
-                            <Row gutter={16}>
-                                <Col span={8}>
-                                    <Form.Item label="任务名称">
-                                        <Input
-                                            value={task.taskName}
-                                            onChange={(e) => updateTask(index, 'taskName', e.target.value)}
-                                            placeholder="请输入任务名称"
-                                        />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={8}>
-                                    <Form.Item label="服务类型">
-                                        <Select
-                                            value={task.serviceId}
-                                            onChange={(value) => updateTask(index, 'serviceId', value)}
-                                            placeholder="请选择服务类型"
-                                        >
-                                            {services.map(service => (
-                                                <Option key={service._id} value={service._id}>
-                                                    {service.serviceName} ({service.unitPrice}元/{service.unit})
-                                                </Option>
-                                            ))}
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                                <Col span={8}>
-                                    <Form.Item label="优先级">
-                                        <Select
-                                            value={task.priority}
-                                            onChange={(value) => updateTask(index, 'priority', value)}
-                                        >
-                                            <Option value="low">低</Option>
-                                            <Option value="medium">中</Option>
-                                            <Option value="high">高</Option>
-                                            <Option value="urgent">紧急</Option>
-                                        </Select>
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-
-                            <Row gutter={16}>
-                                <Col span={6}>
-                                    <Form.Item label="数量">
-                                        <InputNumber
-                                            value={task.quantity}
-                                            onChange={(value) => updateTask(index, 'quantity', value)}
-                                            min={1}
-                                            style={{ width: '100%' }}
-                                        />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={6}>
-                                    <Form.Item label="单位">
-                                        <Input
-                                            value={task.unit}
-                                            onChange={(e) => updateTask(index, 'unit', e.target.value)}
-                                            placeholder="如：本、张、款"
-                                        />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={6}>
-                                    <Form.Item label="小计">
-                                        <Input
-                                            value={`¥${calculateSubtotal(task)}`}
-                                            disabled
-                                            style={{ color: '#1890ff', fontWeight: 'bold' }}
-                                        />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={6}>
-                                    <Form.Item label="截止日期">
-                                        <DatePicker
-                                            value={task.dueDate ? dayjs(task.dueDate) : undefined}
-                                            onChange={(date) => updateTask(index, 'dueDate', date?.format('YYYY-MM-DD'))}
-                                            style={{ width: '100%' }}
-                                        />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
-
-                            <Form.Item label="计费说明">
-                                <TextArea
-                                    value={task.billingDescription}
-                                    onChange={(e) => updateTask(index, 'billingDescription', e.target.value)}
-                                    placeholder="请详细说明计费方式"
-                                    rows={2}
-                                />
-                            </Form.Item>
-
-                            <Form.Item label="备注">
-                                <TextArea
-                                    value={task.remarks}
-                                    onChange={(e) => updateTask(index, 'remarks', e.target.value)}
-                                    placeholder="请输入任务备注"
-                                    rows={2}
-                                />
-                            </Form.Item>
-                        </Card>
-                    ))}
-
-                    {/* 添加任务按钮 */}
-                    <Button
-                        type="dashed"
-                        icon={<PlusOutlined />}
-                        onClick={addTask}
-                        style={{ width: '100%', marginBottom: 24 }}
+                    <Card
+                        size="small"
+                        title={
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ color: '#722ed1' }}>📝</span>
+                                <span>备注信息</span>
+                            </div>
+                        }
+                        style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
                     >
-                        添加任务
-                    </Button>
+                        <Form.Item name="remark" label="项目备注">
+                            <TextArea rows={3} placeholder="请输入项目备注信息" />
+                        </Form.Item>
+                    </Card>
 
-                    {/* 总计 */}
-                    {tasks.length > 0 && (
-                        <Card size="small">
-                            <Row justify="end">
-                                <Col>
-                                    <Tag color="blue" style={{ fontSize: '16px', padding: '8px 16px' }}>
-                                        项目总计: ¥{tasks.reduce((sum, task) => sum + calculateSubtotal(task), 0)}
-                                    </Tag>
-                                </Col>
-                            </Row>
-                        </Card>
-                    )}
+                    {/* 任务信息 */}
+                    <Card
+                        size="small"
+                        title={
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ color: '#eb2f96' }}>📋</span>
+                                <span>任务信息</span>
+                                <Tag color="orange">{tasks.length} 个任务</Tag>
+                            </div>
+                        }
+                        style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
+                    >
+
+                        {/* 任务列表 */}
+                        {tasks.map((task, index) => (
+                            <Card
+                                key={index}
+                                size="small"
+                                style={{
+                                    marginBottom: 16,
+                                    border: '1px solid #d9d9d9',
+                                    borderRadius: '6px',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                }}
+                                title={
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ color: '#1890ff', fontWeight: 'bold' }}>任务 {index + 1}</span>
+                                        {task.priority && (
+                                            <Tag color={
+                                                task.priority === 'urgent' ? 'red' :
+                                                    task.priority === 'high' ? 'orange' :
+                                                        task.priority === 'medium' ? 'blue' : 'green'
+                                            }>
+                                                {task.priority === 'urgent' ? '紧急' :
+                                                    task.priority === 'high' ? '高' :
+                                                        task.priority === 'medium' ? '中' : '低'}
+                                            </Tag>
+                                        )}
+                                    </div>
+                                }
+                                extra={
+                                    <Button
+                                        type="text"
+                                        danger
+                                        icon={<DeleteOutlined />}
+                                        onClick={() => removeTask(index)}
+                                        size="small"
+                                    />
+                                }
+                            >
+                                <Row gutter={24}>
+                                    <Col span={8}>
+                                        <Form.Item label="任务名称" required>
+                                            <Input
+                                                value={task.taskName}
+                                                onChange={(e) => updateTask(index, 'taskName', e.target.value)}
+                                                placeholder="请输入任务名称"
+                                                style={{ borderRadius: '6px' }}
+                                            />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={8}>
+                                        <Form.Item label="服务类型" required>
+                                            <Select
+                                                value={task.serviceId}
+                                                onChange={(value) => updateTask(index, 'serviceId', value)}
+                                                placeholder="请选择服务类型"
+                                                style={{ borderRadius: '6px' }}
+                                            >
+                                                {services.map(service => (
+                                                    <Option key={service._id} value={service._id}>
+                                                        {service.serviceName} ({service.unitPrice}元/{service.unit})
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={8}>
+                                        <Form.Item label="优先级">
+                                            <Select
+                                                value={task.priority}
+                                                onChange={(value) => updateTask(index, 'priority', value)}
+                                                style={{ borderRadius: '6px' }}
+                                            >
+                                                <Option value="low">低</Option>
+                                                <Option value="medium">中</Option>
+                                                <Option value="high">高</Option>
+                                                <Option value="urgent">紧急</Option>
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+
+                                <Row gutter={24}>
+                                    <Col span={6}>
+                                        <Form.Item label="数量" required>
+                                            <InputNumber
+                                                value={task.quantity}
+                                                onChange={(value) => updateTask(index, 'quantity', value)}
+                                                min={1}
+                                                style={{ width: '100%', borderRadius: '6px' }}
+                                            />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={6}>
+                                        <Form.Item label="单位" required>
+                                            <Input
+                                                value={task.unit}
+                                                onChange={(e) => updateTask(index, 'unit', e.target.value)}
+                                                placeholder="如：本、张、款"
+                                                style={{ borderRadius: '6px' }}
+                                            />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={6}>
+                                        <Form.Item label="小计">
+                                            <Input
+                                                value={`¥${calculateSubtotal(task)}`}
+                                                disabled
+                                                style={{
+                                                    color: '#1890ff',
+                                                    fontWeight: 'bold',
+                                                    borderRadius: '6px',
+                                                    backgroundColor: '#f0f8ff'
+                                                }}
+                                            />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={6}>
+                                        <Form.Item label="截止日期">
+                                            <DatePicker
+                                                value={task.dueDate ? dayjs(task.dueDate) : undefined}
+                                                onChange={(date) => updateTask(index, 'dueDate', date?.format('YYYY-MM-DD'))}
+                                                style={{ width: '100%', borderRadius: '6px' }}
+                                            />
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+
+                                <Row gutter={24}>
+                                    <Col span={12}>
+                                        <Form.Item label="计费说明">
+                                            <TextArea
+                                                value={task.billingDescription}
+                                                onChange={(e) => updateTask(index, 'billingDescription', e.target.value)}
+                                                placeholder="请详细说明计费方式"
+                                                rows={2}
+                                                style={{ borderRadius: '6px' }}
+                                            />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={12}>
+                                        <Form.Item label="任务备注">
+                                            <TextArea
+                                                value={task.remarks}
+                                                onChange={(e) => updateTask(index, 'remarks', e.target.value)}
+                                                placeholder="请输入任务备注"
+                                                rows={2}
+                                                style={{ borderRadius: '6px' }}
+                                            />
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+                            </Card>
+                        ))}
+
+                        {/* 添加任务按钮 */}
+                        <div style={{ textAlign: 'center', margin: '24px 0' }}>
+                            <Button
+                                type="dashed"
+                                icon={<PlusOutlined />}
+                                onClick={addTask}
+                                size="large"
+                                style={{
+                                    width: '200px',
+                                    height: '50px',
+                                    borderRadius: '8px',
+                                    borderStyle: 'dashed',
+                                    borderColor: '#1890ff',
+                                    color: '#1890ff'
+                                }}
+                            >
+                                添加任务
+                            </Button>
+                        </div>
+
+                        {/* 总计 */}
+                        {tasks.length > 0 && (
+                            <Card
+                                size="small"
+                                style={{
+                                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    border: 'none',
+                                    borderRadius: '8px'
+                                }}
+                            >
+                                <Row justify="space-between" align="middle">
+                                    <Col>
+                                        <div style={{ color: 'white', fontSize: '14px' }}>
+                                            项目包含 <strong>{tasks.length}</strong> 个任务
+                                        </div>
+                                    </Col>
+                                    <Col>
+                                        <Tag
+                                            color="white"
+                                            style={{
+                                                fontSize: '18px',
+                                                padding: '12px 20px',
+                                                color: '#1890ff',
+                                                fontWeight: 'bold',
+                                                borderRadius: '6px'
+                                            }}
+                                        >
+                                            项目总计: ¥{tasks.reduce((sum, task) => sum + calculateSubtotal(task), 0)}
+                                        </Tag>
+                                    </Col>
+                                </Row>
+                            </Card>
+                        )}
+                    </Card>
                 </Form>
             </Card>
         </div>
