@@ -351,35 +351,13 @@ const CreateProject: React.FC = () => {
                         style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
                     >
                         <Row gutter={24}>
-                            <Col span={12}>
+                            <Col span={24}>
                                 <Form.Item
                                     name="projectName"
                                     label="项目名称"
                                     rules={[{ required: true, message: '请输入项目名称' }]}
                                 >
                                     <Input placeholder="请输入项目名称" />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item
-                                    name="undertakingTeam"
-                                    label="承接团队"
-                                    rules={[{ required: true, message: '请选择承接团队' }]}
-                                >
-                                    <Select
-                                        placeholder="请选择承接团队"
-                                        showSearch
-                                        filterOption={(input, option) => {
-                                            const label = option?.label || option?.children;
-                                            return String(label).toLowerCase().includes(input.toLowerCase());
-                                        }}
-                                    >
-                                        {enterprises.map(enterprise => (
-                                            <Option key={enterprise._id} value={enterprise._id}>
-                                                {enterprise.enterpriseAlias || enterprise.enterpriseName}
-                                            </Option>
-                                        ))}
-                                    </Select>
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -475,6 +453,30 @@ const CreateProject: React.FC = () => {
                         }
                         style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
                     >
+                        <Row gutter={24}>
+                            <Col span={24}>
+                                <Form.Item
+                                    name="undertakingTeam"
+                                    label="承接团队"
+                                    rules={[{ required: true, message: '请选择承接团队' }]}
+                                >
+                                    <Select
+                                        placeholder="请选择承接团队"
+                                        showSearch
+                                        filterOption={(input, option) => {
+                                            const label = option?.label || option?.children;
+                                            return String(label).toLowerCase().includes(input.toLowerCase());
+                                        }}
+                                    >
+                                        {enterprises.map(enterprise => (
+                                            <Option key={enterprise._id} value={enterprise._id}>
+                                                {enterprise.enterpriseAlias || enterprise.enterpriseName}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        </Row>
                         <Row gutter={24}>
                             <Col span={12}>
                                 <Form.Item
