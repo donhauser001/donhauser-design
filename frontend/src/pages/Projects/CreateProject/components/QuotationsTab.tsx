@@ -246,15 +246,15 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                 }}
                                                                 bodyStyle={{ padding: '12px' }}
                                                             >
-                                                                                                                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
+                                                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
                                                                     <Checkbox
                                                                         checked={selectedServices.includes(service._id)}
                                                                         onChange={(e) => handleServiceToggle(service._id, e.target.checked)}
                                                                     />
                                                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                                                        <div style={{ 
-                                                                            display: 'flex', 
-                                                                            justifyContent: 'space-between', 
+                                                                        <div style={{
+                                                                            display: 'flex',
+                                                                            justifyContent: 'space-between',
                                                                             alignItems: 'flex-start',
                                                                             marginBottom: '4px'
                                                                         }}>
@@ -263,9 +263,9 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                                     {service.serviceName}
                                                                                 </Text>
                                                                             </div>
-                                                                            <div style={{ 
-                                                                                display: 'flex', 
-                                                                                alignItems: 'center', 
+                                                                            <div style={{
+                                                                                display: 'flex',
+                                                                                alignItems: 'center',
                                                                                 gap: '4px',
                                                                                 marginLeft: '8px',
                                                                                 flexShrink: 0
@@ -290,17 +290,24 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
 
                                                                 <div style={{ marginBottom: '8px' }}>
                                                                     {service.pricingPolicyIds && service.pricingPolicyIds.length > 0 ? (
-                                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
+                                                                        <div style={{
+                                                                            display: 'flex',
+                                                                            flexWrap: 'wrap',
+                                                                            gap: '2px',
+                                                                            justifyContent: 'flex-end'
+                                                                        }}>
                                                                             {service.pricingPolicyNames?.map((policyName, index) => (
-                                                                                <Tag key={index} color="green" style={{ fontSize: '10px' }}>
+                                                                                <Tag key={index} color="green" style={{ fontSize: '12px' }}>
                                                                                     {policyName}
                                                                                 </Tag>
                                                                             ))}
                                                                         </div>
                                                                     ) : (
-                                                                        <Text type="secondary" style={{ fontSize: '11px' }}>
-                                                                            无政策
-                                                                        </Text>
+                                                                        <div style={{ textAlign: 'right' }}>
+                                                                            <Text type="secondary" style={{ fontSize: '12px' }}>
+                                                                                无政策
+                                                                            </Text>
+                                                                        </div>
                                                                     )}
                                                                 </div>
 
