@@ -199,14 +199,6 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                 <Text strong>包含服务项目 ({quotation.selectedServices.length} 项):</Text>
                                 <div>
                                     <Tag color="blue">已选择: {selectedServices.length} 项</Tag>
-                                    {selectedServices.length > 0 && (
-                                        <Tag color="green">
-                                            总价: ¥{serviceDetails
-                                                .filter(service => selectedServices.includes(service._id))
-                                                .reduce((sum, service) => sum + (service.unitPrice * (serviceQuantities[service._id] || 1)), 0)
-                                                .toLocaleString()}
-                                        </Tag>
-                                    )}
                                 </div>
                             </div>
                             <div style={{ marginTop: '12px' }}>
@@ -361,14 +353,6 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div>
                                             <Text strong>已选择 {selectedServices.length} 项服务</Text>
-                                            <div style={{ marginTop: '4px' }}>
-                                                <Text type="secondary">
-                                                    总价: ¥{serviceDetails
-                                                        .filter(service => selectedServices.includes(service._id))
-                                                        .reduce((sum, service) => sum + (service.unitPrice * (serviceQuantities[service._id] || 1)), 0)
-                                                        .toLocaleString()}
-                                                </Text>
-                                            </div>
                                         </div>
                                         <Button
                                             type="primary"

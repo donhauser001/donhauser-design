@@ -141,8 +141,8 @@ const CreateProject: React.FC = () => {
                                 label: (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <span style={{ color: '#1890ff' }}>📋</span>
-                                        <span>报价单</span>
-                                        <Tag color="blue">{quotations.length}</Tag>
+                                        <span>任务列表</span>
+                                        <Tag color="blue">{quotations.length > 0 ? quotations[0].selectedServices.length : 0}</Tag>
                                     </div>
                                 ),
                                 children: (
