@@ -57,7 +57,7 @@ const EditForm: React.FC<EditFormProps> = ({ form, editingOrder, clients }) => {
                         precision={2}
                         formatter={(value: number | string | undefined) => {
                             if (value === undefined || value === null) return ''
-                            return `¥ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                            return `¥ ${Number(value).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                         }}
                         parser={(value: string | undefined) => {
                             if (!value) return ''

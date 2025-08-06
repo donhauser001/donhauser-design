@@ -34,7 +34,12 @@ const Settlements: React.FC = () => {
           columns={[
             { title: '结算单号', dataIndex: 'settlementNo', key: 'settlementNo' },
             { title: '客户名称', dataIndex: 'clientName', key: 'clientName' },
-            { title: '结算金额', dataIndex: 'amount', key: 'amount' },
+            {
+              title: '结算金额',
+              dataIndex: 'amount',
+              key: 'amount',
+              render: (amount: number) => `¥${amount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+            },
             { title: '状态', dataIndex: 'status', key: 'status' },
             { title: '创建时间', dataIndex: 'createTime', key: 'createTime' },
             { title: '操作', key: 'action', render: () => <Space><Button type="link" size="small">查看</Button></Space> }

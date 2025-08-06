@@ -173,7 +173,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             key: 'unitPrice',
             render: (price: number, record: any) => (
                 <div style={{ textAlign: 'left' }}>
-                    <Text type="danger" strong>¥{price}</Text>
+                    <Text strong>¥{price.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                     <Text type="secondary" style={{ fontSize: '12px' }}>/{record.unit}</Text>
                 </div>
             )
@@ -265,10 +265,10 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                                 <div style={{ textDecoration: 'line-through', color: '#999', fontSize: '12px' }}>
                                     ¥{priceResult.originalPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </div>
-                                <Text type="danger" strong>¥{priceResult.discountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                                <Text strong>¥{priceResult.discountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                             </div>
                         ) : (
-                            <Text type="danger" strong>¥{priceResult.discountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
+                            <Text strong>¥{priceResult.discountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                         )}
                     </div>
                 );
@@ -385,7 +385,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                                         <div style={{ textDecoration: 'line-through', color: '#999', fontSize: '12px' }}>
                                             ¥{originalTotalAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </div>
-                                        <Text type="danger" strong style={{ fontSize: '16px' }}>
+                                        <Text strong style={{ fontSize: '16px' }}>
                                             ¥{totalAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </Text>
                                         <div style={{ color: '#52c41a', fontSize: '12px' }}>
@@ -393,7 +393,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                                         </div>
                                     </div>
                                 ) : (
-                                    <Text type="danger" strong style={{ fontSize: '16px' }}>
+                                    <Text strong style={{ fontSize: '16px' }}>
                                         ¥{totalAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </Text>
                                 )}

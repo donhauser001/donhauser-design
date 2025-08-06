@@ -292,7 +292,7 @@ const ServicePricing: React.FC = () => {
             width: 120,
             render: (_: any, record: ServicePricing) => (
                 <div style={{ fontWeight: 500 }}>
-                    ¥{record.unitPrice}/{record.unit}
+                    ¥{record.unitPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/{record.unit}
                 </div>
             )
         },

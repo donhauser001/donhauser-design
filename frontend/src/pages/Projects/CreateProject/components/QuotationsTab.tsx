@@ -290,8 +290,8 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
                                                                                 marginLeft: '8px',
                                                                                 flexShrink: 0
                                                                             }}>
-                                                                                <Text type="danger" strong style={{ fontSize: '16px' }}>
-                                                                                    ¥{service.unitPrice}
+                                                                                <Text strong style={{ fontSize: '14px' }}>
+                                                                                    ¥{service.unitPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                                                 </Text>
                                                                                 <Text type="secondary" style={{ fontSize: '12px' }}>
                                                                                     /{service.unit}
