@@ -38,6 +38,12 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
     const calculatePrice = (service: any) => {
         const originalPrice = service.unitPrice * service.quantity;
 
+        // 调试信息
+        console.log('计算价格 - 服务:', service.serviceName);
+        console.log('服务定价政策IDs:', service.pricingPolicyIds);
+        console.log('服务选中的定价政策:', service.selectedPricingPolicies);
+        console.log('可用定价政策:', pricingPolicies.map(p => ({ id: p._id, name: p.name })));
+
         // 如果没有选择定价政策，返回原价
         if (!service.selectedPricingPolicies || service.selectedPricingPolicies.length === 0) {
             return {
@@ -50,6 +56,8 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
 
         // 获取选中的定价政策
         const selectedPolicy = pricingPolicies.find(p => p._id === service.selectedPricingPolicies[0]);
+        console.log('找到的选中政策:', selectedPolicy);
+
         if (!selectedPolicy || selectedPolicy.status !== 'active') {
             return {
                 originalPrice,
@@ -204,36 +212,48 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             title: '定价政策',
             dataIndex: 'pricingPolicyNames',
             key: 'pricingPolicyNames',
-            render: (policies: string[], record: any) => (
-                <div>
-                    {record.pricingPolicyIds && record.pricingPolicyIds.length > 0 ? (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            {record.pricingPolicyIds.map((policyId: string, index: number) => {
-                                const policyName = record.pricingPolicyNames?.[index] || '未知政策';
-                                return (
-                                    <Checkbox
-                                        key={policyId}
-                                        checked={record.selectedPricingPolicies?.includes(policyId) || false}
-                                        onChange={(e) => {
-                                            if (onPricingPolicyChange) {
-                                                // 单选逻辑：如果勾选，则只选择当前政策；如果取消勾选，则清空选择
-                                                const newSelected = e.target.checked ? [policyId] : [];
-                                                onPricingPolicyChange(record._id, newSelected);
-                                            }
-                                        }}
-                                    >
-                                        <Tag color="green" style={{ fontSize: '12px' }}>
-                                            {policyName}
-                                        </Tag>
-                                    </Checkbox>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        <Text type="secondary" style={{ fontSize: '12px' }}>无政策</Text>
-                    )}
-                </div>
-            )
+            render: (policies: string[], record: any) => {
+                console.log('渲染定价政策列 - 记录:', record.serviceName);
+                console.log('定价政策IDs:', record.pricingPolicyIds);
+                console.log('定价政策名称:', record.pricingPolicyNames);
+                console.log('选中的定价政策:', record.selectedPricingPolicies);
+
+                return (
+                    <div>
+                        {record.pricingPolicyIds && record.pricingPolicyIds.length > 0 ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                {record.pricingPolicyIds.map((policyId: string, index: number) => {
+                                    const policyName = record.pricingPolicyNames?.[index] || '未知政策';
+                                    const isChecked = record.selectedPricingPolicies?.includes(policyId) || false;
+
+                                    console.log(`政策 ${policyName} (${policyId}) 是否选中:`, isChecked);
+
+                                    return (
+                                        <Checkbox
+                                            key={policyId}
+                                            checked={isChecked}
+                                            onChange={(e) => {
+                                                console.log(`政策 ${policyName} 状态改变:`, e.target.checked);
+                                                if (onPricingPolicyChange) {
+                                                    // 单选逻辑：如果勾选，则只选择当前政策；如果取消勾选，则清空选择
+                                                    const newSelected = e.target.checked ? [policyId] : [];
+                                                    onPricingPolicyChange(record._id, newSelected);
+                                                }
+                                            }}
+                                        >
+                                            <Tag color="green" style={{ fontSize: '12px' }}>
+                                                {policyName}
+                                            </Tag>
+                                        </Checkbox>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <Text type="secondary" style={{ fontSize: '12px' }}>无政策</Text>
+                        )}
+                    </div>
+                );
+            }
         },
         {
             title: '价格说明',

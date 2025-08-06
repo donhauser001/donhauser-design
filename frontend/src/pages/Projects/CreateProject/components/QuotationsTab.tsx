@@ -125,9 +125,15 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
                 const quantity = serviceQuantities[serviceId] || 1;
                 return {
                     ...service,
-                    quantity
+                    quantity,
+                    // 确保包含定价政策信息
+                    pricingPolicyIds: service?.pricingPolicyIds || [],
+                    pricingPolicyNames: service?.pricingPolicyNames || [],
+                    // 初始化选中的定价政策为空数组
+                    selectedPricingPolicies: []
                 };
             });
+            console.log('传递给父组件的服务数据:', selectedItems);
             onServicesChange(selectedItems);
         }
     }, [selectedServiceIds, serviceQuantities, serviceDetails, onServicesChange]);
