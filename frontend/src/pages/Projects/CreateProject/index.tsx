@@ -151,9 +151,20 @@ const CreateProject: React.FC = () => {
                 handleClientChange(savedClientId);
                 // 同时设置表单的客户字段
                 form.setFieldsValue({ clientId: savedClientId });
+                
+                // 延迟恢复联系人数据，确保客户数据加载完成
+                setTimeout(() => {
+                    const savedFormData = localStorage.getItem('createProject_formData');
+                    if (savedFormData) {
+                        const formData = JSON.parse(savedFormData);
+                        if (formData.contactIds) {
+                            form.setFieldsValue({ contactIds: formData.contactIds });
+                        }
+                    }
+                }, 100);
             }
         }
-    }, [clients, handleClientChange]);
+    }, [clients, handleClientChange, form]);
 
     // 保存客户选择
     useEffect(() => {

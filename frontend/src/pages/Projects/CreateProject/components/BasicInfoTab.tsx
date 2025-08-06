@@ -108,6 +108,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                                     return String(label).toLowerCase().includes(input.toLowerCase());
                                 }}
                                 optionLabelProp="label"
+                                labelInValue={false}
                             >
                                 {filteredContacts.map(contact => (
                                     <Option
