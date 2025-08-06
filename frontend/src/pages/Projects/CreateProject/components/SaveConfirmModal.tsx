@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, Button, Space, Typography, Card, Row, Col, Statistic } from 'antd';
 import { ShoppingCartOutlined, SaveOutlined, FileTextOutlined, TeamOutlined } from '@ant-design/icons';
 
@@ -27,6 +27,26 @@ const SaveConfirmModal: React.FC<SaveConfirmModalProps> = ({
     originalAmount,
     discountAmount
 }) => {
+    // 状态管理：选中的保存方式
+    const [selectedAction, setSelectedAction] = useState<'order' | 'draft' | null>(null);
+
+    // 处理保存方式选择
+    const handleActionSelect = (action: 'order' | 'draft') => {
+        setSelectedAction(action);
+    };
+
+    // 处理保存确认
+    const handleSave = () => {
+        if (selectedAction) {
+            onConfirm(selectedAction);
+        }
+    };
+
+    // 处理取消
+    const handleCancel = () => {
+        setSelectedAction(null);
+        onCancel();
+    };
     return (
         <Modal
             title={
@@ -80,7 +100,7 @@ const SaveConfirmModal: React.FC<SaveConfirmModalProps> = ({
                                     {(() => {
                                         const mainDesigners = projectData?.mainDesignerNames || '';
                                         const assistantDesigners = projectData?.assistantDesignerNames || '';
-                                        
+
                                         if (mainDesigners && assistantDesigners) {
                                             return `${mainDesigners}（主创），${assistantDesigners}（助理）`;
                                         } else if (mainDesigners) {
@@ -168,14 +188,21 @@ const SaveConfirmModal: React.FC<SaveConfirmModalProps> = ({
                             <Card
                                 size="small"
                                 hoverable
-                                onClick={() => onConfirm('order')}
+                                onClick={() => handleActionSelect('order')}
                                 style={{
-                                    border: '2px solid #1890ff',
+                                    border: selectedAction === 'order' ? '2px solid #1890ff' : '2px solid #d9d9d9',
                                     cursor: 'pointer',
-                                    textAlign: 'center'
+                                    textAlign: 'center',
+                                    backgroundColor: selectedAction === 'order' ? '#f0f8ff' : '#fff'
                                 }}
                             >
-                                <ShoppingCartOutlined style={{ fontSize: '24px', color: '#1890ff', marginBottom: '8px' }} />
+                                <ShoppingCartOutlined
+                                    style={{
+                                        fontSize: '24px',
+                                        color: selectedAction === 'order' ? '#1890ff' : '#666',
+                                        marginBottom: '8px'
+                                    }}
+                                />
                                 <div>
                                     <Title level={5} style={{ margin: '8px 0' }}>直接下单</Title>
                                     <Text type="secondary">项目状态：进行中</Text>
@@ -188,14 +215,21 @@ const SaveConfirmModal: React.FC<SaveConfirmModalProps> = ({
                             <Card
                                 size="small"
                                 hoverable
-                                onClick={() => onConfirm('draft')}
+                                onClick={() => handleActionSelect('draft')}
                                 style={{
-                                    border: '2px solid #52c41a',
+                                    border: selectedAction === 'draft' ? '2px solid #52c41a' : '2px solid #d9d9d9',
                                     cursor: 'pointer',
-                                    textAlign: 'center'
+                                    textAlign: 'center',
+                                    backgroundColor: selectedAction === 'draft' ? '#f6ffed' : '#fff'
                                 }}
                             >
-                                <SaveOutlined style={{ fontSize: '24px', color: '#52c41a', marginBottom: '8px' }} />
+                                <SaveOutlined
+                                    style={{
+                                        fontSize: '24px',
+                                        color: selectedAction === 'draft' ? '#52c41a' : '#666',
+                                        marginBottom: '8px'
+                                    }}
+                                />
                                 <div>
                                     <Title level={5} style={{ margin: '8px 0' }}>暂存为临时订单</Title>
                                     <Text type="secondary">项目状态：咨询中</Text>
@@ -210,24 +244,17 @@ const SaveConfirmModal: React.FC<SaveConfirmModalProps> = ({
                 {/* 操作按钮 */}
                 <div style={{ textAlign: 'center' }}>
                     <Space>
-                        <Button onClick={onCancel} disabled={loading}>
+                        <Button onClick={handleCancel} disabled={loading}>
                             取消
                         </Button>
                         <Button
                             type="primary"
-                            icon={<ShoppingCartOutlined />}
-                            loading={loading}
-                            onClick={() => onConfirm('order')}
-                        >
-                            直接下单
-                        </Button>
-                        <Button
-                            type="default"
                             icon={<SaveOutlined />}
                             loading={loading}
-                            onClick={() => onConfirm('draft')}
+                            disabled={!selectedAction}
+                            onClick={handleSave}
                         >
-                            暂存为临时订单
+                            保存
                         </Button>
                     </Space>
                 </div>
