@@ -246,6 +246,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                         checked={isCategoryAllSelected(category)}
                                                         indeterminate={isCategoryIndeterminate(category)}
                                                         onChange={(e) => handleCategorySelectAll(category, e.target.checked)}
+                                                        onClick={(e) => e.stopPropagation()}
                                                         style={{ marginRight: '8px' }}
                                                     />
                                                     <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
