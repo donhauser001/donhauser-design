@@ -231,7 +231,7 @@ const ProjectDetail: React.FC = () => {
 
                 <Row gutter={24}>
                     {/* 左侧：项目信息 */}
-                    <Col span={16}>
+                    <Col span={19}>
                         {/* 基本信息 */}
                         <Card title="基本信息" style={{ marginBottom: 16 }}>
                             <Descriptions column={2}>
@@ -326,7 +326,7 @@ const ProjectDetail: React.FC = () => {
                     </Col>
 
                     {/* 右侧：团队信息、客户嘱托和备注 */}
-                    <Col span={8}>
+                    <Col span={5}>
                         {/* 团队信息 */}
                         <Card title="团队信息" style={{ marginBottom: 16 }}>
                             <div style={{ marginBottom: 16 }}>
