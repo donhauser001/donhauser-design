@@ -138,13 +138,13 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
         <div>
             <Card
                 size="small"
-                                            title={
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{ color: '#1890ff' }}>📋</span>
-                                    <span>报价单信息</span>
-                                    <Tag color="blue">包含服务项目 {quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项</Tag>
-                                </div>
-                            }
+                title={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ color: '#1890ff' }}>📋</span>
+                        <span>报价单信息</span>
+                        <Tag color="blue">包含服务项目 {quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项</Tag>
+                    </div>
+                }
                 style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
             >
                 {quotations.map((quotation, index) => (
@@ -173,9 +173,12 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                     </Tag>
                                 )}
                             </div>
-                            <Tag color={quotation.status === 'active' ? 'green' : 'red'}>
-                                {quotation.status === 'active' ? '有效' : '无效'}
-                            </Tag>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Tag color="blue">已选择: {selectedServices.length} 项</Tag>
+                                <Tag color={quotation.status === 'active' ? 'green' : 'red'}>
+                                    {quotation.status === 'active' ? '有效' : '无效'}
+                                </Tag>
+                            </div>
                         </div>
 
                         {quotation.description && (
@@ -185,11 +188,6 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                         )}
 
                         <div style={{ marginTop: '12px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                <div>
-                                    <Tag color="blue">已选择: {selectedServices.length} 项</Tag>
-                                </div>
-                            </div>
                             <div style={{ marginTop: '12px' }}>
                                 <Collapse
                                     ghost
