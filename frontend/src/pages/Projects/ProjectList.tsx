@@ -24,7 +24,8 @@ import {
     DeleteOutlined,
     EyeOutlined,
     ReloadOutlined,
-    FilterOutlined
+    FilterOutlined,
+    ClearOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -266,6 +267,15 @@ const ProjectList: React.FC = () => {
         setSelectedNewStatus('');
     };
 
+    // 清除所有筛选条件，查看全部项目
+    const handleViewAll = () => {
+        setSearchText('');
+        setProgressFilter('');
+        setSettlementFilter('');
+        setTeamFilter('');
+        setCurrentPage(1); // 重置到第一页
+    };
+
     // 状态标签颜色映射
     const getProgressStatusColor = (status: string) => {
         const colors: Record<string, string> = {
@@ -505,6 +515,13 @@ const ProjectList: React.FC = () => {
                     </Col>
                     <Col>
                         <Space>
+                            <Button
+                                icon={<ClearOutlined />}
+                                onClick={handleViewAll}
+                                disabled={!searchText && !progressFilter && !settlementFilter && !teamFilter}
+                            >
+                                查看全部
+                            </Button>
                             <Button
                                 icon={<ReloadOutlined />}
                                 onClick={() => {
