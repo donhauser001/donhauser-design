@@ -36,25 +36,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const TaskSchema = new mongoose_1.Schema({
     taskName: { type: String, required: true },
-    serviceId: { type: String, required: true },
     projectId: { type: String, required: true },
-    orderId: { type: String, required: false },
+    serviceId: { type: String, required: true },
     assignedDesigners: [{ type: String }],
-    specification: {
-        type: {
-            id: { type: String },
-            name: { type: String },
-            length: { type: Number },
-            width: { type: Number },
-            height: { type: Number },
-            unit: { type: String },
-            resolution: { type: String }
-        },
-        required: false
-    },
+    specificationId: { type: String },
     quantity: { type: Number, required: true },
     unit: { type: String, required: true },
     subtotal: { type: Number, required: true },
+    pricingPolicies: [{
+            policyId: { type: String, required: true },
+            policyName: { type: String, required: true },
+            policyType: {
+                type: String,
+                enum: ['uniform_discount', 'tiered_discount'],
+                required: true
+            },
+            discountRatio: { type: Number, required: true },
+            calculationDetails: { type: String, required: true }
+        }],
+    billingDescription: { type: String, required: true },
     status: {
         type: String,
         enum: ['pending', 'in-progress', 'completed', 'cancelled', 'on-hold'],
@@ -65,18 +65,28 @@ const TaskSchema = new mongoose_1.Schema({
         enum: ['low', 'medium', 'high', 'urgent'],
         default: 'medium'
     },
+    progress: { type: Number, default: 0, min: 0, max: 100 },
     startDate: { type: Date },
     dueDate: { type: Date },
     completedDate: { type: Date },
-    progress: { type: Number, default: 0, min: 0, max: 100 },
+    settlementStatus: {
+        type: String,
+        enum: ['unpaid', 'prepaid', 'draft-paid', 'fully-paid', 'cancelled'],
+        default: 'unpaid'
+    },
+    settlementTime: { type: Date },
     remarks: { type: String },
-    attachments: [{ type: String }]
+    attachmentIds: [{ type: String }],
+    proposalId: { type: String }
 }, {
-    timestamps: true
+    timestamps: true,
+    collection: 'tasks'
 });
 TaskSchema.index({ projectId: 1 });
 TaskSchema.index({ assignedDesigners: 1 });
 TaskSchema.index({ status: 1 });
 TaskSchema.index({ priority: 1 });
+TaskSchema.index({ settlementStatus: 1 });
+TaskSchema.index({ dueDate: 1 });
 exports.default = mongoose_1.default.model('Task', TaskSchema);
 //# sourceMappingURL=Task.js.map

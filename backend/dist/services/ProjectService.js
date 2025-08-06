@@ -5,23 +5,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProjectService = void 0;
 const Project_1 = __importDefault(require("../models/Project"));
+const ProjectLog_1 = __importDefault(require("../models/ProjectLog"));
 const TaskService_1 = require("./TaskService");
 class ProjectService {
+    constructor() {
+        this.taskService = new TaskService_1.TaskService();
+    }
     async getProjects(params) {
-        const { page = 1, limit = 50, search, status, team } = params;
+        const { page = 1, limit = 50, search, progressStatus, settlementStatus, undertakingTeam, clientId } = params;
         const skip = (page - 1) * limit;
         const filter = {};
         if (search) {
             filter.$or = [
                 { projectName: { $regex: search, $options: 'i' } },
-                { client: { $regex: search, $options: 'i' } },
-                { contact: { $regex: search, $options: 'i' } }
+                { clientName: { $regex: search, $options: 'i' } }
             ];
         }
-        if (status)
-            filter.status = status;
-        if (team)
-            filter.team = team;
+        if (progressStatus)
+            filter.progressStatus = progressStatus;
+        if (settlementStatus)
+            filter.settlementStatus = settlementStatus;
+        if (undertakingTeam)
+            filter.undertakingTeam = undertakingTeam;
+        if (clientId)
+            filter.clientId = clientId;
         const [projects, total] = await Promise.all([
             Project_1.default.find(filter)
                 .sort({ createdAt: -1 })
@@ -36,76 +43,171 @@ class ProjectService {
         return await Project_1.default.findById(id).lean();
     }
     async createProject(projectData) {
-        const taskService = new TaskService_1.TaskService();
+        const { tasks, createdBy, ...projectBasicData } = projectData;
         const project = new Project_1.default({
-            projectName: projectData.projectName,
-            client: projectData.client,
-            contact: projectData.contact,
-            team: projectData.team,
-            mainDesigner: projectData.mainDesigner,
-            assistantDesigners: projectData.assistantDesigners,
-            relatedOrders: projectData.relatedOrders,
-            relatedTaskIds: [],
-            clientRequirements: projectData.clientRequirements,
-            startDate: projectData.startDate,
-            status: 'pending',
-            relatedContracts: [],
-            relatedSettlements: [],
-            relatedInvoices: [],
-            relatedFiles: [],
-            relatedProposals: []
+            ...projectBasicData,
+            taskIds: [],
+            fileIds: [],
+            contractIds: [],
+            invoiceIds: [],
+            proposalIds: [],
+            logIds: []
         });
         const savedProject = await project.save();
-        if (projectData.relatedTasks && projectData.relatedTasks.length > 0) {
-            const tasksData = projectData.relatedTasks.map(task => ({
-                taskName: task.serviceName,
-                serviceId: task.serviceId,
+        await this.createProjectLog({
+            projectId: savedProject._id.toString(),
+            type: 'system',
+            title: '项目创建',
+            content: `项目 "${projectData.projectName}" 已创建`,
+            createdBy
+        });
+        if (tasks && tasks.length > 0) {
+            const tasksData = tasks.map(task => ({
+                ...task,
                 projectId: savedProject._id.toString(),
-                orderId: projectData.relatedOrders[0],
-                assignedDesigners: [...projectData.mainDesigner, ...projectData.assistantDesigners],
-                specification: task.specification,
-                quantity: task.quantity,
-                unit: task.unit,
-                subtotal: task.subtotal,
                 status: 'pending',
-                priority: 'medium',
-                progress: 0
+                progress: 0,
+                settlementStatus: 'unpaid',
+                attachmentIds: [],
+                pricingPolicies: task.pricingPolicies || []
             }));
-            const createdTasks = await taskService.createTasks(tasksData);
-            const taskIds = createdTasks.map(task => task._id.toString());
-            await Project_1.default.findByIdAndUpdate(savedProject._id, { relatedTaskIds: taskIds });
+            const createdTasks = await this.taskService.createTasks(tasksData);
+            const taskIds = createdTasks.map((task) => task._id.toString());
+            await Project_1.default.findByIdAndUpdate(savedProject._id, { taskIds });
+            await this.createProjectLog({
+                projectId: savedProject._id.toString(),
+                type: 'task_update',
+                title: '任务创建',
+                content: `创建了 ${tasks.length} 个任务`,
+                createdBy,
+                details: { relatedIds: taskIds }
+            });
             return await Project_1.default.findById(savedProject._id).lean();
         }
         return savedProject;
     }
     async updateProject(id, updateData) {
-        return await Project_1.default.findByIdAndUpdate(id, { ...updateData, updateTime: new Date() }, { new: true });
+        const { updatedBy, ...updateFields } = updateData;
+        const project = await Project_1.default.findById(id);
+        if (!project) {
+            return null;
+        }
+        if (updateFields.progressStatus && updateFields.progressStatus !== project.progressStatus) {
+            await this.createProjectLog({
+                projectId: id,
+                type: 'status_change',
+                title: '进度状态变更',
+                content: `项目进度状态从 "${project.progressStatus}" 变更为 "${updateFields.progressStatus}"`,
+                createdBy: updatedBy,
+                details: {
+                    oldValue: project.progressStatus,
+                    newValue: updateFields.progressStatus
+                }
+            });
+        }
+        if (updateFields.settlementStatus && updateFields.settlementStatus !== project.settlementStatus) {
+            await this.createProjectLog({
+                projectId: id,
+                type: 'settlement',
+                title: '结算状态变更',
+                content: `项目结算状态从 "${project.settlementStatus}" 变更为 "${updateFields.settlementStatus}"`,
+                createdBy: updatedBy,
+                details: {
+                    oldValue: project.settlementStatus,
+                    newValue: updateFields.settlementStatus
+                }
+            });
+        }
+        if (updateFields.mainDesigners || updateFields.assistantDesigners) {
+            await this.createProjectLog({
+                projectId: id,
+                type: 'team_change',
+                title: '团队变更',
+                content: '项目团队人员已更新',
+                createdBy: updatedBy,
+                details: {
+                    oldValue: {
+                        mainDesigners: project.mainDesigners,
+                        assistantDesigners: project.assistantDesigners
+                    },
+                    newValue: {
+                        mainDesigners: updateFields.mainDesigners || project.mainDesigners,
+                        assistantDesigners: updateFields.assistantDesigners || project.assistantDesigners
+                    }
+                }
+            });
+        }
+        return await Project_1.default.findByIdAndUpdate(id, updateFields, { new: true });
     }
-    async deleteProject(id) {
-        const taskService = new TaskService_1.TaskService();
-        await taskService.deleteTasksByProject(id);
+    async deleteProject(id, deletedBy) {
+        const project = await Project_1.default.findById(id);
+        if (!project) {
+            throw new Error('项目不存在');
+        }
+        await this.taskService.deleteTasksByProject(id);
+        await this.createProjectLog({
+            projectId: id,
+            type: 'system',
+            title: '项目删除',
+            content: `项目 "${project.projectName}" 已被删除`,
+            createdBy: deletedBy
+        });
         await Project_1.default.findByIdAndDelete(id);
     }
-    async updateProjectStatus(id, status) {
-        return await Project_1.default.findByIdAndUpdate(id, { status, updateTime: new Date() }, { new: true });
+    async updateProjectStatus(id, status, updatedBy) {
+        return await this.updateProject(id, { progressStatus: status, updatedBy });
+    }
+    async updateSettlementStatus(id, status, updatedBy) {
+        const updateData = { settlementStatus: status, updatedBy };
+        if (status === 'fully-paid') {
+            updateData.settledAt = new Date();
+        }
+        return await this.updateProject(id, updateData);
     }
     async getProjectStats() {
-        const [total, pending, inProgress, completed, cancelled, onHold] = await Promise.all([
+        const [total, consulting, inProgress, partialDelivery, completed, onHold, cancelled, unpaid, prepaid, partialPaid, fullyPaid] = await Promise.all([
             Project_1.default.countDocuments(),
-            Project_1.default.countDocuments({ status: 'pending' }),
-            Project_1.default.countDocuments({ status: 'in-progress' }),
-            Project_1.default.countDocuments({ status: 'completed' }),
-            Project_1.default.countDocuments({ status: 'cancelled' }),
-            Project_1.default.countDocuments({ status: 'on-hold' })
+            Project_1.default.countDocuments({ progressStatus: 'consulting' }),
+            Project_1.default.countDocuments({ progressStatus: 'in-progress' }),
+            Project_1.default.countDocuments({ progressStatus: 'partial-delivery' }),
+            Project_1.default.countDocuments({ progressStatus: 'completed' }),
+            Project_1.default.countDocuments({ progressStatus: 'on-hold' }),
+            Project_1.default.countDocuments({ progressStatus: 'cancelled' }),
+            Project_1.default.countDocuments({ settlementStatus: 'unpaid' }),
+            Project_1.default.countDocuments({ settlementStatus: 'prepaid' }),
+            Project_1.default.countDocuments({ settlementStatus: 'partial-paid' }),
+            Project_1.default.countDocuments({ settlementStatus: 'fully-paid' })
         ]);
         return {
             total,
-            pending,
+            consulting,
             inProgress,
+            partialDelivery,
             completed,
+            onHold,
             cancelled,
-            onHold
+            unpaid,
+            prepaid,
+            partialPaid,
+            fullyPaid
         };
+    }
+    async createProjectLog(logData) {
+        const log = new ProjectLog_1.default(logData);
+        await log.save();
+        await Project_1.default.findByIdAndUpdate(logData.projectId, { $push: { logIds: log._id.toString() } });
+    }
+    async getProjectLogs(projectId, page = 1, limit = 20) {
+        const skip = (page - 1) * limit;
+        const [logs, total] = await Promise.all([
+            ProjectLog_1.default.find({ projectId })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+            ProjectLog_1.default.countDocuments({ projectId })
+        ]);
+        return { logs, total };
     }
 }
 exports.ProjectService = ProjectService;

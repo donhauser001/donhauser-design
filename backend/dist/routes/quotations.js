@@ -13,5 +13,6 @@ router.post('/', QuotationController_1.default.createQuotation);
 router.put('/:id', QuotationController_1.default.updateQuotation);
 router.delete('/:id', QuotationController_1.default.deleteQuotation);
 router.patch('/:id/toggle-status', QuotationController_1.default.toggleQuotationStatus);
+router.get('/client/:clientId', QuotationController_1.default.getQuotationsByClientId);
 exports.default = router;
 //# sourceMappingURL=quotations.js.map

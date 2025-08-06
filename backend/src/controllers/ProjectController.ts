@@ -11,7 +11,7 @@ export class ProjectController {
   static async getProjects(req: Request, res: Response) {
     try {
       const { page, limit, search, progressStatus, settlementStatus, undertakingTeam, clientId } = req.query;
-      
+
       const result = await ProjectService.getProjects({
         page: page ? parseInt(page as string) : undefined,
         limit: limit ? parseInt(limit as string) : undefined,
@@ -45,9 +45,9 @@ export class ProjectController {
   static async getProjectById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      
+
       const project = await ProjectService.getProjectById(id);
-      
+
       if (!project) {
         return res.status(404).json({
           success: false,
@@ -80,19 +80,61 @@ export class ProjectController {
    */
   static async createProject(req: Request, res: Response) {
     try {
-      const projectData = req.body;
+      const { project: projectData, services: servicesData } = req.body;
       const createdBy = (req as any).user?.id || 'system';
 
+      // 创建项目
       const project = await ProjectService.createProject({
         ...projectData,
         createdBy
       });
 
-      res.status(201).json({
-        success: true,
-        message: '项目创建成功',
-        data: project
-      });
+      // 创建任务
+      if (servicesData && servicesData.length > 0) {
+        const tasks = await Promise.all(
+          servicesData.map(async (service: any) => {
+            return await taskService.createTask({
+              taskName: service.serviceName,
+              projectId: project._id?.toString() || '',
+              serviceId: service.serviceId,
+              quantity: service.quantity,
+              unit: service.unit,
+              subtotal: service.subtotal,
+              pricingPolicies: service.pricingPolicies?.map((policyId: string) => ({
+                policyId,
+                policyName: service.pricingPolicyNames || '未知政策',
+                policyType: 'uniform_discount',
+                discountRatio: 100,
+                calculationDetails: '标准定价'
+              })) || [],
+              billingDescription: `${service.serviceName} - ${service.quantity}${service.unit}`,
+              status: 'pending',
+              priority: 'medium',
+              assignedDesigners: projectData.mainDesigners || [],
+              settlementStatus: 'unpaid',
+              progress: 0
+            });
+          })
+        );
+
+        res.status(201).json({
+          success: true,
+          message: '项目创建成功',
+          data: {
+            project,
+            tasks
+          }
+        });
+      } else {
+        res.status(201).json({
+          success: true,
+          message: '项目创建成功',
+          data: {
+            project,
+            tasks: []
+          }
+        });
+      }
     } catch (error) {
       console.error('创建项目失败:', error);
       res.status(500).json({

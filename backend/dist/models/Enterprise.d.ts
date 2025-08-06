@@ -1,6 +1,7 @@
 import mongoose, { Document } from 'mongoose';
 export interface IEnterprise extends Document {
     enterpriseName: string;
+    enterpriseAlias?: string;
     creditCode: string;
     businessLicense: string;
     legalRepresentative: string;
@@ -24,6 +25,7 @@ export declare const Enterprise: mongoose.Model<IEnterprise, {}, {}, {}, mongoos
 export interface Enterprise {
     id: string;
     enterpriseName: string;
+    enterpriseAlias?: string;
     creditCode: string;
     businessLicense: string;
     legalRepresentative: string;
@@ -41,6 +43,7 @@ export interface Enterprise {
 }
 export interface CreateEnterpriseRequest {
     enterpriseName: string;
+    enterpriseAlias?: string;
     creditCode: string;
     businessLicense: string;
     legalRepresentative: string;
@@ -57,6 +60,7 @@ export interface CreateEnterpriseRequest {
 }
 export interface UpdateEnterpriseRequest {
     enterpriseName?: string;
+    enterpriseAlias?: string;
     creditCode?: string;
     businessLicense?: string;
     legalRepresentative?: string;

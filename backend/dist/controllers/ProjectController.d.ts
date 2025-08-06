@@ -1,12 +1,14 @@
 import { Request, Response } from 'express';
 export declare class ProjectController {
-    getProjects(req: Request, res: Response): Promise<void>;
-    getProjectById(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
-    createProject(req: Request, res: Response): Promise<void>;
-    updateProject(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
-    deleteProject(req: Request, res: Response): Promise<void>;
-    updateProjectStatus(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
-    getProjectStats(req: Request, res: Response): Promise<void>;
-    getProjectTasks(req: Request, res: Response): Promise<void>;
+    static getProjects(req: Request, res: Response): Promise<void>;
+    static getProjectById(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    static createProject(req: Request, res: Response): Promise<void>;
+    static updateProject(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    static deleteProject(req: Request, res: Response): Promise<void>;
+    static updateProjectStatus(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    static updateSettlementStatus(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    static getProjectStats(req: Request, res: Response): Promise<void>;
+    static getProjectLogs(req: Request, res: Response): Promise<void>;
 }
+export default ProjectController;
 //# sourceMappingURL=ProjectController.d.ts.map

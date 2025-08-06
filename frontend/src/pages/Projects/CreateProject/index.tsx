@@ -243,7 +243,7 @@ const CreateProject: React.FC = () => {
             assistantDesignerNames: assistantDesigners.map(d => d.realName).join(', '),
             clientRequirements: values.clientRequirements,
             remark: values.remark,
-            progressStatus: action === 'order' ? 'designing' : 'consulting',
+            progressStatus: action === 'order' ? 'in-progress' : 'consulting',
             settlementStatus: 'unpaid',
             ...calculateAmounts()
         };

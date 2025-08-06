@@ -1,30 +1,32 @@
 import mongoose, { Document } from 'mongoose';
 export interface ITask extends Document {
     taskName: string;
-    serviceId: string;
     projectId: string;
-    orderId?: string;
+    serviceId: string;
     assignedDesigners: string[];
-    specification?: {
-        id: string;
-        name: string;
-        length: number;
-        width: number;
-        height?: number;
-        unit: string;
-        resolution?: string;
-    };
+    specificationId?: string;
     quantity: number;
     unit: string;
     subtotal: number;
+    pricingPolicies: Array<{
+        policyId: string;
+        policyName: string;
+        policyType: 'uniform_discount' | 'tiered_discount';
+        discountRatio: number;
+        calculationDetails: string;
+    }>;
+    billingDescription: string;
     status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold';
     priority: 'low' | 'medium' | 'high' | 'urgent';
+    progress: number;
     startDate?: Date;
     dueDate?: Date;
     completedDate?: Date;
-    progress: number;
+    settlementStatus: 'unpaid' | 'prepaid' | 'draft-paid' | 'fully-paid' | 'cancelled';
+    settlementTime?: Date;
     remarks?: string;
-    attachments: string[];
+    attachmentIds: string[];
+    proposalId?: string;
     createdAt: Date;
     updatedAt: Date;
 }

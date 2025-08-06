@@ -1,5 +1,5 @@
 import { ITask } from '../models/Task';
-export declare class TaskService {
+declare class TaskService {
     createTask(taskData: Partial<ITask>): Promise<ITask>;
     createTasks(tasksData: Partial<ITask>[]): Promise<ITask[]>;
     getTaskById(id: string): Promise<ITask | null>;
@@ -12,15 +12,17 @@ export declare class TaskService {
         designerId?: string;
         status?: string;
         priority?: string;
+        settlementStatus?: string;
         search?: string;
     }): Promise<{
         tasks: ITask[];
         total: number;
     }>;
-    updateTask(id: string, updateData: Partial<ITask>): Promise<ITask | null>;
-    updateTaskStatus(id: string, status: string, progress?: number): Promise<ITask | null>;
-    assignDesigners(taskId: string, designerIds: string[]): Promise<ITask | null>;
-    deleteTask(id: string): Promise<boolean>;
+    updateTask(id: string, updateData: Partial<ITask>, updatedBy: string): Promise<ITask | null>;
+    updateTaskStatus(id: string, status: string, updatedBy: string, progress?: number): Promise<ITask | null>;
+    updateTaskSettlementStatus(id: string, status: string, updatedBy: string): Promise<ITask | null>;
+    assignDesigners(taskId: string, designerIds: string[], updatedBy: string): Promise<ITask | null>;
+    deleteTask(id: string, deletedBy: string): Promise<boolean>;
     deleteTasksByProject(projectId: string): Promise<number>;
     getTaskStats(projectId?: string, designerId?: string): Promise<{
         total: number;
@@ -29,6 +31,22 @@ export declare class TaskService {
         completed: number;
         cancelled: number;
         onHold: number;
+        unpaid: number;
+        prepaid: number;
+        draftPaid: number;
+        fullyPaid: number;
     }>;
+    createTaskLog(logData: {
+        taskId: string;
+        projectId: string;
+        type: string;
+        title: string;
+        content: string;
+        createdBy: string;
+        details?: any;
+    }): Promise<void>;
 }
+export { TaskService };
+declare const _default: TaskService;
+export default _default;
 //# sourceMappingURL=TaskService.d.ts.map

@@ -42,6 +42,11 @@ const EnterpriseSchema = new mongoose_1.Schema({
         trim: true,
         index: true
     },
+    enterpriseAlias: {
+        type: String,
+        trim: true,
+        index: true
+    },
     creditCode: {
         type: String,
         required: true,

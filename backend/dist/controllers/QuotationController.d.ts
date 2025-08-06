@@ -7,6 +7,7 @@ export declare class QuotationController {
     deleteQuotation(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
     toggleQuotationStatus(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
     searchQuotations(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    getQuotationsByClientId(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
 }
 declare const _default: QuotationController;
 export default _default;

@@ -1,11 +1,14 @@
 import { IProject } from '../models/Project';
 export declare class ProjectService {
+    private taskService;
     getProjects(params: {
         page?: number;
         limit?: number;
         search?: string;
-        status?: string;
-        team?: string;
+        progressStatus?: string;
+        settlementStatus?: string;
+        undertakingTeam?: string;
+        clientId?: string;
     }): Promise<{
         projects: IProject[];
         total: number;
@@ -13,70 +16,86 @@ export declare class ProjectService {
     getProjectById(id: string): Promise<IProject | null>;
     createProject(projectData: {
         projectName: string;
-        client: string;
-        contact: string;
-        team: string;
-        mainDesigner: string[];
+        clientId: string;
+        clientName: string;
+        contactIds: string[];
+        contactNames: string[];
+        contactPhones: string[];
+        undertakingTeam: string;
+        mainDesigners: string[];
         assistantDesigners: string[];
-        relatedOrders: string[];
-        relatedTasks: Array<{
+        clientRequirements?: string;
+        quotationId?: string;
+        remark?: string;
+        tasks?: Array<{
+            taskName: string;
             serviceId: string;
-            serviceName: string;
+            assignedDesigners: string[];
+            specificationId?: string;
             quantity: number;
             unit: string;
             subtotal: number;
-            specification?: {
-                id: string;
-                name: string;
-                length: number;
-                width: number;
-                height?: number;
-                unit: string;
-                resolution?: string;
-            };
+            pricingPolicies?: Array<{
+                policyId: string;
+                policyName: string;
+                policyType: 'uniform_discount' | 'tiered_discount';
+                discountRatio: number;
+                calculationDetails: string;
+            }>;
+            billingDescription: string;
+            priority?: 'low' | 'medium' | 'high' | 'urgent';
+            dueDate?: Date;
+            remarks?: string;
         }>;
-        clientRequirements?: string;
-        startDate: Date;
+        createdBy: string;
     }): Promise<IProject>;
     updateProject(id: string, updateData: {
         projectName?: string;
-        client?: string;
-        contact?: string;
-        team?: string;
-        mainDesigner?: string[];
+        clientId?: string;
+        clientName?: string;
+        contactIds?: string[];
+        contactNames?: string[];
+        contactPhones?: string[];
+        undertakingTeam?: string;
+        mainDesigners?: string[];
         assistantDesigners?: string[];
-        relatedTaskIds?: string[];
-        relatedFiles?: Array<{
-            path: string;
-            originalName: string;
-            size: number;
-        }>;
-        relatedTasks?: Array<{
-            serviceId: string;
-            specification?: {
-                id: string;
-                name: string;
-                length: number;
-                width: number;
-                height?: number;
-                unit: string;
-                resolution?: string;
-            };
-        }>;
+        progressStatus?: string;
+        settlementStatus?: string;
+        startedAt?: Date;
+        deliveredAt?: Date;
+        settledAt?: Date;
         clientRequirements?: string;
-        status?: string;
-        startDate?: Date;
-        endDate?: Date;
+        quotationId?: string;
+        remark?: string;
+        updatedBy: string;
     }): Promise<IProject | null>;
-    deleteProject(id: string): Promise<void>;
-    updateProjectStatus(id: string, status: string): Promise<IProject | null>;
+    deleteProject(id: string, deletedBy: string): Promise<void>;
+    updateProjectStatus(id: string, status: string, updatedBy: string): Promise<IProject | null>;
+    updateSettlementStatus(id: string, status: string, updatedBy: string): Promise<IProject | null>;
     getProjectStats(): Promise<{
         total: number;
-        pending: number;
+        consulting: number;
         inProgress: number;
+        partialDelivery: number;
         completed: number;
-        cancelled: number;
         onHold: number;
+        cancelled: number;
+        unpaid: number;
+        prepaid: number;
+        partialPaid: number;
+        fullyPaid: number;
+    }>;
+    createProjectLog(logData: {
+        projectId: string;
+        type: string;
+        title: string;
+        content: string;
+        createdBy: string;
+        details?: any;
+    }): Promise<void>;
+    getProjectLogs(projectId: string, page?: number, limit?: number): Promise<{
+        logs: any[];
+        total: number;
     }>;
 }
 declare const _default: ProjectService;

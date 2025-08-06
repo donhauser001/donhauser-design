@@ -9,6 +9,9 @@ export * from './PricingPolicy';
 export * from './ServicePricing';
 export * from './Quotation';
 export * from './Specification';
+export * from './Project';
+export * from './Task';
+export * from './ProjectLog';
 export interface Client {
     id: string;
     name: string;

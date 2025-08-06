@@ -25,4 +25,7 @@ __exportStar(require("./PricingPolicy"), exports);
 __exportStar(require("./ServicePricing"), exports);
 __exportStar(require("./Quotation"), exports);
 __exportStar(require("./Specification"), exports);
+__exportStar(require("./Project"), exports);
+__exportStar(require("./Task"), exports);
+__exportStar(require("./ProjectLog"), exports);
 //# sourceMappingURL=index.js.map

@@ -25,5 +25,7 @@ __exportStar(require("./PricingPolicyController"), exports);
 __exportStar(require("./ServicePricingController"), exports);
 __exportStar(require("./QuotationController"), exports);
 __exportStar(require("./SpecificationController"), exports);
+__exportStar(require("./ProjectController"), exports);
+__exportStar(require("./TaskController"), exports);
 exports.clientController = {};
 //# sourceMappingURL=index.js.map

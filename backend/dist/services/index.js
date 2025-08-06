@@ -25,6 +25,8 @@ __exportStar(require("./PricingPolicyService"), exports);
 __exportStar(require("./ServicePricingService"), exports);
 __exportStar(require("./QuotationService"), exports);
 __exportStar(require("./SpecificationService"), exports);
+__exportStar(require("./ProjectService"), exports);
+__exportStar(require("./TaskService"), exports);
 exports.clientService = {};
 exports.authService = {};
 //# sourceMappingURL=index.js.map

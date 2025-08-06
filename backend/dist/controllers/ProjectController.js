@@ -6,26 +6,26 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProjectController = void 0;
 const ProjectService_1 = __importDefault(require("../services/ProjectService"));
 const TaskService_1 = require("../services/TaskService");
+const taskService = new TaskService_1.TaskService();
 class ProjectController {
-    async getProjects(req, res) {
+    static async getProjects(req, res) {
         try {
-            const { page = 1, limit = 50, search, status, team } = req.query;
+            const { page, limit, search, progressStatus, settlementStatus, undertakingTeam, clientId } = req.query;
             const result = await ProjectService_1.default.getProjects({
-                page: Number(page),
-                limit: Number(limit),
+                page: page ? parseInt(page) : undefined,
+                limit: limit ? parseInt(limit) : undefined,
                 search: search,
-                status: status,
-                team: team
+                progressStatus: progressStatus,
+                settlementStatus: settlementStatus,
+                undertakingTeam: undertakingTeam,
+                clientId: clientId
             });
             res.json({
                 success: true,
                 data: result.projects,
-                pagination: {
-                    page: Number(page),
-                    limit: Number(limit),
-                    total: result.total,
-                    pages: Math.ceil(result.total / Number(limit))
-                }
+                total: result.total,
+                page: page ? parseInt(page) : 1,
+                limit: limit ? parseInt(limit) : 50
             });
         }
         catch (error) {
@@ -37,7 +37,7 @@ class ProjectController {
             });
         }
     }
-    async getProjectById(req, res) {
+    static async getProjectById(req, res) {
         try {
             const { id } = req.params;
             const project = await ProjectService_1.default.getProjectById(id);
@@ -47,9 +47,13 @@ class ProjectController {
                     message: '项目不存在'
                 });
             }
+            const tasks = await taskService.getTasksByProject(id);
             res.json({
                 success: true,
-                data: project
+                data: {
+                    ...project,
+                    tasks
+                }
             });
         }
         catch (error) {
@@ -61,26 +65,53 @@ class ProjectController {
             });
         }
     }
-    async createProject(req, res) {
+    static async createProject(req, res) {
         try {
-            const { projectName, client, contact, team, mainDesigner, assistantDesigners, relatedOrders, relatedTasks, clientRequirements, startDate } = req.body;
+            const { project: projectData, services: servicesData } = req.body;
+            const createdBy = req.user?.id || 'system';
             const project = await ProjectService_1.default.createProject({
-                projectName,
-                client,
-                contact,
-                team,
-                mainDesigner,
-                assistantDesigners,
-                relatedOrders,
-                relatedTasks,
-                clientRequirements,
-                startDate: new Date(startDate)
+                ...projectData,
+                createdBy
             });
-            res.status(201).json({
-                success: true,
-                data: project,
-                message: '项目创建成功'
-            });
+            if (servicesData && servicesData.length > 0) {
+                const tasks = await Promise.all(servicesData.map(async (service) => {
+                    return await taskService.createTask({
+                        projectId: project._id,
+                        serviceId: service.serviceId,
+                        serviceName: service.serviceName,
+                        quantity: service.quantity,
+                        unitPrice: service.unitPrice,
+                        unit: service.unit,
+                        subtotal: service.subtotal,
+                        pricingPolicies: service.pricingPolicies,
+                        pricingPolicyNames: service.pricingPolicyNames,
+                        discountAmount: service.discountAmount,
+                        finalAmount: service.finalAmount,
+                        status: 'pending',
+                        priority: 'medium',
+                        assignedDesigners: projectData.mainDesigners || [],
+                        createdBy
+                    });
+                }));
+                res.status(201).json({
+                    success: true,
+                    message: '项目创建成功',
+                    data: {
+                        project,
+                        tasks
+                    }
+                });
+            }
+            else {
+                res.status(201).json({
+                    success: true,
+                    message: '项目创建成功',
+                    data: {
+                        project,
+                        tasks: []
+                    }
+                });
+            }
         }
         catch (error) {
             console.error('创建项目失败:', error);
@@ -91,11 +122,15 @@ class ProjectController {
             });
         }
     }
-    async updateProject(req, res) {
+    static async updateProject(req, res) {
         try {
             const { id } = req.params;
             const updateData = req.body;
-            const project = await ProjectService_1.default.updateProject(id, updateData);
+            const updatedBy = req.user?.id || 'system';
+            const project = await ProjectService_1.default.updateProject(id, {
+                ...updateData,
+                updatedBy
+            });
             if (!project) {
                 return res.status(404).json({
                     success: false,
@@ -104,8 +139,8 @@ class ProjectController {
             }
             res.json({
                 success: true,
-                data: project,
-                message: '项目更新成功'
+                message: '项目更新成功',
+                data: project
             });
         }
         catch (error) {
@@ -117,10 +152,11 @@ class ProjectController {
             });
         }
     }
-    async deleteProject(req, res) {
+    static async deleteProject(req, res) {
         try {
             const { id } = req.params;
-            await ProjectService_1.default.deleteProject(id);
+            const deletedBy = req.user?.id || 'system';
+            await ProjectService_1.default.deleteProject(id, deletedBy);
             res.json({
                 success: true,
                 message: '项目删除成功'
@@ -135,11 +171,12 @@ class ProjectController {
             });
         }
     }
-    async updateProjectStatus(req, res) {
+    static async updateProjectStatus(req, res) {
         try {
             const { id } = req.params;
             const { status } = req.body;
-            const project = await ProjectService_1.default.updateProjectStatus(id, status);
+            const updatedBy = req.user?.id || 'system';
+            const project = await ProjectService_1.default.updateProjectStatus(id, status, updatedBy);
             if (!project) {
                 return res.status(404).json({
                     success: false,
@@ -148,8 +185,8 @@ class ProjectController {
             }
             res.json({
                 success: true,
-                data: project,
-                message: '项目状态更新成功'
+                message: '项目状态更新成功',
+                data: project
             });
         }
         catch (error) {
@@ -161,7 +198,34 @@ class ProjectController {
             });
         }
     }
-    async getProjectStats(req, res) {
+    static async updateSettlementStatus(req, res) {
+        try {
+            const { id } = req.params;
+            const { status } = req.body;
+            const updatedBy = req.user?.id || 'system';
+            const project = await ProjectService_1.default.updateSettlementStatus(id, status, updatedBy);
+            if (!project) {
+                return res.status(404).json({
+                    success: false,
+                    message: '项目不存在'
+                });
+            }
+            res.json({
+                success: true,
+                message: '结算状态更新成功',
+                data: project
+            });
+        }
+        catch (error) {
+            console.error('更新结算状态失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '更新结算状态失败',
+                error: error instanceof Error ? error.message : '未知错误'
+            });
+        }
+    }
+    static async getProjectStats(req, res) {
         try {
             const stats = await ProjectService_1.default.getProjectStats();
             res.json({
@@ -178,25 +242,29 @@ class ProjectController {
             });
         }
     }
-    async getProjectTasks(req, res) {
+    static async getProjectLogs(req, res) {
         try {
             const { id } = req.params;
-            const taskService = new TaskService_1.TaskService();
-            const tasks = await taskService.getTasksByProject(id);
+            const { page, limit } = req.query;
+            const result = await ProjectService_1.default.getProjectLogs(id, page ? parseInt(page) : 1, limit ? parseInt(limit) : 20);
             res.json({
                 success: true,
-                data: tasks
+                data: result.logs,
+                total: result.total,
+                page: page ? parseInt(page) : 1,
+                limit: limit ? parseInt(limit) : 20
             });
         }
         catch (error) {
-            console.error('获取项目任务失败:', error);
+            console.error('获取项目日志失败:', error);
             res.status(500).json({
                 success: false,
-                message: '获取项目任务失败',
+                message: '获取项目日志失败',
                 error: error instanceof Error ? error.message : '未知错误'
             });
         }
     }
 }
 exports.ProjectController = ProjectController;
+exports.default = ProjectController;
 //# sourceMappingURL=ProjectController.js.map

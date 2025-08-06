@@ -34,48 +34,28 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const ProjectSchema = new mongoose_1.Schema({
-    projectName: { type: String, required: true },
-    clientId: { type: String, required: true },
-    clientName: { type: String, required: true },
-    contactIds: [{ type: String, required: true }],
-    contactNames: [{ type: String, required: true }],
-    contactPhones: [{ type: String, required: true }],
-    undertakingTeam: { type: String, required: true },
-    mainDesigners: [{ type: String }],
-    assistantDesigners: [{ type: String }],
-    progressStatus: {
+const ProjectLogSchema = new mongoose_1.Schema({
+    projectId: { type: String, required: true },
+    type: {
         type: String,
-        enum: ['consulting', 'in-progress', 'partial-delivery', 'completed', 'on-hold', 'cancelled'],
-        default: 'consulting'
+        enum: ['status_change', 'team_change', 'task_update', 'settlement', 'file_upload', 'remark', 'system'],
+        required: true
     },
-    settlementStatus: {
-        type: String,
-        enum: ['unpaid', 'prepaid', 'partial-paid', 'fully-paid'],
-        default: 'unpaid'
-    },
+    title: { type: String, required: true },
+    content: { type: String, required: true },
+    createdBy: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },
-    startedAt: { type: Date },
-    deliveredAt: { type: Date },
-    settledAt: { type: Date },
-    clientRequirements: { type: String },
-    quotationId: { type: String },
-    remark: { type: String },
-    taskIds: [{ type: String }],
-    fileIds: [{ type: String }],
-    contractIds: [{ type: String }],
-    invoiceIds: [{ type: String }],
-    proposalIds: [{ type: String }],
-    logIds: [{ type: String }]
+    details: {
+        oldValue: mongoose_1.Schema.Types.Mixed,
+        newValue: mongoose_1.Schema.Types.Mixed,
+        relatedIds: [String]
+    }
 }, {
     timestamps: true,
-    collection: 'projects'
+    collection: 'project_logs'
 });
-ProjectSchema.index({ projectName: 1 });
-ProjectSchema.index({ clientId: 1 });
-ProjectSchema.index({ undertakingTeam: 1 });
-ProjectSchema.index({ progressStatus: 1 });
-ProjectSchema.index({ settlementStatus: 1 });
-ProjectSchema.index({ createdAt: -1 });
-exports.default = mongoose_1.default.model('Project', ProjectSchema);
-//# sourceMappingURL=Project.js.map
+ProjectLogSchema.index({ projectId: 1 });
+ProjectLogSchema.index({ type: 1 });
+ProjectLogSchema.index({ createdAt: -1 });
+exports.default = mongoose_1.default.model('ProjectLog', ProjectLogSchema);
+//# sourceMappingURL=ProjectLog.js.map
