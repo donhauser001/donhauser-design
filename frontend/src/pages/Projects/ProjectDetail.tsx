@@ -11,7 +11,8 @@ import {
     Statistic,
     Divider,
     List,
-    Avatar
+    Avatar,
+    Tabs
 } from 'antd';
 import {
     ArrowLeftOutlined,
@@ -360,17 +361,24 @@ const ProjectDetail: React.FC = () => {
                             </div>
                         </Card>
 
-                        {/* 客户嘱托 */}
-                        {project.clientRequirements && (
-                            <Card title="客户嘱托" style={{ marginBottom: 16 }}>
-                                <p>{project.clientRequirements}</p>
-                            </Card>
-                        )}
-
-                        {/* 备注 */}
-                        {project.remark && (
-                            <Card title="备注" style={{ marginBottom: 16 }}>
-                                <p>{project.remark}</p>
+                        {/* 客户嘱托和备注选项卡 */}
+                        {(project.clientRequirements || project.remark) && (
+                            <Card title="项目详情" style={{ marginBottom: 16 }}>
+                                <Tabs
+                                    size="small"
+                                    items={[
+                                        ...(project.clientRequirements ? [{
+                                            key: 'requirements',
+                                            label: '客户嘱托',
+                                            children: <p>{project.clientRequirements}</p>
+                                        }] : []),
+                                        ...(project.remark ? [{
+                                            key: 'remark',
+                                            label: '备注',
+                                            children: <p>{project.remark}</p>
+                                        }] : [])
+                                    ]}
+                                />
                             </Card>
                         )}
                     </Col>
