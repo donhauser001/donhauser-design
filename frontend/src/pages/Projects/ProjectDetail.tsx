@@ -235,7 +235,22 @@ const ProjectDetail: React.FC = () => {
                         <Card title="基本信息" style={{ marginBottom: 16 }}>
                             <Descriptions column={2}>
                                 <Descriptions.Item label="项目名称">{project.projectName}</Descriptions.Item>
-                                <Descriptions.Item label="客户名称">{project.clientName}</Descriptions.Item>
+                                <Descriptions.Item label="客户名称">
+                                    {project.clientName}
+                                    {project.contactNames && project.contactNames.length > 0 && (
+                                        <span style={{ color: '#666', marginLeft: '8px' }}>
+                                            - {project.contactNames.map((name, index) => (
+                                                <span key={index}>
+                                                    {name}
+                                                    {project.contactPhones[index] && (
+                                                        <span style={{ color: '#999' }}>（{project.contactPhones[index]}）</span>
+                                                    )}
+                                                    {index < project.contactNames.length - 1 && '，'}
+                                                </span>
+                                            ))}
+                                        </span>
+                                    )}
+                                </Descriptions.Item>
                                 <Descriptions.Item label="承接团队">{project.undertakingTeamName || project.undertakingTeam}</Descriptions.Item>
                                 <Descriptions.Item label="创建时间">{dayjs(project.createdAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>
                                 <Descriptions.Item label="进度状态">
@@ -251,24 +266,7 @@ const ProjectDetail: React.FC = () => {
                             </Descriptions>
                         </Card>
 
-                        {/* 联系人信息 */}
-                        <Card title="联系人信息" style={{ marginBottom: 16 }}>
-                            <List
-                                dataSource={project.contactNames.map((name, index) => ({
-                                    name,
-                                    phone: project.contactPhones[index]
-                                }))}
-                                renderItem={(item) => (
-                                    <List.Item>
-                                        <List.Item.Meta
-                                            avatar={<Avatar icon={<UserOutlined />} />}
-                                            title={item.name}
-                                            description={item.phone}
-                                        />
-                                    </List.Item>
-                                )}
-                            />
-                        </Card>
+
 
                         {/* 客户嘱托 */}
                         {project.clientRequirements && (
