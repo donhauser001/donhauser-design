@@ -43,6 +43,7 @@ import {
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
+import SpecificationSelector from '../../components/SpecificationSelector';
 
 interface Project {
     _id: string;
@@ -77,6 +78,15 @@ interface Task {
     assistantDesigners: string[];
     assistantDesignerNames?: string[];
     specificationId?: string;
+    specification?: {
+        id: string;
+        name: string;
+        length: number;
+        width: number;
+        height?: number;
+        unit: string;
+        resolution?: string;
+    };
     quantity: number;
     unit: string;
     subtotal: number;
@@ -89,7 +99,7 @@ interface Task {
     }>;
     billingDescription: string;
     status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold';
-    priority: 'low' | 'medium' | 'high' | 'urgent';
+    priority: 'low' | 'medium' | 'high' | 'urgent' | 'waiting' | 'on-hold' | 'completed';
     progress: number;
     startDate?: string;
     dueDate?: string;
@@ -233,6 +243,31 @@ const ProjectDetail: React.FC = () => {
             message.error('修改紧急度失败');
         } finally {
             setPriorityLoading(false);
+        }
+    };
+
+    // 处理规格变更
+    const handleSpecificationChange = async (task: Task, specification: any) => {
+        try {
+            const response = await fetch(`/api/tasks/${task._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    specificationId: specification?.id || null
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                message.success('规格修改成功');
+                fetchTasks(); // 重新获取任务列表
+            } else {
+                message.error(data.message || '规格修改失败');
+            }
+        } catch (error) {
+            console.error('修改规格失败:', error);
+            message.error('修改规格失败');
         }
     };
 
@@ -558,6 +593,18 @@ const ProjectDetail: React.FC = () => {
                                             <Tag color={getTaskStatusColor(record.status)}>
                                                 {getTaskStatusText(record.status)}
                                             </Tag>
+                                        )
+                                    },
+                                    {
+                                        title: '规格',
+                                        key: 'specification',
+                                        width: 120,
+                                        render: (_, record: Task) => (
+                                            <SpecificationSelector
+                                                value={record.specification}
+                                                onChange={(specification) => handleSpecificationChange(record, specification)}
+                                                placeholder="选择规格"
+                                            />
                                         )
                                     },
                                     {
