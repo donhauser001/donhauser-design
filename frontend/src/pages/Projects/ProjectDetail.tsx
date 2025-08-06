@@ -181,7 +181,17 @@ const ProjectDetail: React.FC = () => {
                         >
                             返回
                         </Button>
-                        <span>{project.projectName}</span>
+                        <span>
+                            {project.projectName}
+                            <Space style={{ marginLeft: 8 }}>
+                                <Tag color={getProgressStatusColor(project.progressStatus)}>
+                                    {getProgressStatusText(project.progressStatus)}
+                                </Tag>
+                                <Tag color={getSettlementStatusColor(project.settlementStatus)}>
+                                    {getSettlementStatusText(project.settlementStatus)}
+                                </Tag>
+                            </Space>
+                        </span>
                     </Space>
                 }
                 extra={
@@ -235,17 +245,7 @@ const ProjectDetail: React.FC = () => {
                         {/* 基本信息 */}
                         <Card title="基本信息" style={{ marginBottom: 16 }}>
                             <Descriptions column={2}>
-                                <Descriptions.Item label="项目名称">
-                                    {project.projectName}
-                                    <Space style={{ marginLeft: 8 }}>
-                                        <Tag color={getProgressStatusColor(project.progressStatus)}>
-                                            {getProgressStatusText(project.progressStatus)}
-                                        </Tag>
-                                        <Tag color={getSettlementStatusColor(project.settlementStatus)}>
-                                            {getSettlementStatusText(project.settlementStatus)}
-                                        </Tag>
-                                    </Space>
-                                </Descriptions.Item>
+                                <Descriptions.Item label="项目名称">{project.projectName}</Descriptions.Item>
                                 <Descriptions.Item label="客户名称">
                                     {project.clientName}
                                     {project.contactNames && project.contactNames.length > 0 && (
