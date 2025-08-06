@@ -241,13 +241,26 @@ const ProjectDetail: React.FC = () => {
                                         <span style={{ color: '#666', marginLeft: '8px' }}>
                                             - {(() => {
                                                 // 处理可能的数据格式：单个字符串或数组
-                                                const names = Array.isArray(project.contactNames)
-                                                    ? project.contactNames
-                                                    : project.contactNames[0]?.split(',').map(n => n.trim()) || [];
+                                                let names: string[] = [];
+                                                let phones: string[] = [];
 
-                                                const phones = Array.isArray(project.contactPhones)
-                                                    ? project.contactPhones
-                                                    : project.contactPhones[0]?.split(',').map(p => p.trim()) || [];
+                                                if (Array.isArray(project.contactNames)) {
+                                                    // 如果是数组，检查第一个元素是否包含逗号
+                                                    if (project.contactNames.length > 0 && project.contactNames[0].includes(',')) {
+                                                        names = project.contactNames[0].split(',').map(n => n.trim());
+                                                    } else {
+                                                        names = project.contactNames;
+                                                    }
+                                                }
+
+                                                if (Array.isArray(project.contactPhones)) {
+                                                    // 如果是数组，检查第一个元素是否包含逗号
+                                                    if (project.contactPhones.length > 0 && project.contactPhones[0].includes(',')) {
+                                                        phones = project.contactPhones[0].split(',').map(p => p.trim());
+                                                    } else {
+                                                        phones = project.contactPhones;
+                                                    }
+                                                }
 
                                                 return names.map((name, index) => {
                                                     const phone = phones[index];
