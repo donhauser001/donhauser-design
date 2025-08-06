@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import { Client, Contact, Enterprise, Designer, Service, Task, Quotation } from './types';
 import { getQuotationsByClientId } from '../../../api/quotations';
@@ -86,7 +86,7 @@ export const useCreateProject = () => {
         }
     };
 
-    const handleClientChange = async (clientId: string) => {
+    const handleClientChange = useCallback(async (clientId: string) => {
         const client = clients.find(c => c._id === clientId);
         setSelectedClient(client || null);
 
@@ -102,7 +102,7 @@ export const useCreateProject = () => {
         } else {
             setQuotations([]);
         }
-    };
+    }, [clients]);
 
     const handleContactChange = (contactIds: string[]) => {
         // 可以在这里添加联系人变化的处理逻辑

@@ -153,7 +153,7 @@ const CreateProject: React.FC = () => {
                 form.setFieldsValue({ clientId: savedClientId });
             }
         }
-    }, [clients, handleClientChange, form]);
+    }, [clients, handleClientChange]);
 
     // 保存客户选择
     useEffect(() => {
