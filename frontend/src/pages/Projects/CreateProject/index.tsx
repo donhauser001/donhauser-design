@@ -246,7 +246,7 @@ const CreateProject: React.FC = () => {
             contactNames: selectedContacts.map(c => c.realName).join(', '),
             contactPhones: selectedContacts.map(c => c.phone).join(', '),
             undertakingTeam: values.undertakingTeam,
-            undertakingTeamName: enterprise?.enterpriseName,
+            undertakingTeamName: enterprise?.enterpriseAlias || enterprise?.enterpriseName,
             mainDesigners: values.mainDesigners,
             mainDesignerNames: mainDesigners.map(d => d.realName).join(', '),
             assistantDesigners: values.assistantDesigners,

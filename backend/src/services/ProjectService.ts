@@ -47,7 +47,29 @@ export class ProjectService {
       Project.countDocuments(filter)
     ]);
 
-    return { projects, total };
+    // 为项目列表添加企业别名信息
+    const projectsWithTeamNames = await Promise.all(
+      projects.map(async (project) => {
+        let undertakingTeamName = project.undertakingTeam;
+        if (project.undertakingTeam) {
+          try {
+            const enterprise = await this.enterpriseService.getEnterpriseById(project.undertakingTeam);
+            if (enterprise) {
+              // 优先使用企业别名，如果没有则使用企业名称
+              undertakingTeamName = enterprise.enterpriseAlias || enterprise.enterpriseName;
+            }
+          } catch (error) {
+            console.error('获取企业信息失败:', error);
+          }
+        }
+        return {
+          ...project,
+          undertakingTeamName
+        };
+      })
+    );
+
+    return { projects: projectsWithTeamNames, total };
   }
 
   /**
@@ -66,7 +88,8 @@ export class ProjectService {
       try {
         const enterprise = await this.enterpriseService.getEnterpriseById(project.undertakingTeam);
         if (enterprise) {
-          undertakingTeamName = enterprise.enterpriseName;
+          // 优先使用企业别名，如果没有则使用企业名称
+          undertakingTeamName = enterprise.enterpriseAlias || enterprise.enterpriseName;
         }
       } catch (error) {
         console.error('获取企业信息失败:', error);

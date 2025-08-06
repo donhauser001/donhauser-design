@@ -52,6 +52,7 @@ interface Project {
     clientName: string;
     contactNames?: string;
     undertakingTeam: string;
+    undertakingTeamName?: string;
     progressStatus: 'consulting' | 'in-progress' | 'partial-delivery' | 'completed' | 'on-hold' | 'cancelled';
     settlementStatus: 'unpaid' | 'prepaid' | 'partial-paid' | 'fully-paid';
     createdAt: string;
@@ -469,6 +470,18 @@ const ProjectList: React.FC = () => {
                             <span style={{ color: '#666' }}> - {record.contactNames}</span>
                         )}
                     </span>
+                </div>
+            )
+        },
+        {
+            title: '承接团队',
+            dataIndex: 'undertakingTeamName',
+            key: 'undertakingTeam',
+            width: 150,
+            render: (text: string, record: Project) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <TeamOutlined style={{ fontSize: '12px', color: '#666' }} />
+                    <span>{record.undertakingTeamName || record.undertakingTeam || '未设置'}</span>
                 </div>
             )
         },
