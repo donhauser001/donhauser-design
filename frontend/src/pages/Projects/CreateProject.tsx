@@ -558,19 +558,8 @@ const CreateProject: React.FC = () => {
                                 children: (
                                     <div>
                                         {/* 任务信息 */}
-                                        <Card
-                                            size="small"
-                                            title={
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ color: '#eb2f96' }}>📋</span>
-                                                    <span>任务信息</span>
-                                                    <Tag color="orange">{tasks.length} 个任务</Tag>
-                                                </div>
-                                            }
-                                            style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
-                                        >
-
-                        {/* 任务列表 */}
+                                        <div>
+                                            {/* 任务列表 */}
                         {tasks.map((task, index) => (
                             <Card
                                 key={index}
@@ -776,7 +765,7 @@ const CreateProject: React.FC = () => {
                                 </Row>
                             </Card>
                         )}
-                                    </div>
+                                        </div>
                                 )
                             },
                             {
