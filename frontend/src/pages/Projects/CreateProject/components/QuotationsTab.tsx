@@ -298,13 +298,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
                                                                                 </Text>
                                                                             </div>
                                                                         </div>
-                                                                        {service.alias && (
-                                                                            <div style={{ marginBottom: '4px' }}>
-                                                                                <Text type="secondary" style={{ fontSize: '12px' }}>
-                                                                                    {service.alias}
-                                                                                </Text>
-                                                                            </div>
-                                                                        )}
+
                                                                         <div style={{ marginBottom: '4px' }}>
                                                                             <Text type="secondary" style={{ fontSize: '12px', color: '#999' }}>
                                                                                 价格说明：按{service.unit}计费

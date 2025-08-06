@@ -41,10 +41,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             key: 'serviceName',
             render: (text: string, record: any) => (
                 <div>
-                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{text}</div>
-                    {record.alias && (
-                        <Text type="secondary" style={{ fontSize: '12px' }}>{record.alias}</Text>
-                    )}
+                    <div style={{ fontWeight: 'bold' }}>{text}</div>
                 </div>
             )
         },
