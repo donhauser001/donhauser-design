@@ -92,13 +92,13 @@ const ProjectList: React.FC = () => {
                 page: currentPage.toString(),
                 limit: pageSize.toString(),
                 ...(searchText && { search: searchText }),
-                ...(progressFilter && { progressStatus: progressFilter }),
-                ...(settlementFilter && { settlementStatus: settlementFilter }),
+                ...(progressFilter && progressFilter !== 'all' && { progressStatus: progressFilter }),
+                ...(settlementFilter && settlementFilter !== 'all' && { settlementStatus: settlementFilter }),
                 ...(teamFilter && { undertakingTeam: teamFilter })
             });
 
-            // 如果没有选择进度状态筛选，默认排除已取消的项目
-            if (!progressFilter) {
+            // 如果没有选择进度状态筛选或选择了"全部状态"，默认排除已取消的项目
+            if (!progressFilter || progressFilter === 'all') {
                 params.append('excludeStatus', 'cancelled');
             }
 
@@ -270,8 +270,8 @@ const ProjectList: React.FC = () => {
     // 清除所有筛选条件，查看全部项目
     const handleViewAll = () => {
         setSearchText('');
-        setProgressFilter('');
-        setSettlementFilter('');
+        setProgressFilter('all');
+        setSettlementFilter('all');
         setTeamFilter('');
         setCurrentPage(1); // 重置到第一页
     };
@@ -490,17 +490,17 @@ const ProjectList: React.FC = () => {
                             <Button
                                 icon={<ClearOutlined />}
                                 onClick={handleViewAll}
-                                disabled={!searchText && !progressFilter && !settlementFilter && !teamFilter}
+                                disabled={!searchText && (progressFilter === 'all' || !progressFilter) && (settlementFilter === 'all' || !settlementFilter) && !teamFilter}
                             >
                                 查看全部
                             </Button>
                             <Select
                                 placeholder="进度状态"
-                                allowClear
                                 style={{ width: 120 }}
-                                value={progressFilter}
+                                value={progressFilter || 'all'}
                                 onChange={setProgressFilter}
                             >
+                                <Option value="all">全部状态</Option>
                                 <Option value="consulting">咨询中</Option>
                                 <Option value="in-progress">进行中</Option>
                                 <Option value="partial-delivery">部分交付</Option>
@@ -510,11 +510,11 @@ const ProjectList: React.FC = () => {
                             </Select>
                             <Select
                                 placeholder="结算状态"
-                                allowClear
                                 style={{ width: 120 }}
-                                value={settlementFilter}
+                                value={settlementFilter || 'all'}
                                 onChange={setSettlementFilter}
                             >
+                                <Option value="all">全部状态</Option>
                                 <Option value="unpaid">未付款</Option>
                                 <Option value="prepaid">预付款</Option>
                                 <Option value="partial-paid">部分付款</Option>
