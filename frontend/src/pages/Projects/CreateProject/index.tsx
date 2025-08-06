@@ -129,12 +129,23 @@ const CreateProject: React.FC = () => {
             ...prev,
             [serviceId]: quantity
         }));
-        
+
         // 同时更新selectedServices中的数量
-        setSelectedServices(prev => 
-            prev.map(service => 
-                service._id === serviceId 
-                    ? { ...service, quantity } 
+        setSelectedServices(prev =>
+            prev.map(service =>
+                service._id === serviceId
+                    ? { ...service, quantity }
+                    : service
+            )
+        );
+    };
+
+    // 处理定价政策变化
+    const handlePricingPolicyChange = (serviceId: string, policyIds: string[]) => {
+        setSelectedServices(prev =>
+            prev.map(service =>
+                service._id === serviceId
+                    ? { ...service, selectedPricingPolicies: policyIds }
                     : service
             )
         );
@@ -168,7 +179,7 @@ const CreateProject: React.FC = () => {
                 handleClientChange(savedClientId);
                 // 同时设置表单的客户字段
                 form.setFieldsValue({ clientId: savedClientId });
-                
+
                 // 延迟恢复联系人数据，确保客户数据加载完成
                 setTimeout(() => {
                     const savedFormData = localStorage.getItem('createProject_formData');
@@ -362,6 +373,7 @@ const CreateProject: React.FC = () => {
                                 enterprises={enterprises}
                                 designers={designers}
                                 onServiceQuantityChange={handleQuantityChange}
+                                onPricingPolicyChange={handlePricingPolicyChange}
                             />
                         )}
                     </div>

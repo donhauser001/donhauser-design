@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Select, Row, Col, Card, Table, Tag, Typography, Space, InputNumber } from 'antd';
+import { Form, Input, Select, Row, Col, Card, Table, Tag, Typography, Space, InputNumber, Checkbox } from 'antd';
 import { UserOutlined, TeamOutlined, FileTextOutlined, EditOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
@@ -14,9 +14,10 @@ interface OrderTabProps {
     enterprises?: any[];
     designers?: any[];
     onServiceQuantityChange?: (serviceId: string, quantity: number) => void;
+    onPricingPolicyChange?: (serviceId: string, policyIds: string[]) => void;
 }
 
-const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, projectData, selectedContacts, enterprises = [], designers = [], onServiceQuantityChange }) => {
+const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, projectData, selectedContacts, enterprises = [], designers = [], onServiceQuantityChange, onPricingPolicyChange }) => {
     // 辅助函数：获取企业显示名称
     const getEnterpriseName = (enterpriseId: string) => {
         const enterprise = enterprises.find(e => e._id === enterpriseId);
@@ -86,29 +87,48 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             )
         },
         {
+            title: '定价政策',
+            dataIndex: 'pricingPolicyNames',
+            key: 'pricingPolicyNames',
+            render: (policies: string[], record: any) => (
+                <div>
+                    {record.pricingPolicyIds && record.pricingPolicyIds.length > 0 ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            {record.pricingPolicyIds.map((policyId: string, index: number) => {
+                                const policyName = record.pricingPolicyNames?.[index] || '未知政策';
+                                return (
+                                    <Checkbox
+                                        key={policyId}
+                                        checked={record.selectedPricingPolicies?.includes(policyId) || false}
+                                        onChange={(e) => {
+                                            if (onPricingPolicyChange) {
+                                                const currentSelected = record.selectedPricingPolicies || [];
+                                                const newSelected = e.target.checked
+                                                    ? [...currentSelected, policyId]
+                                                    : currentSelected.filter((id: string) => id !== policyId);
+                                                onPricingPolicyChange(record._id, newSelected);
+                                            }
+                                        }}
+                                    >
+                                        <Tag color="green" style={{ fontSize: '12px' }}>
+                                            {policyName}
+                                        </Tag>
+                                    </Checkbox>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <Text type="secondary" style={{ fontSize: '12px' }}>无政策</Text>
+                    )}
+                </div>
+            )
+        },
+        {
             title: '小计',
             key: 'subtotal',
             render: (record: any) => (
                 <div style={{ textAlign: 'right' }}>
                     <Text type="danger" strong>¥{record.unitPrice * record.quantity}</Text>
-                </div>
-            )
-        },
-        {
-            title: '定价政策',
-            dataIndex: 'pricingPolicyNames',
-            key: 'pricingPolicyNames',
-            render: (policies: string[]) => (
-                <div>
-                    {policies && policies.length > 0 ? (
-                        policies.map((policy, index) => (
-                            <Tag key={index} color="green" style={{ fontSize: '12px', marginBottom: '4px' }}>
-                                {policy}
-                            </Tag>
-                        ))
-                    ) : (
-                        <Text type="secondary" style={{ fontSize: '12px' }}>无政策</Text>
-                    )}
                 </div>
             )
         }
