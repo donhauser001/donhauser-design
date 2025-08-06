@@ -13,7 +13,9 @@ import {
     List,
     Avatar,
     Tabs,
-    Table
+    Table,
+    Modal,
+    Select
 } from 'antd';
 import {
     ArrowLeftOutlined,
@@ -97,6 +99,11 @@ const ProjectDetail: React.FC = () => {
     const [project, setProject] = useState<Project | null>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(true);
+    const [assignModalVisible, setAssignModalVisible] = useState(false);
+    const [currentTask, setCurrentTask] = useState<Task | null>(null);
+    const [availableUsers, setAvailableUsers] = useState<any[]>([]);
+    const [selectedDesigners, setSelectedDesigners] = useState<string[]>([]);
+    const [assignLoading, setAssignLoading] = useState(false);
 
     // 获取项目详情
     const fetchProject = async () => {
@@ -130,6 +137,60 @@ const ProjectDetail: React.FC = () => {
             }
         } catch (error) {
             console.error('获取项目任务失败:', error);
+        }
+    };
+
+    // 获取员工和管理员用户
+    const fetchAvailableUsers = async () => {
+        try {
+            const response = await fetch('/api/users/employees-admins');
+            const data = await response.json();
+
+            if (data.success) {
+                setAvailableUsers(data.data);
+            }
+        } catch (error) {
+            console.error('获取用户列表失败:', error);
+            message.error('获取用户列表失败');
+        }
+    };
+
+    // 打开分配设计师模态窗
+    const handleAssignDesigners = (task: Task) => {
+        setCurrentTask(task);
+        setSelectedDesigners(task.assignedDesigners || []);
+        setAssignModalVisible(true);
+        fetchAvailableUsers();
+    };
+
+    // 确认分配设计师
+    const handleConfirmAssign = async () => {
+        if (!currentTask) return;
+
+        setAssignLoading(true);
+        try {
+            const response = await fetch(`/api/tasks/${currentTask._id}/assign`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    designerIds: selectedDesigners
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                message.success('设计师分配成功');
+                setAssignModalVisible(false);
+                fetchTasks(); // 重新获取任务列表
+            } else {
+                message.error(data.message || '设计师分配失败');
+            }
+        } catch (error) {
+            console.error('分配设计师失败:', error);
+            message.error('分配设计师失败');
+        } finally {
+            setAssignLoading(false);
         }
     };
 
@@ -478,11 +539,25 @@ const ProjectDetail: React.FC = () => {
                                     {
                                         title: '设计师',
                                         key: 'designers',
-                                        width: 120,
-                                        render: (_, record: Task) =>
-                                            record.assignedDesignerNames && record.assignedDesignerNames.length > 0
-                                                ? record.assignedDesignerNames.join('，')
-                                                : '-'
+                                        width: 150,
+                                        render: (_, record: Task) => {
+                                            const hasDesigners = record.assignedDesignerNames && record.assignedDesignerNames.length > 0;
+                                            return (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span>
+                                                        {hasDesigners ? record.assignedDesignerNames!.join('，') : '-'}
+                                                    </span>
+                                                    <Button
+                                                        type="link"
+                                                        size="small"
+                                                        onClick={() => handleAssignDesigners(record)}
+                                                        style={{ padding: 0, height: 'auto' }}
+                                                    >
+                                                        {hasDesigners ? '修改' : '指定'}
+                                                    </Button>
+                                                </div>
+                                            );
+                                        }
                                     }
                                 ]}
                             />
@@ -522,6 +597,35 @@ const ProjectDetail: React.FC = () => {
                     </Col>
                 </Row>
             </Card>
+
+            {/* 分配设计师模态窗 */}
+            <Modal
+                title={`分配设计师 - ${currentTask?.taskName}`}
+                open={assignModalVisible}
+                onOk={handleConfirmAssign}
+                onCancel={() => setAssignModalVisible(false)}
+                confirmLoading={assignLoading}
+                width={500}
+            >
+                <div style={{ marginBottom: 16 }}>
+                    <p>请选择要分配给此任务的设计师：</p>
+                </div>
+                <Select
+                    mode="multiple"
+                    placeholder="请选择设计师"
+                    value={selectedDesigners}
+                    onChange={setSelectedDesigners}
+                    style={{ width: '100%' }}
+                    optionFilterProp="children"
+                    showSearch
+                >
+                    {availableUsers.map(user => (
+                        <Select.Option key={user._id} value={user._id}>
+                            {user.realName || user.username} ({user.role})
+                        </Select.Option>
+                    ))}
+                </Select>
+            </Modal>
         </div>
     );
 };
