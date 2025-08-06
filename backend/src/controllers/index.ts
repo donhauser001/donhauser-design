@@ -11,6 +11,8 @@ export * from './PricingPolicyController';
 export * from './ServicePricingController';
 export * from './QuotationController';
 export * from './SpecificationController';
+export * from './ProjectController';
+export * from './TaskController';
 
 
 export const clientController = {
