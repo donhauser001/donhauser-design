@@ -112,10 +112,7 @@ export class ProjectController {
               billingDescription: `${service.serviceName} - ${service.quantity}${service.unit}`,
               status: 'pending',
               priority: 'medium',
-              assignedDesigners: [
-                ...(projectData.mainDesigners || []),
-                ...(projectData.assistantDesigners || [])
-              ],
+              assignedDesigners: [],
               settlementStatus: 'unpaid',
               progress: 0
             });
