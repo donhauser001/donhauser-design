@@ -17,7 +17,8 @@ import {
     Modal,
     Select,
     Dropdown,
-    Menu
+    Menu,
+    Tooltip
 } from 'antd';
 import {
     ArrowLeftOutlined,
@@ -698,16 +699,7 @@ const ProjectDetail: React.FC = () => {
                                             );
                                         }
                                     },
-                                    {
-                                        title: '结算',
-                                        key: 'settlement',
-                                        width: 100,
-                                        render: (_, record: Task) => (
-                                            <Tag color={getSettlementStatusColor(record.settlementStatus)}>
-                                                {getSettlementStatusText(record.settlementStatus)}
-                                            </Tag>
-                                        )
-                                    },
+
                                     {
                                         title: '数量',
                                         key: 'quantity',
@@ -819,8 +811,19 @@ const ProjectDetail: React.FC = () => {
                                     {
                                         title: '金额',
                                         key: 'amount',
-                                        width: 100,
-                                        render: (_, record: Task) => `¥${record.subtotal.toFixed(2)}`
+                                        width: 120,
+                                        render: (_, record: Task) => (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span>¥{record.subtotal.toFixed(2)}</span>
+                                                <Tooltip title={getSettlementStatusText(record.settlementStatus)}>
+                                                    {record.settlementStatus === 'unpaid' && <WalletOutlined style={{ color: '#ff4d4f' }} />}
+                                                    {record.settlementStatus === 'prepaid' && <CreditCardOutlined style={{ color: '#faad14' }} />}
+                                                    {record.settlementStatus === 'draft-paid' && <DollarOutlined style={{ color: '#1890ff' }} />}
+                                                    {record.settlementStatus === 'fully-paid' && <CheckOutlined style={{ color: '#52c41a' }} />}
+                                                    {record.settlementStatus === 'cancelled' && <CloseCircleOutlined style={{ color: '#8c8c8c' }} />}
+                                                </Tooltip>
+                                            </div>
+                                        )
                                     }
                                 ]}
                             />
