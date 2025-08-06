@@ -207,7 +207,7 @@ const SaveConfirmModal: React.FC<SaveConfirmModalProps> = ({
                                     <Title level={5} style={{ margin: '8px 0' }}>直接下单</Title>
                                     <Text type="secondary">项目状态：进行中</Text>
                                     <br />
-                                    <Text type="secondary">立即开始项目执行</Text>
+                                    <Text type="secondary">项目将直接开启，并进行计时</Text>
                                 </div>
                             </Card>
                         </Col>
@@ -234,7 +234,7 @@ const SaveConfirmModal: React.FC<SaveConfirmModalProps> = ({
                                     <Title level={5} style={{ margin: '8px 0' }}>暂存为临时订单</Title>
                                     <Text type="secondary">项目状态：咨询中</Text>
                                     <br />
-                                    <Text type="secondary">保存后可以继续编辑</Text>
+                                    <Text type="secondary">项目被存为咨询状态，待与客户沟通确定后再进行后续操作</Text>
                                 </div>
                             </Card>
                         </Col>
