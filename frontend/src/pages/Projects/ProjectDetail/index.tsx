@@ -421,7 +421,7 @@ const ProjectDetail: React.FC = () => {
                 await fetchTasks();
 
                 // 计算并更新项目进度（使用最新的任务数据）
-                const updatedTasks = await fetch(`/api/projects/${id}/tasks`).then(res => res.json()).then(data => data.data || []);
+                const updatedTasks = await fetch(`/api/tasks/project/${id}`).then(res => res.json()).then(data => data.data || []);
                 const newProjectProgress = calculateProjectProgress(updatedTasks);
                 await updateProjectProgress(newProjectProgress);
 

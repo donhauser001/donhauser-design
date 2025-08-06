@@ -31,7 +31,7 @@ export const useProjectDetail = (projectId: string) => {
         if (!projectId) return;
 
         try {
-            const response = await fetch(`/api/projects/${projectId}/tasks`);
+            const response = await fetch(`/api/tasks/project/${projectId}`);
             const data = await response.json();
 
             if (data.success) {

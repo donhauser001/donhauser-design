@@ -15,6 +15,8 @@ import servicePricingRoutes from './servicePricing';
 import quotationRoutes from './quotations';
 
 import specificationRoutes from './specifications';
+import projectRoutes from './projects';
+import taskRoutes from './tasks';
 
 const router = Router();
 
@@ -64,5 +66,11 @@ router.use('/quotations', quotationRoutes);
 
 // 规格管理路由
 router.use('/specifications', specificationRoutes);
+
+// 项目管理路由
+router.use('/projects', projectRoutes);
+
+// 任务管理路由
+router.use('/tasks', taskRoutes);
 
 export default router; 
