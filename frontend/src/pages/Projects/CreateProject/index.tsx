@@ -140,22 +140,7 @@ const CreateProject: React.FC = () => {
         localStorage.setItem('createProject_serviceQuantities', JSON.stringify(serviceQuantities));
     }, [serviceQuantities]);
 
-    // 监听表单值变化并保存
-    useEffect(() => {
-        const saveFormData = () => {
-            const formData = form.getFieldsValue();
-            localStorage.setItem('createProject_formData', JSON.stringify(formData));
-        };
 
-        // 监听表单值变化
-        const unsubscribe = form.subscribe(({ values }) => {
-            if (values) {
-                localStorage.setItem('createProject_formData', JSON.stringify(values));
-            }
-        });
-
-        return unsubscribe;
-    }, [form]);
 
     // 恢复客户选择
     useEffect(() => {
@@ -213,6 +198,9 @@ const CreateProject: React.FC = () => {
                     form={form}
                     layout="vertical"
                     onFinish={handleSubmit}
+                    onValuesChange={(changedValues, allValues) => {
+                        localStorage.setItem('createProject_formData', JSON.stringify(allValues));
+                    }}
                     initialValues={{
                         progressStatus: 'consulting',
                         settlementStatus: 'unpaid',
