@@ -1,17 +1,11 @@
 import { message } from 'antd';
 import { ProjectFormData, Task } from './types';
 
-export const createProject = async (formData: ProjectFormData, tasks: Task[]) => {
+export const createProject = async (projectData: any, servicesData: any[]) => {
     try {
-        const projectData = {
-            ...formData,
-            tasks: tasks.map(task => ({
-                ...task,
-                status: 'pending' as const,
-                settlementStatus: 'unpaid' as const
-            })),
-            progressStatus: 'consulting',
-            settlementStatus: 'unpaid'
+        const requestData = {
+            project: projectData,
+            services: servicesData
         };
 
         const response = await fetch('/api/projects', {
@@ -19,21 +13,18 @@ export const createProject = async (formData: ProjectFormData, tasks: Task[]) =>
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(projectData),
+            body: JSON.stringify(requestData),
         });
 
         const data = await response.json();
 
         if (data.success) {
-            message.success('项目创建成功');
             return data.data;
         } else {
-            message.error(data.message || '项目创建失败');
             throw new Error(data.message || '项目创建失败');
         }
     } catch (error) {
         console.error('创建项目失败:', error);
-        message.error('创建项目失败');
         throw error;
     }
 };

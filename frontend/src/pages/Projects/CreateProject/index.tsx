@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Form, Button, Card, Space, Steps, Tag, Input } from 'antd';
+import { Form, Button, Card, Space, Steps, Tag, Input, message } from 'antd';
 import { SaveOutlined, ArrowLeftOutlined, FileTextOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useCreateProject } from './hooks';
-import { createProject, validateProjectData } from './services';
+import { createProject } from './services';
 import { ProjectFormData } from './types';
 import BasicInfoTab from './components/BasicInfoTab';
 import QuotationsTab from './components/QuotationsTab';
 import OrderTab from './components/OrderTab';
+import SaveConfirmModal from './components/SaveConfirmModal';
 
 // 数据持久化键名
 const STORAGE_KEYS = {
@@ -24,23 +25,24 @@ const CreateProject: React.FC = () => {
     const navigate = useNavigate();
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
-    
+    const [saveModalVisible, setSaveModalVisible] = useState(false);
+
     // 从localStorage恢复所有状态
     const [currentStep, setCurrentStep] = useState(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_STEP);
         return saved ? parseInt(saved) : 0;
     });
-    
+
     const [selectedServices, setSelectedServices] = useState<any[]>(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.SELECTED_SERVICES);
         return saved ? JSON.parse(saved) : [];
     });
-    
+
     const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.SELECTED_SERVICE_IDS);
         return saved ? JSON.parse(saved) : [];
     });
-    
+
     const [serviceQuantities, setServiceQuantities] = useState<Record<string, number>>(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.SERVICE_QUANTITIES);
         return saved ? JSON.parse(saved) : {};
@@ -129,12 +131,12 @@ const CreateProject: React.FC = () => {
     // 监听表单变化并保存
     const handleFormValuesChange = useCallback((changedValues: any, allValues: any) => {
         saveToStorage(STORAGE_KEYS.FORM_DATA, allValues);
-        
+
         // 如果客户发生变化，保存客户ID
         if (changedValues.clientId !== undefined) {
             saveToStorage(STORAGE_KEYS.SELECTED_CLIENT_ID, changedValues.clientId);
         }
-        
+
         // 如果联系人发生变化，保存联系人ID
         if (changedValues.contactIds !== undefined) {
             saveToStorage(STORAGE_KEYS.SELECTED_CONTACTS, changedValues.contactIds);
@@ -173,28 +175,115 @@ const CreateProject: React.FC = () => {
         }
     }, [clients, restoreFormData]);
 
-    const handleSubmit = async (values: ProjectFormData) => {
+    // 数据验证函数
+    const validateProjectData = (values: ProjectFormData) => {
+        if (!values.projectName) {
+            message.error('请输入项目名称');
+            return false;
+        }
+        if (!values.clientId) {
+            message.error('请选择客户');
+            return false;
+        }
+        if (!values.contactIds?.length) {
+            message.error('请选择联系人');
+            return false;
+        }
+        if (!values.undertakingTeam) {
+            message.error('请选择承接团队');
+            return false;
+        }
+        if (!values.mainDesigners?.length) {
+            message.error('请选择主创设计师');
+            return false;
+        }
+        if (!selectedServices.length) {
+            message.error('请选择至少一个服务项目');
+            return false;
+        }
+        return true;
+    };
+
+    // 计算金额
+    const calculateAmounts = () => {
+        const totalAmount = selectedServices.reduce((sum, service) => {
+            const priceResult = calculatePrice(service);
+            return sum + priceResult.discountedPrice;
+        }, 0);
+
+        const originalAmount = selectedServices.reduce((sum, service) => {
+            return sum + (service.unitPrice * service.quantity);
+        }, 0);
+
+        const discountAmount = originalAmount - totalAmount;
+
+        return { totalAmount, originalAmount, discountAmount };
+    };
+
+    // 构建项目数据
+    const buildProjectData = (values: ProjectFormData, action: 'order' | 'draft') => {
+        const client = clients.find(c => c._id === values.clientId);
+        const selectedContacts = contacts.filter(c => values.contactIds?.includes(c._id));
+        const enterprise = enterprises.find(e => e._id === values.undertakingTeam);
+        const mainDesigners = designers.filter(d => values.mainDesigners?.includes(d._id));
+        const assistantDesigners = designers.filter(d => values.assistantDesigners?.includes(d._id));
+
+        return {
+            projectName: values.projectName,
+            clientId: values.clientId,
+            clientName: client?.name,
+            contactIds: values.contactIds,
+            contactNames: selectedContacts.map(c => c.realName).join(', '),
+            contactPhones: selectedContacts.map(c => c.phone).join(', '),
+            undertakingTeam: values.undertakingTeam,
+            undertakingTeamName: enterprise?.enterpriseName,
+            mainDesigners: values.mainDesigners,
+            mainDesignerNames: mainDesigners.map(d => d.realName).join(', '),
+            assistantDesigners: values.assistantDesigners,
+            assistantDesignerNames: assistantDesigners.map(d => d.realName).join(', '),
+            clientRequirements: values.clientRequirements,
+            remark: values.remark,
+            progressStatus: action === 'order' ? 'designing' : 'consulting',
+            settlementStatus: 'unpaid',
+            ...calculateAmounts()
+        };
+    };
+
+    // 处理保存确认
+    const handleSaveConfirm = async (action: 'order' | 'draft') => {
         try {
             setLoading(true);
 
+            const values = form.getFieldsValue();
+
             // 验证数据
-            if (!validateProjectData(values, tasks)) {
+            if (!validateProjectData(values)) {
                 return;
             }
 
-            // 处理客户和联系人信息
-            const client = clients.find(c => c._id === values.clientId);
-            const selectedContacts = contacts.filter(c => values.contactIds?.includes(c._id));
+            // 构建项目数据
+            const projectData = buildProjectData(values, action);
 
-            const projectData = {
-                ...values,
-                clientName: client?.name,
-                contactNames: selectedContacts.map(c => c.realName).join(', '),
-                contactPhones: selectedContacts.map(c => c.phone).join(', ')
-            };
+            // 处理服务数据
+            const servicesData = selectedServices.map(service => ({
+                serviceId: service._id,
+                serviceName: service.serviceName,
+                quantity: service.quantity,
+                unitPrice: service.unitPrice,
+                unit: service.unit,
+                subtotal: service.unitPrice * service.quantity,
+                pricingPolicies: service.selectedPricingPolicies || [],
+                pricingPolicyNames: getPricingPolicyNames(service.selectedPricingPolicies || []),
+                discountAmount: calculateServiceDiscount(service),
+                finalAmount: calculateServiceFinalAmount(service)
+            }));
 
             // 创建项目
-            await createProject(projectData, tasks);
+            await createProject(projectData, servicesData);
+
+            // 显示成功消息
+            const actionText = action === 'order' ? '下单' : '暂存';
+            message.success(`项目${actionText}成功`);
 
             // 清空所有暂存数据
             clearStoredData();
@@ -202,10 +291,127 @@ const CreateProject: React.FC = () => {
             // 跳转到项目列表
             navigate('/projects');
         } catch (error) {
-            console.error('提交失败:', error);
+            console.error('保存失败:', error);
+            message.error('保存失败，请重试');
         } finally {
             setLoading(false);
+            setSaveModalVisible(false);
         }
+    };
+
+    // 显示保存确认模态窗
+    const showSaveModal = () => {
+        const values = form.getFieldsValue();
+        if (!validateProjectData(values)) {
+            return;
+        }
+        setSaveModalVisible(true);
+    };
+
+    // 计算服务价格（从OrderTab复制）
+    const calculatePrice = (service: any) => {
+        const originalPrice = service.unitPrice * service.quantity;
+
+        if (!service.selectedPricingPolicies || service.selectedPricingPolicies.length === 0) {
+            return {
+                originalPrice,
+                discountedPrice: originalPrice,
+                discountAmount: 0
+            };
+        }
+
+        let selectedPolicy = null;
+
+        if (service.selectedPricingPolicies && service.selectedPricingPolicies.length > 0) {
+            const selectedPolicyId = service.selectedPricingPolicies[0];
+
+            selectedPolicy = pricingPolicies.find(p => p._id === selectedPolicyId);
+
+            if (service.pricingPolicyIds && service.pricingPolicyNames) {
+                const selectedIndex = service.pricingPolicyIds.indexOf(selectedPolicyId);
+                if (selectedIndex !== -1) {
+                    const expectedPolicyName = service.pricingPolicyNames[selectedIndex];
+
+                    if (selectedPolicy && selectedPolicy.name !== expectedPolicyName && selectedPolicy.alias !== expectedPolicyName) {
+                        selectedPolicy = pricingPolicies.find(p => p.name === expectedPolicyName || p.alias === expectedPolicyName);
+                    }
+                }
+            }
+        }
+
+        if (!selectedPolicy || selectedPolicy.status !== 'active') {
+            return {
+                originalPrice,
+                discountedPrice: originalPrice,
+                discountAmount: 0
+            };
+        }
+
+        let discountedPrice = originalPrice;
+
+        if (selectedPolicy.type === 'uniform_discount') {
+            const discountRatio = selectedPolicy.discountRatio || 100;
+            discountedPrice = (originalPrice * discountRatio) / 100;
+        } else if (selectedPolicy.type === 'tiered_discount' && selectedPolicy.tierSettings) {
+            const unitPrice = service.unitPrice;
+            let totalDiscountedPrice = 0;
+
+            const sortedTiers = [...selectedPolicy.tierSettings].sort((a, b) => (a.startQuantity || 0) - (b.startQuantity || 0));
+            let remainingQuantity = service.quantity;
+
+            for (const tier of sortedTiers) {
+                if (remainingQuantity <= 0) break;
+
+                const startQuantity = tier.startQuantity || 0;
+                const endQuantity = tier.endQuantity || Infinity;
+                const discountRatio = tier.discountRatio || 100;
+
+                let tierQuantity = 0;
+                if (endQuantity === Infinity) {
+                    tierQuantity = remainingQuantity;
+                } else {
+                    const tierCapacity = endQuantity - startQuantity + 1;
+                    tierQuantity = Math.min(remainingQuantity, tierCapacity);
+                }
+
+                if (tierQuantity > 0) {
+                    const tierPrice = unitPrice * tierQuantity;
+                    const tierDiscountedPrice = (tierPrice * discountRatio) / 100;
+                    totalDiscountedPrice += tierDiscountedPrice;
+                    remainingQuantity -= tierQuantity;
+                }
+            }
+
+            discountedPrice = totalDiscountedPrice;
+        }
+
+        const discountAmount = originalPrice - discountedPrice;
+
+        return {
+            originalPrice,
+            discountedPrice,
+            discountAmount
+        };
+    };
+
+    // 获取定价政策名称
+    const getPricingPolicyNames = (policyIds: string[]) => {
+        return policyIds.map(id => {
+            const policy = pricingPolicies.find(p => p._id === id);
+            return policy?.name || policy?.alias || '未知政策';
+        }).join(', ');
+    };
+
+    // 计算服务折扣金额
+    const calculateServiceDiscount = (service: any) => {
+        const priceResult = calculatePrice(service);
+        return priceResult.discountAmount;
+    };
+
+    // 计算服务最终金额
+    const calculateServiceFinalAmount = (service: any) => {
+        const priceResult = calculatePrice(service);
+        return priceResult.discountedPrice;
     };
 
     const handleNext = () => {
@@ -229,22 +435,22 @@ const CreateProject: React.FC = () => {
             ...prev,
             [serviceId]: quantity
         }));
-        
+
         // 同时更新selectedServices中的数量
-        setSelectedServices(prev => 
-            prev.map(service => 
-                service._id === serviceId 
-                    ? { ...service, quantity } 
+        setSelectedServices(prev =>
+            prev.map(service =>
+                service._id === serviceId
+                    ? { ...service, quantity }
                     : service
             )
         );
     };
 
     const handlePricingPolicyChange = (serviceId: string, policyIds: string[]) => {
-        setSelectedServices(prev => 
-            prev.map(service => 
-                service._id === serviceId 
-                    ? { ...service, selectedPricingPolicies: policyIds } 
+        setSelectedServices(prev =>
+            prev.map(service =>
+                service._id === serviceId
+                    ? { ...service, selectedPricingPolicies: policyIds }
                     : service
             )
         );
@@ -284,7 +490,6 @@ const CreateProject: React.FC = () => {
                 <Form
                     form={form}
                     layout="vertical"
-                    onFinish={handleSubmit}
                     onValuesChange={handleFormValuesChange}
                     initialValues={{
                         progressStatus: 'consulting',
@@ -448,7 +653,7 @@ const CreateProject: React.FC = () => {
                                     type="primary"
                                     icon={<SaveOutlined />}
                                     loading={loading}
-                                    onClick={() => form.submit()}
+                                    onClick={showSaveModal}
                                     size="large"
                                 >
                                     保存项目
@@ -469,6 +674,17 @@ const CreateProject: React.FC = () => {
                     </Form.Item>
                 </Form>
             </Card>
+
+            {/* 保存确认模态窗 */}
+            <SaveConfirmModal
+                visible={saveModalVisible}
+                onCancel={() => setSaveModalVisible(false)}
+                onConfirm={handleSaveConfirm}
+                loading={loading}
+                projectData={buildProjectData(form.getFieldsValue(), 'order')}
+                selectedServices={selectedServices}
+                {...calculateAmounts()}
+            />
         </div>
     );
 };
