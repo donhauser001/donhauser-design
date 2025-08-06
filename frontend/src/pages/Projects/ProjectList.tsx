@@ -83,6 +83,10 @@ const ProjectList: React.FC = () => {
     const [statusChangeProject, setStatusChangeProject] = useState<Project | null>(null);
     const [selectedNewStatus, setSelectedNewStatus] = useState<string>('');
     const [statusChangeLoading, setStatusChangeLoading] = useState(false);
+    const [resumeModalVisible, setResumeModalVisible] = useState(false);
+    const [resumeProject, setResumeProject] = useState<Project | null>(null);
+    const [selectedResumeStatus, setSelectedResumeStatus] = useState<string>('');
+    const [resumeLoading, setResumeLoading] = useState(false);
 
     // 获取项目列表
     const fetchProjects = async () => {
@@ -267,6 +271,66 @@ const ProjectList: React.FC = () => {
         setSelectedNewStatus('');
     };
 
+    // 处理暂停项目的状态变更
+    const handleResumeProject = async (project: Project) => {
+        setResumeProject(project);
+        setSelectedResumeStatus('');
+        setResumeModalVisible(true);
+    };
+
+    const handleConfirmResumeProject = async () => {
+        if (!resumeProject || !selectedResumeStatus) return;
+
+        setResumeLoading(true);
+        try {
+            const updateData: any = {
+                progressStatus: selectedResumeStatus
+            };
+
+            // 根据新状态设置相应的时间字段
+            if (selectedResumeStatus === 'in-progress') {
+                // 恢复进行中，设置或更新开始时间
+                updateData.startedAt = new Date().toISOString();
+            } else if (selectedResumeStatus === 'cancelled') {
+                // 取消项目，设置取消时间
+                updateData.cancelledAt = new Date().toISOString();
+            }
+
+            const response = await fetch(`/api/projects/${resumeProject._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                const statusText = getProgressStatusText(selectedResumeStatus);
+                message.success(`项目状态已更新为：${statusText}`);
+                setResumeModalVisible(false);
+                setResumeProject(null);
+                setSelectedResumeStatus('');
+                fetchProjects();
+                fetchStats();
+            } else {
+                message.error(data.message || '更新失败');
+            }
+        } catch (error) {
+            console.error('更新项目状态失败:', error);
+            message.error('更新项目状态失败');
+        } finally {
+            setResumeLoading(false);
+        }
+    };
+
+    const handleCancelResumeProject = () => {
+        setResumeModalVisible(false);
+        setResumeProject(null);
+        setSelectedResumeStatus('');
+    };
+
     // 清除所有筛选条件，查看全部项目
     const handleViewAll = () => {
         setSearchText('');
@@ -341,7 +405,7 @@ const ProjectList: React.FC = () => {
                     <Tag
                         color={getProgressStatusColor(record.progressStatus)}
                         style={{
-                            cursor: (record.progressStatus === 'consulting' || record.progressStatus === 'in-progress') ? 'pointer' : 'default',
+                            cursor: (record.progressStatus === 'consulting' || record.progressStatus === 'in-progress' || record.progressStatus === 'on-hold') ? 'pointer' : 'default',
                             userSelect: 'none'
                         }}
                         onClick={
@@ -349,7 +413,9 @@ const ProjectList: React.FC = () => {
                                 ? () => handleStartProject(record)
                                 : record.progressStatus === 'in-progress'
                                     ? () => handleChangeProjectStatus(record)
-                                    : undefined
+                                    : record.progressStatus === 'on-hold'
+                                        ? () => handleResumeProject(record)
+                                        : undefined
                         }
                     >
                         {getProgressStatusText(record.progressStatus)}
@@ -358,6 +424,9 @@ const ProjectList: React.FC = () => {
                         )}
                         {record.progressStatus === 'in-progress' && (
                             <span style={{ marginLeft: '4px', fontSize: '12px' }}>⚙️</span>
+                        )}
+                        {record.progressStatus === 'on-hold' && (
+                            <span style={{ marginLeft: '4px', fontSize: '12px' }}>⏸️</span>
                         )}
                     </Tag>
                 </div>
@@ -699,6 +768,84 @@ const ProjectList: React.FC = () => {
                         }}>
                             <p style={{ margin: 0, color: '#1890ff' }}>
                                 <strong>即将变更：</strong>进行中 → {getProgressStatusText(selectedNewStatus)}
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </Modal>
+
+            {/* 暂停项目状态变更对话框 */}
+            <Modal
+                title="恢复暂停项目"
+                open={resumeModalVisible}
+                onOk={handleConfirmResumeProject}
+                onCancel={handleCancelResumeProject}
+                confirmLoading={resumeLoading}
+                okText="确定"
+                cancelText="取消"
+                okButtonProps={{ disabled: !selectedResumeStatus }}
+            >
+                <div style={{ padding: '16px 0' }}>
+                    <p>要将项目切换到以下状态吗？</p>
+                    <div style={{
+                        background: '#f5f5f5',
+                        padding: '12px',
+                        borderRadius: '6px',
+                        margin: '12px 0'
+                    }}>
+                        <p><strong>项目名称：</strong>{resumeProject?.projectName}</p>
+                        <p><strong>客户：</strong>{resumeProject?.clientName}</p>
+                        <p><strong>当前状态：</strong>
+                            <Tag color="purple">暂停</Tag>
+                        </p>
+                    </div>
+
+                    <div style={{ margin: '16px 0' }}>
+                        <p style={{ marginBottom: '12px', fontWeight: 'bold' }}>选择新状态：</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div
+                                style={{
+                                    padding: '12px',
+                                    border: selectedResumeStatus === 'in-progress' ? '2px solid #1890ff' : '1px solid #d9d9d9',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    backgroundColor: selectedResumeStatus === 'in-progress' ? '#e6f7ff' : '#fff'
+                                }}
+                                onClick={() => setSelectedResumeStatus('in-progress')}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Tag color="blue">进行中</Tag>
+                                    <span style={{ fontSize: '14px', color: '#666' }}>恢复项目执行，继续计时</span>
+                                </div>
+                            </div>
+
+                            <div
+                                style={{
+                                    padding: '12px',
+                                    border: selectedResumeStatus === 'cancelled' ? '2px solid #d9d9d9' : '1px solid #d9d9d9',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    backgroundColor: selectedResumeStatus === 'cancelled' ? '#f5f5f5' : '#fff'
+                                }}
+                                onClick={() => setSelectedResumeStatus('cancelled')}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Tag color="default">取消</Tag>
+                                    <span style={{ fontSize: '14px', color: '#666' }}>项目终止，不可恢复</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {selectedResumeStatus && (
+                        <div style={{
+                            background: '#e6f7ff',
+                            padding: '12px',
+                            borderRadius: '6px',
+                            border: '1px solid #91d5ff'
+                        }}>
+                            <p style={{ margin: 0, color: '#1890ff' }}>
+                                <strong>即将变更：</strong>暂停 → {getProgressStatusText(selectedResumeStatus)}
                             </p>
                         </div>
                     )}
