@@ -83,7 +83,7 @@ export class ProjectService {
         calculationDetails: string;
       }>;
       billingDescription: string;
-      priority?: string;
+      priority?: 'low' | 'medium' | 'high' | 'urgent';
       dueDate?: Date;
       remarks?: string;
     }>;
@@ -106,7 +106,7 @@ export class ProjectService {
 
     // 创建项目日志
     await this.createProjectLog({
-      projectId: savedProject._id.toString(),
+      projectId: (savedProject as any)._id.toString(),
       type: 'system',
       title: '项目创建',
       content: `项目 "${projectData.projectName}" 已创建`,
@@ -117,10 +117,10 @@ export class ProjectService {
     if (tasks && tasks.length > 0) {
       const tasksData = tasks.map(task => ({
         ...task,
-        projectId: savedProject._id.toString(),
-        status: 'pending',
+        projectId: (savedProject as any)._id.toString(),
+        status: 'pending' as const,
         progress: 0,
-        settlementStatus: 'unpaid',
+        settlementStatus: 'unpaid' as const,
         attachmentIds: [],
         pricingPolicies: task.pricingPolicies || []
       }));
@@ -133,7 +133,7 @@ export class ProjectService {
 
       // 创建任务创建日志
       await this.createProjectLog({
-        projectId: savedProject._id.toString(),
+        projectId: (savedProject as any)._id.toString(),
         type: 'task_update',
         title: '任务创建',
         content: `创建了 ${tasks.length} 个任务`,
