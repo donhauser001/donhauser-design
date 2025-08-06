@@ -55,10 +55,24 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
         }
 
         // 获取选中的定价政策
-        const selectedPolicy = pricingPolicies.find(p => p._id === service.selectedPricingPolicies[0]);
-        console.log('找到的选中政策:', selectedPolicy);
+        let selectedPolicy = pricingPolicies.find(p => p._id === service.selectedPricingPolicies[0]);
+        console.log('从pricingPolicies中找到的选中政策:', selectedPolicy);
+        
+        // 如果从pricingPolicies中找不到，尝试从服务数据中构建政策信息
+        if (!selectedPolicy && service.pricingPolicyIds && service.pricingPolicyNames) {
+            const selectedIndex = service.pricingPolicyIds.indexOf(service.selectedPricingPolicies[0]);
+            if (selectedIndex !== -1) {
+                const policyName = service.pricingPolicyNames[selectedIndex];
+                console.log('从服务数据中找到政策名称:', policyName);
+                
+                // 尝试从pricingPolicies中通过名称查找
+                selectedPolicy = pricingPolicies.find(p => p.name === policyName || p.alias === policyName);
+                console.log('通过名称找到的政策:', selectedPolicy);
+            }
+        }
 
         if (!selectedPolicy || selectedPolicy.status !== 'active') {
+            console.log('未找到有效的定价政策，使用原价计算');
             return {
                 originalPrice,
                 discountedPrice: originalPrice,
