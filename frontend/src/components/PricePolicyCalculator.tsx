@@ -65,14 +65,14 @@ export const calculatePriceWithPolicies = (
       const discountRatio = policy.discountRatio || 0
       const discountedPrice = (originalPrice * discountRatio) / 100
       const discountAmount = originalPrice - discountedPrice
-      
+
       currentResult = {
         originalPrice,
         discountedPrice,
         discountAmount,
         discountRatio,
         appliedPolicy: policy,
-        calculationDetails: `按${discountRatio}%计费`
+        calculationDetails: `优惠说明: 按${discountRatio}%计费<br/><br/>原价：￥${originalPrice.toFixed(2)}<br/>优惠：￥${discountAmount.toFixed(2)}<br/>最终价格：￥${discountedPrice.toFixed(2)}`
       }
     } else if (policy.type === 'tiered_discount' && policy.tierSettings) {
       // 阶梯折扣 - 分段计算
@@ -126,6 +126,7 @@ const calculateTieredDiscount = (
   let totalDiscountedPrice = 0
   let calculationDetails = ''
   let totalDiscountRatio = 0
+  let tierDetails: string[] = []
 
   // 按阶梯设置排序
   const sortedTiers = [...policy.tierSettings].sort((a, b) => (a.startQuantity || 0) - (b.startQuantity || 0))
@@ -150,7 +151,7 @@ const calculateTieredDiscount = (
       const tierCapacity = endQuantity - startQuantity + 1
       tierQuantityApplicable = Math.min(remainingQuantity, tierCapacity)
     }
-    
+
     // Ensure tierQuantityApplicable is not negative
     tierQuantityApplicable = Math.max(0, tierQuantityApplicable)
 
@@ -168,13 +169,42 @@ const calculateTieredDiscount = (
       } else {
         tierRange = `第${startQuantity}-${endQuantity}${unit}`
       }
-      calculationDetails += `${tierRange}按${discountRatio}%计费: ¥${tierDiscountedPrice.toLocaleString()}<br/>`
+
+      // 生成详细的计算公式
+      const tierDetail = `${tierRange}：￥${unitPrice.toFixed(2)} × ${tierQuantityApplicable}${unit} × ${discountRatio}% = ￥${tierDiscountedPrice.toFixed(2)}`
+      tierDetails.push(tierDetail)
+
       remainingQuantity -= tierQuantityApplicable // 更新剩余数量
     }
   }
 
   const discountAmount = originalPrice - totalDiscountedPrice
   totalDiscountRatio = ((originalPrice - totalDiscountedPrice) / originalPrice) * 100
+
+  // 生成优惠说明
+  let discountDescription = ''
+  for (let i = 0; i < sortedTiers.length; i++) {
+    const tier = sortedTiers[i]
+    const startQuantity = tier.startQuantity || 0
+    const endQuantity = tier.endQuantity || Infinity
+    const discountRatio = tier.discountRatio || 0
+
+    if (i > 0) discountDescription += '，'
+
+    if (startQuantity === endQuantity) {
+      discountDescription += `第${startQuantity}${unit}按${discountRatio}%计费`
+    } else if (endQuantity === Infinity) {
+      discountDescription += `${startQuantity}${unit}及以上按${discountRatio}%计费`
+    } else {
+      discountDescription += `${startQuantity}-${endQuantity}${unit}按${discountRatio}%计费`
+    }
+  }
+
+  // 组合完整的计算详情
+  calculationDetails = `优惠说明: ${discountDescription}<br/><br/>`
+  calculationDetails += tierDetails.join('<br/>')
+  calculationDetails += `<br/><br/>小计：${tierDetails.map(detail => detail.split(' = ')[1]).join('+')}=￥${totalDiscountedPrice.toFixed(2)}<br/>`
+  calculationDetails += `优惠：￥${discountAmount.toFixed(2)}`
 
   return {
     originalPrice,
@@ -194,7 +224,7 @@ const calculateTieredDiscount = (
 export const formatCalculationDetails = (result: PriceCalculationResult): string => {
   if (result.appliedPolicy) {
     const actualDiscountRatio = 100 - result.discountRatio // 实际优惠比例
-    
+
     if (result.appliedPolicy.type === 'uniform_discount') {
       // 统一折扣简化显示
       return `优惠折扣: 按${result.discountRatio}%计费<br/>原价: ¥${result.originalPrice.toLocaleString()}<br/>优惠比例: ${actualDiscountRatio}%<br/>优惠金额: ¥${result.discountAmount.toLocaleString()}<br/>最终价格: ¥${result.discountedPrice.toLocaleString()}`
@@ -258,17 +288,17 @@ const PricePolicyCalculator: React.FC<PricePolicyCalculatorProps> = ({
           <div style={{ marginBottom: 4 }}>
             <strong>应用政策:</strong> {calculationResult.appliedPolicy.name}
           </div>
-          <div 
-            style={{ 
-              backgroundColor: '#f6ffed', 
-              padding: 8, 
-              borderRadius: 4, 
+          <div
+            style={{
+              backgroundColor: '#f6ffed',
+              padding: 8,
+              borderRadius: 4,
               border: '1px solid #b7eb8f',
               fontSize: '11px',
               lineHeight: 1.4
             }}
-            dangerouslySetInnerHTML={{ 
-              __html: formatCalculationDetails(calculationResult) 
+            dangerouslySetInnerHTML={{
+              __html: formatCalculationDetails(calculationResult)
             }}
           />
         </div>

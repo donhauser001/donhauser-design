@@ -71,7 +71,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             // 阶梯折扣
             const unitPrice = service.unitPrice;
             let totalDiscountedPrice = 0;
-            let details = [];
+            let tierDetails: string[] = [];
 
             const sortedTiers = [...selectedPolicy.tierSettings].sort((a, b) => (a.startQuantity || 0) - (b.startQuantity || 0));
             let remainingQuantity = service.quantity;
@@ -104,13 +104,36 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                     } else {
                         tierRange = `第${startQuantity}-${endQuantity}${service.unit}`;
                     }
-                    details.push(`${tierRange}按${discountRatio}%计费`);
+
+                    // 生成详细的计算公式
+                    const tierDetail = `${tierRange}：￥${unitPrice.toFixed(2)} × ${tierQuantity}${service.unit} × ${discountRatio}% = ￥${tierDiscountedPrice.toFixed(2)}`;
+                    tierDetails.push(tierDetail);
                     remainingQuantity -= tierQuantity;
                 }
             }
 
             discountedPrice = totalDiscountedPrice;
-            calculationDetails = `${service.priceDescription || `按${service.unit}计费`} | 应用政策: ${selectedPolicy.name} (${details.join(', ')})`;
+
+            // 生成优惠说明
+            let discountDescription = '';
+            for (let i = 0; i < sortedTiers.length; i++) {
+                const tier = sortedTiers[i];
+                const startQuantity = tier.startQuantity || 0;
+                const endQuantity = tier.endQuantity || Infinity;
+                const discountRatio = tier.discountRatio || 100;
+
+                if (i > 0) discountDescription += '，';
+
+                if (startQuantity === endQuantity) {
+                    discountDescription += `第${startQuantity}${service.unit}按${discountRatio}%计费`;
+                } else if (endQuantity === Infinity) {
+                    discountDescription += `${startQuantity}${service.unit}及以上按${discountRatio}%计费`;
+                } else {
+                    discountDescription += `${startQuantity}-${endQuantity}${service.unit}按${discountRatio}%计费`;
+                }
+            }
+
+            calculationDetails = `${service.priceDescription || `按${service.unit}计费`} | 应用政策: ${selectedPolicy.name}<br/>优惠说明: ${discountDescription}<br/><br/>${tierDetails.join('<br/>')}<br/><br/>小计：${tierDetails.map(detail => detail.split(' = ')[1]).join('+')}=￥${totalDiscountedPrice.toFixed(2)}<br/>优惠：￥${(originalPrice - totalDiscountedPrice).toFixed(2)}`;
         }
 
         const discountAmount = originalPrice - discountedPrice;
