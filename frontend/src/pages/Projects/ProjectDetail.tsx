@@ -466,6 +466,32 @@ const ProjectDetail: React.FC = () => {
 
     return (
         <div style={{ padding: '24px' }}>
+            <style>
+                {`
+                    .ant-table-tbody > tr {
+                        position: relative;
+                    }
+                    .ant-table-tbody > tr::after {
+                        content: '';
+                        position: absolute;
+                        bottom: 0;
+                        left: 0;
+                        height: 3px;
+                        background: linear-gradient(to right, #d32f2f 0%, #e53935 10%, #f44336 20%, #ff9800 30%, #ffb74d 40%, #8bc34a 50%, #66bb6a 60%, #4caf50 70%, #388e3c 80%, #2e7d32 90%);
+                        transition: width 0.3s ease;
+                        z-index: 1;
+                        width: 0%;
+                    }
+                    ${tasks.map(task => {
+                    const progressRatio = task.currentProcessStep?.progressRatio || 0;
+                    return `
+                            .task-row-${task._id}::after {
+                                width: ${progressRatio}%;
+                            }
+                        `;
+                }).join('')}
+                `}
+            </style>
             {/* 页面头部 */}
             <Card
                 title={
@@ -634,6 +660,7 @@ const ProjectDetail: React.FC = () => {
                                 pagination={false}
                                 size="small"
                                 rowKey="_id"
+                                rowClassName={(record: Task) => `task-row-${record._id}`}
                                 columns={[
                                     {
                                         title: '任务名称',
@@ -808,12 +835,7 @@ const ProjectDetail: React.FC = () => {
                                         width: 80,
                                         render: (_, record: Task) => `${record.quantity}${record.unit}`
                                     },
-                                    {
-                                        title: '进度',
-                                        key: 'progress',
-                                        width: 80,
-                                        render: (_, record: Task) => `${record.progress}%`
-                                    },
+
                                     {
                                         title: '截止日期',
                                         key: 'dueDate',
