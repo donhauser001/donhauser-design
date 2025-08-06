@@ -198,15 +198,20 @@ const ProjectList: React.FC = () => {
             title: '项目名称',
             dataIndex: 'projectName',
             key: 'projectName',
-            width: 200,
+            width: 250,
             render: (text: string, record: Project) => (
-                <Button
-                    type="link"
-                    onClick={() => navigate(`/projects/${record._id}`)}
-                    style={{ padding: 0, height: 'auto' }}
-                >
-                    {text}
-                </Button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Button
+                        type="link"
+                        onClick={() => navigate(`/projects/${record._id}`)}
+                        style={{ padding: 0, height: 'auto' }}
+                    >
+                        {text}
+                    </Button>
+                    <Tag color={getProgressStatusColor(record.progressStatus)}>
+                        {getProgressStatusText(record.progressStatus)}
+                    </Tag>
+                </div>
             )
         },
         {
@@ -214,17 +219,6 @@ const ProjectList: React.FC = () => {
             dataIndex: 'clientName',
             key: 'clientName',
             width: 150
-        },
-        {
-            title: '进度状态',
-            dataIndex: 'progressStatus',
-            key: 'progressStatus',
-            width: 120,
-            render: (status: string) => (
-                <Tag color={getProgressStatusColor(status)}>
-                    {getProgressStatusText(status)}
-                </Tag>
-            )
         },
         {
             title: '结算状态',
@@ -257,7 +251,7 @@ const ProjectList: React.FC = () => {
             title: '操作',
             key: 'action',
             width: 150,
-            render: (_, record: Project) => (
+            render: (_: any, record: Project) => (
                 <Space size="small">
                     <Tooltip title="查看详情">
                         <Button
