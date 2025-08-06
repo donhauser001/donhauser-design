@@ -223,15 +223,7 @@ const SpecificationSelector: React.FC<SpecificationSelectorProps> = ({
         key: spec._id,
         label: (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>{formatSpecification({
-              id: spec._id,
-              name: spec.name,
-              length: spec.length,
-              width: spec.width,
-              height: spec.height,
-              unit: spec.unit,
-              resolution: spec.resolution
-            })}</span>
+            <span><strong>{spec.name}</strong> {spec.length}×{spec.width}{spec.height ? `×${spec.height}` : ''} {spec.unit}{spec.resolution ? ` ${spec.resolution}` : ''}</span>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               {spec.isDefault && (
                 <span style={{ fontSize: '10px', color: '#52c41a', marginRight: 8 }}>默认</span>
