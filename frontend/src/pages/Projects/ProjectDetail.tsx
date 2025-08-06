@@ -235,7 +235,17 @@ const ProjectDetail: React.FC = () => {
                         {/* 基本信息 */}
                         <Card title="基本信息" style={{ marginBottom: 16 }}>
                             <Descriptions column={2}>
-                                <Descriptions.Item label="项目名称">{project.projectName}</Descriptions.Item>
+                                <Descriptions.Item label="项目名称">
+                                    {project.projectName}
+                                    <Space style={{ marginLeft: 8 }}>
+                                        <Tag color={getProgressStatusColor(project.progressStatus)}>
+                                            {getProgressStatusText(project.progressStatus)}
+                                        </Tag>
+                                        <Tag color={getSettlementStatusColor(project.settlementStatus)}>
+                                            {getSettlementStatusText(project.settlementStatus)}
+                                        </Tag>
+                                    </Space>
+                                </Descriptions.Item>
                                 <Descriptions.Item label="客户名称">
                                     {project.clientName}
                                     {project.contactNames && project.contactNames.length > 0 && (
@@ -281,16 +291,6 @@ const ProjectDetail: React.FC = () => {
                                 </Descriptions.Item>
                                 <Descriptions.Item label="承接团队">{project.undertakingTeamName || project.undertakingTeam}</Descriptions.Item>
                                 <Descriptions.Item label="创建时间">{dayjs(project.createdAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>
-                                <Descriptions.Item label="进度状态">
-                                    <Tag color={getProgressStatusColor(project.progressStatus)}>
-                                        {getProgressStatusText(project.progressStatus)}
-                                    </Tag>
-                                </Descriptions.Item>
-                                <Descriptions.Item label="结算状态">
-                                    <Tag color={getSettlementStatusColor(project.settlementStatus)}>
-                                        {getSettlementStatusText(project.settlementStatus)}
-                                    </Tag>
-                                </Descriptions.Item>
                                 <Descriptions.Item label="主创设计师">
                                     {(project.mainDesignerNames || project.mainDesigners).join('，')}
                                 </Descriptions.Item>
