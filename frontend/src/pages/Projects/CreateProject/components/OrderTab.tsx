@@ -19,7 +19,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
     // 辅助函数：获取企业显示名称
     const getEnterpriseName = (enterpriseId: string) => {
         const enterprise = enterprises.find(e => e._id === enterpriseId);
-        return enterprise ? (enterprise.enterpriseAlias || enterprise.enterpriseName) : '未选择';
+        return enterprise ? enterprise.enterpriseName : '未选择';
     };
 
     // 辅助函数：获取设计师显示名称
@@ -115,7 +115,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <FileTextOutlined style={{ color: '#666' }} />
-                        <span>项目信息概览</span>
+                        <span>项目信息概览：{projectData?.projectName || '未填写'}</span>
                     </div>
                 }
                 style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
@@ -129,7 +129,6 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                             </div>
                             <div style={{ paddingLeft: '24px' }}>
                                 <div><Text>客户名称：{selectedClient?.name || '未选择'}</Text></div>
-                                <div><Text>项目名称：{projectData?.projectName || '未填写'}</Text></div>
                                 <div><Text>联系人：{selectedContacts?.map(c => `${c.realName}(${c.phone})`).join(', ') || '未选择'}</Text></div>
                             </div>
                         </div>
