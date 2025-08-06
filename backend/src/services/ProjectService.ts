@@ -1,9 +1,13 @@
 import Project, { IProject } from '../models/Project';
 import ProjectLog from '../models/ProjectLog';
 import { TaskService } from './TaskService';
+import { UserService } from './UserService';
+import { EnterpriseService } from './EnterpriseService';
 
 export class ProjectService {
   private taskService = new TaskService();
+  private userService = new UserService();
+  private enterpriseService = new EnterpriseService();
 
   /**
    * 获取项目列表
@@ -49,8 +53,62 @@ export class ProjectService {
   /**
    * 根据ID获取项目详情
    */
-  async getProjectById(id: string): Promise<IProject | null> {
-    return await Project.findById(id).lean();
+  async getProjectById(id: string): Promise<any | null> {
+    const project = await Project.findById(id).lean();
+
+    if (!project) {
+      return null;
+    }
+
+    // 获取承接团队名称
+    let undertakingTeamName = project.undertakingTeam;
+    if (project.undertakingTeam) {
+      try {
+        const enterprise = await this.enterpriseService.getEnterpriseById(project.undertakingTeam);
+        if (enterprise) {
+          undertakingTeamName = enterprise.enterpriseName;
+        }
+      } catch (error) {
+        console.error('获取企业信息失败:', error);
+      }
+    }
+
+    // 获取主创设计师姓名
+    let mainDesignerNames: string[] = [];
+    if (project.mainDesigners && project.mainDesigners.length > 0) {
+      try {
+        const designerPromises = project.mainDesigners.map(async (designerId: string) => {
+          const user = await this.userService.getUserById(designerId);
+          return user ? user.realName || user.username : designerId;
+        });
+        mainDesignerNames = await Promise.all(designerPromises);
+      } catch (error) {
+        console.error('获取主创设计师信息失败:', error);
+        mainDesignerNames = project.mainDesigners;
+      }
+    }
+
+    // 获取助理设计师姓名
+    let assistantDesignerNames: string[] = [];
+    if (project.assistantDesigners && project.assistantDesigners.length > 0) {
+      try {
+        const designerPromises = project.assistantDesigners.map(async (designerId: string) => {
+          const user = await this.userService.getUserById(designerId);
+          return user ? user.realName || user.username : designerId;
+        });
+        assistantDesignerNames = await Promise.all(designerPromises);
+      } catch (error) {
+        console.error('获取助理设计师信息失败:', error);
+        assistantDesignerNames = project.assistantDesigners;
+      }
+    }
+
+    return {
+      ...project,
+      undertakingTeamName,
+      mainDesignerNames,
+      assistantDesignerNames
+    };
   }
 
   /**

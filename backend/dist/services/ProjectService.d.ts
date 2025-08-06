@@ -1,6 +1,8 @@
 import { IProject } from '../models/Project';
 export declare class ProjectService {
     private taskService;
+    private userService;
+    private enterpriseService;
     getProjects(params: {
         page?: number;
         limit?: number;
@@ -9,11 +11,12 @@ export declare class ProjectService {
         settlementStatus?: string;
         undertakingTeam?: string;
         clientId?: string;
+        excludeStatus?: string;
     }): Promise<{
         projects: IProject[];
         total: number;
     }>;
-    getProjectById(id: string): Promise<IProject | null>;
+    getProjectById(id: string): Promise<any | null>;
     createProject(projectData: {
         projectName: string;
         clientId: string;

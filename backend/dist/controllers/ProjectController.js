@@ -10,7 +10,7 @@ const taskService = new TaskService_1.TaskService();
 class ProjectController {
     static async getProjects(req, res) {
         try {
-            const { page, limit, search, progressStatus, settlementStatus, undertakingTeam, clientId } = req.query;
+            const { page, limit, search, progressStatus, settlementStatus, undertakingTeam, clientId, excludeStatus } = req.query;
             const result = await ProjectService_1.default.getProjects({
                 page: page ? parseInt(page) : undefined,
                 limit: limit ? parseInt(limit) : undefined,
@@ -18,7 +18,8 @@ class ProjectController {
                 progressStatus: progressStatus,
                 settlementStatus: settlementStatus,
                 undertakingTeam: undertakingTeam,
-                clientId: clientId
+                clientId: clientId,
+                excludeStatus: excludeStatus
             });
             res.json({
                 success: true,
@@ -42,10 +43,11 @@ class ProjectController {
             const { id } = req.params;
             const project = await ProjectService_1.default.getProjectById(id);
             if (!project) {
-                return res.status(404).json({
+                res.status(404).json({
                     success: false,
                     message: '项目不存在'
                 });
+                return;
             }
             const tasks = await taskService.getTasksByProject(id);
             res.json({
@@ -76,21 +78,25 @@ class ProjectController {
             if (servicesData && servicesData.length > 0) {
                 const tasks = await Promise.all(servicesData.map(async (service) => {
                     return await taskService.createTask({
-                        projectId: project._id,
+                        taskName: service.serviceName,
+                        projectId: project._id?.toString() || '',
                         serviceId: service.serviceId,
-                        serviceName: service.serviceName,
                         quantity: service.quantity,
-                        unitPrice: service.unitPrice,
                         unit: service.unit,
                         subtotal: service.subtotal,
-                        pricingPolicies: service.pricingPolicies,
-                        pricingPolicyNames: service.pricingPolicyNames,
-                        discountAmount: service.discountAmount,
-                        finalAmount: service.finalAmount,
+                        pricingPolicies: service.pricingPolicies?.map((policyId) => ({
+                            policyId,
+                            policyName: service.pricingPolicyNames || '未知政策',
+                            policyType: 'uniform_discount',
+                            discountRatio: 100,
+                            calculationDetails: '标准定价'
+                        })) || [],
+                        billingDescription: `${service.serviceName} - ${service.quantity}${service.unit}`,
                         status: 'pending',
                         priority: 'medium',
                         assignedDesigners: projectData.mainDesigners || [],
-                        createdBy
+                        settlementStatus: 'unpaid',
+                        progress: 0
                     });
                 }));
                 res.status(201).json({
@@ -132,10 +138,11 @@ class ProjectController {
                 updatedBy
             });
             if (!project) {
-                return res.status(404).json({
+                res.status(404).json({
                     success: false,
                     message: '项目不存在'
                 });
+                return;
             }
             res.json({
                 success: true,
@@ -178,10 +185,11 @@ class ProjectController {
             const updatedBy = req.user?.id || 'system';
             const project = await ProjectService_1.default.updateProjectStatus(id, status, updatedBy);
             if (!project) {
-                return res.status(404).json({
+                res.status(404).json({
                     success: false,
                     message: '项目不存在'
                 });
+                return;
             }
             res.json({
                 success: true,
@@ -205,10 +213,11 @@ class ProjectController {
             const updatedBy = req.user?.id || 'system';
             const project = await ProjectService_1.default.updateSettlementStatus(id, status, updatedBy);
             if (!project) {
-                return res.status(404).json({
+                res.status(404).json({
                     success: false,
                     message: '项目不存在'
                 });
+                return;
             }
             res.json({
                 success: true,

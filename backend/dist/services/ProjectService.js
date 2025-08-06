@@ -7,12 +7,16 @@ exports.ProjectService = void 0;
 const Project_1 = __importDefault(require("../models/Project"));
 const ProjectLog_1 = __importDefault(require("../models/ProjectLog"));
 const TaskService_1 = require("./TaskService");
+const UserService_1 = require("./UserService");
+const EnterpriseService_1 = require("./EnterpriseService");
 class ProjectService {
     constructor() {
         this.taskService = new TaskService_1.TaskService();
+        this.userService = new UserService_1.UserService();
+        this.enterpriseService = new EnterpriseService_1.EnterpriseService();
     }
     async getProjects(params) {
-        const { page = 1, limit = 50, search, progressStatus, settlementStatus, undertakingTeam, clientId } = params;
+        const { page = 1, limit = 50, search, progressStatus, settlementStatus, undertakingTeam, clientId, excludeStatus } = params;
         const skip = (page - 1) * limit;
         const filter = {};
         if (search) {
@@ -29,6 +33,8 @@ class ProjectService {
             filter.undertakingTeam = undertakingTeam;
         if (clientId)
             filter.clientId = clientId;
+        if (excludeStatus)
+            filter.progressStatus = { $ne: excludeStatus };
         const [projects, total] = await Promise.all([
             Project_1.default.find(filter)
                 .sort({ createdAt: -1 })
@@ -40,7 +46,56 @@ class ProjectService {
         return { projects, total };
     }
     async getProjectById(id) {
-        return await Project_1.default.findById(id).lean();
+        const project = await Project_1.default.findById(id).lean();
+        if (!project) {
+            return null;
+        }
+        let undertakingTeamName = project.undertakingTeam;
+        if (project.undertakingTeam) {
+            try {
+                const enterprise = await this.enterpriseService.getEnterpriseById(project.undertakingTeam);
+                if (enterprise) {
+                    undertakingTeamName = enterprise.enterpriseName;
+                }
+            }
+            catch (error) {
+                console.error('获取企业信息失败:', error);
+            }
+        }
+        let mainDesignerNames = [];
+        if (project.mainDesigners && project.mainDesigners.length > 0) {
+            try {
+                const designerPromises = project.mainDesigners.map(async (designerId) => {
+                    const user = await this.userService.getUserById(designerId);
+                    return user ? user.realName || user.username : designerId;
+                });
+                mainDesignerNames = await Promise.all(designerPromises);
+            }
+            catch (error) {
+                console.error('获取主创设计师信息失败:', error);
+                mainDesignerNames = project.mainDesigners;
+            }
+        }
+        let assistantDesignerNames = [];
+        if (project.assistantDesigners && project.assistantDesigners.length > 0) {
+            try {
+                const designerPromises = project.assistantDesigners.map(async (designerId) => {
+                    const user = await this.userService.getUserById(designerId);
+                    return user ? user.realName || user.username : designerId;
+                });
+                assistantDesignerNames = await Promise.all(designerPromises);
+            }
+            catch (error) {
+                console.error('获取助理设计师信息失败:', error);
+                assistantDesignerNames = project.assistantDesigners;
+            }
+        }
+        return {
+            ...project,
+            undertakingTeamName,
+            mainDesignerNames,
+            assistantDesignerNames
+        };
     }
     async createProject(projectData) {
         const { tasks, createdBy, ...projectBasicData } = projectData;

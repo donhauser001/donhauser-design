@@ -43,17 +43,18 @@ export class ProjectController {
   /**
    * 根据ID获取项目详情
    */
-  static async getProjectById(req: Request, res: Response) {
+  static async getProjectById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
 
       const project = await ProjectService.getProjectById(id);
 
       if (!project) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: '项目不存在'
         });
+        return;
       }
 
       // 获取项目相关的任务
@@ -149,7 +150,7 @@ export class ProjectController {
   /**
    * 更新项目
    */
-  static async updateProject(req: Request, res: Response) {
+  static async updateProject(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const updateData = req.body;
@@ -161,10 +162,11 @@ export class ProjectController {
       });
 
       if (!project) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: '项目不存在'
         });
+        return;
       }
 
       res.json({
@@ -209,7 +211,7 @@ export class ProjectController {
   /**
    * 更新项目状态
    */
-  static async updateProjectStatus(req: Request, res: Response) {
+  static async updateProjectStatus(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { status } = req.body;
@@ -218,10 +220,11 @@ export class ProjectController {
       const project = await ProjectService.updateProjectStatus(id, status, updatedBy);
 
       if (!project) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: '项目不存在'
         });
+        return;
       }
 
       res.json({
@@ -242,7 +245,7 @@ export class ProjectController {
   /**
    * 更新结算状态
    */
-  static async updateSettlementStatus(req: Request, res: Response) {
+  static async updateSettlementStatus(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
       const { status } = req.body;
@@ -251,10 +254,11 @@ export class ProjectController {
       const project = await ProjectService.updateSettlementStatus(id, status, updatedBy);
 
       if (!project) {
-        return res.status(404).json({
+        res.status(404).json({
           success: false,
           message: '项目不存在'
         });
+        return;
       }
 
       res.json({

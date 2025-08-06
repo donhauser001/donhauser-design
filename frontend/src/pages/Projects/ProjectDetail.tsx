@@ -29,6 +29,7 @@ interface Project {
     projectName: string;
     clientName: string;
     undertakingTeam: string;
+    undertakingTeamName?: string;
     progressStatus: 'consulting' | 'in-progress' | 'partial-delivery' | 'completed' | 'on-hold' | 'cancelled';
     settlementStatus: 'unpaid' | 'prepaid' | 'partial-paid' | 'fully-paid';
     createdAt: string;
@@ -36,7 +37,9 @@ interface Project {
     deliveredAt?: string;
     settledAt?: string;
     mainDesigners: string[];
+    mainDesignerNames?: string[];
     assistantDesigners: string[];
+    assistantDesignerNames?: string[];
     taskIds: string[];
     contactNames: string[];
     contactPhones: string[];
@@ -233,7 +236,7 @@ const ProjectDetail: React.FC = () => {
                             <Descriptions column={2}>
                                 <Descriptions.Item label="项目名称">{project.projectName}</Descriptions.Item>
                                 <Descriptions.Item label="客户名称">{project.clientName}</Descriptions.Item>
-                                <Descriptions.Item label="承接团队">{project.undertakingTeam}</Descriptions.Item>
+                                <Descriptions.Item label="承接团队">{project.undertakingTeamName || project.undertakingTeam}</Descriptions.Item>
                                 <Descriptions.Item label="创建时间">{dayjs(project.createdAt).format('YYYY-MM-DD HH:mm')}</Descriptions.Item>
                                 <Descriptions.Item label="进度状态">
                                     <Tag color={getProgressStatusColor(project.progressStatus)}>
@@ -290,7 +293,7 @@ const ProjectDetail: React.FC = () => {
                                 <h4>主创设计师</h4>
                                 <List
                                     size="small"
-                                    dataSource={project.mainDesigners}
+                                    dataSource={project.mainDesignerNames || project.mainDesigners}
                                     renderItem={(designer) => (
                                         <List.Item>
                                             <List.Item.Meta
@@ -305,7 +308,7 @@ const ProjectDetail: React.FC = () => {
                                 <h4>助理设计师</h4>
                                 <List
                                     size="small"
-                                    dataSource={project.assistantDesigners}
+                                    dataSource={project.assistantDesignerNames || project.assistantDesigners}
                                     renderItem={(designer) => (
                                         <List.Item>
                                             <List.Item.Meta
