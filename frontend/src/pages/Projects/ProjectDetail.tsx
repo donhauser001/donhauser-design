@@ -592,27 +592,29 @@ const ProjectDetail: React.FC = () => {
                                                         )}
                                                         {!hasAnyDesigners && (
                                                             <Button
-                                                                type="link"
+                                                                type="primary"
                                                                 size="small"
                                                                 onClick={() => handleAssignDesigners(record)}
-                                                                style={{ padding: 0, height: 'auto', fontSize: '12px' }}
+                                                                style={{ fontSize: '12px' }}
                                                             >
                                                                 指定
                                                             </Button>
                                                         )}
                                                     </div>
-                                                    <EditOutlined
-                                                        className="edit-icon"
-                                                        onClick={() => handleAssignDesigners(record)}
-                                                        style={{
-                                                            opacity: 0,
-                                                            transition: 'opacity 0.2s',
-                                                            cursor: 'pointer',
-                                                            color: '#1890ff',
-                                                            fontSize: '14px',
-                                                            marginLeft: '8px'
-                                                        }}
-                                                    />
+                                                    {hasAnyDesigners && (
+                                                        <EditOutlined
+                                                            className="edit-icon"
+                                                            onClick={() => handleAssignDesigners(record)}
+                                                            style={{
+                                                                opacity: 0,
+                                                                transition: 'opacity 0.2s',
+                                                                cursor: 'pointer',
+                                                                color: '#1890ff',
+                                                                fontSize: '14px',
+                                                                marginLeft: '8px'
+                                                            }}
+                                                        />
+                                                    )}
                                                 </div>
                                             );
                                         }
