@@ -95,7 +95,12 @@ const SaveConfirmModal: React.FC<SaveConfirmModalProps> = ({
                             </div>
                             <div style={{ marginBottom: '8px' }}>
                                 <Text strong>服务项目：</Text>
-                                <Text>{selectedServices.length} 项</Text>
+                                <Text>
+                                    {selectedServices && selectedServices.length > 0
+                                        ? selectedServices.map(service => service.serviceName).join('，')
+                                        : '未选择'
+                                    }
+                                </Text>
                             </div>
                         </Col>
                     </Row>
