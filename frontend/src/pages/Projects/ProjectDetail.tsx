@@ -314,10 +314,13 @@ const ProjectDetail: React.FC = () => {
     // 优先级文本映射
     const getPriorityText = (priority: string) => {
         const texts: Record<string, string> = {
-            'low': '低',
-            'medium': '中',
-            'high': '高',
-            'urgent': '紧急'
+            'low': '不太着急',
+            'medium': '正常进行',
+            'high': '尽快完成',
+            'urgent': '十万火急',
+            'waiting': '等待反馈',
+            'on-hold': '暂时搁置',
+            'completed': '完工大吉'
         };
         return texts[priority] || priority;
     };
@@ -325,10 +328,13 @@ const ProjectDetail: React.FC = () => {
     // 优先级颜色映射
     const getPriorityColor = (priority: string) => {
         const colors: Record<string, string> = {
-            'low': 'default',
+            'low': 'cyan',
             'medium': 'blue',
             'high': 'orange',
-            'urgent': 'red'
+            'urgent': 'red',
+            'waiting': 'purple',
+            'on-hold': 'default',
+            'completed': 'green'
         };
         return colors[priority] || 'default';
     };
@@ -548,7 +554,7 @@ const ProjectDetail: React.FC = () => {
                                                             key: 'urgent',
                                                             label: (
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ color: '#ff4d4f' }}>🔥</span>
+                                                                    <span style={{ color: '#ff4500' }}>🔥</span>
                                                                     <span>十万火急</span>
                                                                 </div>
                                                             )
@@ -557,7 +563,7 @@ const ProjectDetail: React.FC = () => {
                                                             key: 'high',
                                                             label: (
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ color: '#faad14' }}>⚡</span>
+                                                                    <span style={{ color: '#ffa500' }}>⚡</span>
                                                                     <span>尽快完成</span>
                                                                 </div>
                                                             )
@@ -566,7 +572,7 @@ const ProjectDetail: React.FC = () => {
                                                             key: 'medium',
                                                             label: (
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ color: '#1890ff' }}>🕐</span>
+                                                                    <span style={{ color: '#2c65da' }}>🕐</span>
                                                                     <span>正常进行</span>
                                                                 </div>
                                                             )
@@ -575,8 +581,35 @@ const ProjectDetail: React.FC = () => {
                                                             key: 'low',
                                                             label: (
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ color: '#52c41a' }}>😊</span>
+                                                                    <span style={{ color: '#159ebb' }}>😊</span>
                                                                     <span>不太着急</span>
+                                                                </div>
+                                                            )
+                                                        },
+                                                        {
+                                                            key: 'waiting',
+                                                            label: (
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <span style={{ color: '#9370db' }}>📧</span>
+                                                                    <span>等待反馈</span>
+                                                                </div>
+                                                            )
+                                                        },
+                                                        {
+                                                            key: 'on-hold',
+                                                            label: (
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <span style={{ color: '#808080' }}>⏸️</span>
+                                                                    <span>暂时搁置</span>
+                                                                </div>
+                                                            )
+                                                        },
+                                                        {
+                                                            key: 'completed',
+                                                            label: (
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <span style={{ color: '#f35c43' }}>✅</span>
+                                                                    <span>完工大吉</span>
                                                                 </div>
                                                             )
                                                         }
