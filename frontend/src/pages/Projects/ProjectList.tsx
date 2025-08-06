@@ -50,6 +50,7 @@ interface Project {
     _id: string;
     projectName: string;
     clientName: string;
+    contactNames?: string;
     undertakingTeam: string;
     progressStatus: 'consulting' | 'in-progress' | 'partial-delivery' | 'completed' | 'on-hold' | 'cancelled';
     settlementStatus: 'unpaid' | 'prepaid' | 'partial-paid' | 'fully-paid';
@@ -458,11 +459,16 @@ const ProjectList: React.FC = () => {
             title: '客户名称',
             dataIndex: 'clientName',
             key: 'clientName',
-            width: 150,
-            render: (text: string) => (
+            width: 200,
+            render: (text: string, record: Project) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <UserOutlined style={{ fontSize: '12px', color: '#666' }} />
-                    <span>{text}</span>
+                    <span>
+                        {text}
+                        {record.contactNames && (
+                            <span style={{ color: '#666' }}> - {record.contactNames}</span>
+                        )}
+                    </span>
                 </div>
             )
         },
