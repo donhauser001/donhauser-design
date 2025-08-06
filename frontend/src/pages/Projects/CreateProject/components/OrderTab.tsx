@@ -13,11 +13,12 @@ interface OrderTabProps {
     selectedContacts?: any[];
     enterprises?: any[];
     designers?: any[];
+    pricingPolicies?: any[];
     onServiceQuantityChange?: (serviceId: string, quantity: number) => void;
     onPricingPolicyChange?: (serviceId: string, policyIds: string[]) => void;
 }
 
-const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, projectData, selectedContacts, enterprises = [], designers = [], onServiceQuantityChange, onPricingPolicyChange }) => {
+const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, projectData, selectedContacts, enterprises = [], designers = [], pricingPolicies = [], onServiceQuantityChange, onPricingPolicyChange }) => {
     // 辅助函数：获取企业显示名称
     const getEnterpriseName = (enterpriseId: string) => {
         const enterprise = enterprises.find(e => e._id === enterpriseId);
@@ -31,6 +32,95 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             const designer = designers.find(d => d._id === id);
             return designer ? designer.realName : '未知';
         }).join(', ');
+    };
+
+    // 价格计算函数
+    const calculatePrice = (service: any) => {
+        const originalPrice = service.unitPrice * service.quantity;
+
+        // 如果没有选择定价政策，返回原价
+        if (!service.selectedPricingPolicies || service.selectedPricingPolicies.length === 0) {
+            return {
+                originalPrice,
+                discountedPrice: originalPrice,
+                discountAmount: 0,
+                calculationDetails: service.priceDescription || `按${service.unit}计费`
+            };
+        }
+
+        // 获取选中的定价政策
+        const selectedPolicy = pricingPolicies.find(p => p._id === service.selectedPricingPolicies[0]);
+        if (!selectedPolicy || selectedPolicy.status !== 'active') {
+            return {
+                originalPrice,
+                discountedPrice: originalPrice,
+                discountAmount: 0,
+                calculationDetails: service.priceDescription || `按${service.unit}计费`
+            };
+        }
+
+        let discountedPrice = originalPrice;
+        let calculationDetails = '';
+
+        if (selectedPolicy.type === 'uniform_discount') {
+            // 统一折扣
+            const discountRatio = selectedPolicy.discountRatio || 100;
+            discountedPrice = (originalPrice * discountRatio) / 100;
+            calculationDetails = `${service.priceDescription || `按${service.unit}计费`} | 应用政策: ${selectedPolicy.name} (${discountRatio}%)`;
+        } else if (selectedPolicy.type === 'tiered_discount' && selectedPolicy.tierSettings) {
+            // 阶梯折扣
+            const unitPrice = service.unitPrice;
+            let totalDiscountedPrice = 0;
+            let details = [];
+
+            const sortedTiers = [...selectedPolicy.tierSettings].sort((a, b) => (a.startQuantity || 0) - (b.startQuantity || 0));
+            let remainingQuantity = service.quantity;
+
+            for (const tier of sortedTiers) {
+                if (remainingQuantity <= 0) break;
+
+                const startQuantity = tier.startQuantity || 0;
+                const endQuantity = tier.endQuantity || Infinity;
+                const discountRatio = tier.discountRatio || 100;
+
+                let tierQuantity = 0;
+                if (endQuantity === Infinity) {
+                    tierQuantity = remainingQuantity;
+                } else {
+                    const tierCapacity = endQuantity - startQuantity + 1;
+                    tierQuantity = Math.min(remainingQuantity, tierCapacity);
+                }
+
+                if (tierQuantity > 0) {
+                    const tierPrice = unitPrice * tierQuantity;
+                    const tierDiscountedPrice = (tierPrice * discountRatio) / 100;
+                    totalDiscountedPrice += tierDiscountedPrice;
+
+                    let tierRange = '';
+                    if (startQuantity === endQuantity) {
+                        tierRange = `第${startQuantity}${service.unit}`;
+                    } else if (endQuantity === Infinity) {
+                        tierRange = `${startQuantity}${service.unit}及以上`;
+                    } else {
+                        tierRange = `第${startQuantity}-${endQuantity}${service.unit}`;
+                    }
+                    details.push(`${tierRange}按${discountRatio}%计费`);
+                    remainingQuantity -= tierQuantity;
+                }
+            }
+
+            discountedPrice = totalDiscountedPrice;
+            calculationDetails = `${service.priceDescription || `按${service.unit}计费`} | 应用政策: ${selectedPolicy.name} (${details.join(', ')})`;
+        }
+
+        const discountAmount = originalPrice - discountedPrice;
+
+        return {
+            originalPrice,
+            discountedPrice,
+            discountAmount,
+            calculationDetails
+        };
     };
 
     // 表格列定义
@@ -125,29 +215,53 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             title: '价格说明',
             dataIndex: 'priceDescription',
             key: 'priceDescription',
-            render: (priceDescription: string, record: any) => (
-                <div>
-                    <Text type="secondary" style={{ fontSize: '12px' }}>
-                        {priceDescription || `按${record.unit}计费`}
-                    </Text>
-                </div>
-            )
+            render: (priceDescription: string, record: any) => {
+                const priceResult = calculatePrice(record);
+                return (
+                    <div>
+                        <Text type="secondary" style={{ fontSize: '12px' }}>
+                            {priceResult.calculationDetails}
+                        </Text>
+                    </div>
+                );
+            }
         },
         {
             title: '小计',
             key: 'subtotal',
-            render: (record: any) => (
-                <div style={{ textAlign: 'right' }}>
-                    <Text type="danger" strong>¥{record.unitPrice * record.quantity}</Text>
-                </div>
-            )
+            render: (record: any) => {
+                const priceResult = calculatePrice(record);
+                return (
+                    <div style={{ textAlign: 'right' }}>
+                        {priceResult.discountAmount > 0 ? (
+                            <div>
+                                <div style={{ textDecoration: 'line-through', color: '#999', fontSize: '12px' }}>
+                                    ¥{priceResult.originalPrice.toLocaleString()}
+                                </div>
+                                <Text type="danger" strong>¥{priceResult.discountedPrice.toLocaleString()}</Text>
+                            </div>
+                        ) : (
+                            <Text type="danger" strong>¥{priceResult.discountedPrice.toLocaleString()}</Text>
+                        )}
+                    </div>
+                );
+            }
         }
     ];
 
     // 计算总金额
     const totalAmount = selectedServices.reduce((sum, service) => {
+        const priceResult = calculatePrice(service);
+        return sum + priceResult.discountedPrice;
+    }, 0);
+
+    // 计算原价总额
+    const originalTotalAmount = selectedServices.reduce((sum, service) => {
         return sum + (service.unitPrice * service.quantity);
     }, 0);
+
+    // 计算总优惠金额
+    const totalDiscountAmount = originalTotalAmount - totalAmount;
 
     return (
         <div>
@@ -235,13 +349,27 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                     size="small"
                     summary={() => (
                         <Table.Summary.Row>
-                            <Table.Summary.Cell index={0} colSpan={4}>
+                            <Table.Summary.Cell index={0} colSpan={5}>
                                 <Text strong>总计</Text>
                             </Table.Summary.Cell>
                             <Table.Summary.Cell index={1}>
-                                <Text type="danger" strong style={{ fontSize: '16px' }}>
-                                    ¥{totalAmount}
-                                </Text>
+                                {totalDiscountAmount > 0 ? (
+                                    <div style={{ textAlign: 'right' }}>
+                                        <div style={{ textDecoration: 'line-through', color: '#999', fontSize: '12px' }}>
+                                            ¥{originalTotalAmount.toLocaleString()}
+                                        </div>
+                                        <Text type="danger" strong style={{ fontSize: '16px' }}>
+                                            ¥{totalAmount.toLocaleString()}
+                                        </Text>
+                                        <div style={{ color: '#52c41a', fontSize: '12px' }}>
+                                            优惠: ¥{totalDiscountAmount.toLocaleString()}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <Text type="danger" strong style={{ fontSize: '16px' }}>
+                                        ¥{totalAmount.toLocaleString()}
+                                    </Text>
+                                )}
                             </Table.Summary.Cell>
                             <Table.Summary.Cell index={2} />
                         </Table.Summary.Row>

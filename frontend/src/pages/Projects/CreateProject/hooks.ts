@@ -12,6 +12,7 @@ export const useCreateProject = () => {
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [quotations, setQuotations] = useState<Quotation[]>([]);
+    const [pricingPolicies, setPricingPolicies] = useState<any[]>([]);
 
     // 根据选择的客户过滤联系人
     const filteredContacts = selectedClient
@@ -86,6 +87,19 @@ export const useCreateProject = () => {
         }
     };
 
+    const fetchPricingPolicies = async () => {
+        try {
+            const response = await fetch('/api/pricing-policies?status=active&limit=100');
+            const data = await response.json();
+            if (data.success) {
+                setPricingPolicies(data.data);
+            }
+        } catch (error) {
+            console.error('获取定价政策列表失败:', error);
+            message.error('获取定价政策列表失败');
+        }
+    };
+
     const handleClientChange = useCallback(async (clientId: string) => {
         const client = clients.find(c => c._id === clientId);
         setSelectedClient(client || null);
@@ -150,6 +164,7 @@ export const useCreateProject = () => {
         fetchEnterprises();
         fetchDesigners();
         fetchServices();
+        fetchPricingPolicies();
     }, []);
 
     return {
@@ -161,6 +176,7 @@ export const useCreateProject = () => {
         selectedClient,
         tasks,
         quotations,
+        pricingPolicies,
         filteredContacts,
         handleClientChange,
         handleContactChange,

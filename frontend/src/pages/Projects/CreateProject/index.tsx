@@ -39,6 +39,7 @@ const CreateProject: React.FC = () => {
         selectedClient,
         tasks,
         quotations,
+        pricingPolicies,
         filteredContacts,
         handleClientChange,
         handleContactChange,
@@ -372,6 +373,7 @@ const CreateProject: React.FC = () => {
                                 )}
                                 enterprises={enterprises}
                                 designers={designers}
+                                pricingPolicies={pricingPolicies}
                                 onServiceQuantityChange={handleQuantityChange}
                                 onPricingPolicyChange={handlePricingPolicyChange}
                             />
