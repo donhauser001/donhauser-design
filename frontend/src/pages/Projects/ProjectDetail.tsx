@@ -15,7 +15,9 @@ import {
     Tabs,
     Table,
     Modal,
-    Select
+    Select,
+    Dropdown,
+    Menu
 } from 'antd';
 import {
     ArrowLeftOutlined,
@@ -108,9 +110,6 @@ const ProjectDetail: React.FC = () => {
     const [selectedMainDesigners, setSelectedMainDesigners] = useState<string[]>([]);
     const [selectedAssistantDesigners, setSelectedAssistantDesigners] = useState<string[]>([]);
     const [assignLoading, setAssignLoading] = useState(false);
-    const [priorityModalVisible, setPriorityModalVisible] = useState(false);
-    const [currentPriorityTask, setCurrentPriorityTask] = useState<Task | null>(null);
-    const [selectedPriority, setSelectedPriority] = useState<string>('');
     const [priorityLoading, setPriorityLoading] = useState(false);
 
     // 获取项目详情
@@ -204,24 +203,15 @@ const ProjectDetail: React.FC = () => {
         }
     };
 
-    // 打开修改紧急度模态窗
-    const handleChangePriority = (task: Task) => {
-        setCurrentPriorityTask(task);
-        setSelectedPriority(task.priority);
-        setPriorityModalVisible(true);
-    };
-
-    // 确认修改紧急度
-    const handleConfirmPriority = async () => {
-        if (!currentPriorityTask) return;
-
+    // 选择紧急度
+    const handlePrioritySelect = async (task: Task, priority: string) => {
         setPriorityLoading(true);
         try {
-            const response = await fetch(`/api/tasks/${currentPriorityTask._id}`, {
+            const response = await fetch(`/api/tasks/${task._id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    priority: selectedPriority
+                    priority: priority
                 })
             });
 
@@ -229,7 +219,6 @@ const ProjectDetail: React.FC = () => {
 
             if (data.success) {
                 message.success('紧急度修改成功');
-                setPriorityModalVisible(false);
                 fetchTasks(); // 重新获取任务列表
             } else {
                 message.error(data.message || '紧急度修改失败');
@@ -550,16 +539,63 @@ const ProjectDetail: React.FC = () => {
                                         title: '紧急度',
                                         key: 'priority',
                                         width: 80,
-                                        render: (_, record: Task) => (
-                                            <Tag 
-                                                color={getPriorityColor(record.priority)} 
-                                                size="small"
-                                                style={{ cursor: 'pointer' }}
-                                                onClick={() => handleChangePriority(record)}
-                                            >
-                                                {getPriorityText(record.priority)}
-                                            </Tag>
-                                        )
+                                        render: (_, record: Task) => {
+                                            const menu = (
+                                                <Menu
+                                                    onClick={({ key }) => handlePrioritySelect(record, key)}
+                                                    items={[
+                                                        {
+                                                            key: 'urgent',
+                                                            label: (
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <span style={{ color: '#ff4d4f' }}>🔥</span>
+                                                                    <span>十万火急</span>
+                                                                </div>
+                                                            )
+                                                        },
+                                                        {
+                                                            key: 'high',
+                                                            label: (
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <span style={{ color: '#faad14' }}>⚡</span>
+                                                                    <span>尽快完成</span>
+                                                                </div>
+                                                            )
+                                                        },
+                                                        {
+                                                            key: 'medium',
+                                                            label: (
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <span style={{ color: '#1890ff' }}>🕐</span>
+                                                                    <span>正常进行</span>
+                                                                </div>
+                                                            )
+                                                        },
+                                                        {
+                                                            key: 'low',
+                                                            label: (
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <span style={{ color: '#52c41a' }}>😊</span>
+                                                                    <span>不太着急</span>
+                                                                </div>
+                                                            )
+                                                        }
+                                                    ]}
+                                                />
+                                            );
+
+                                            return (
+                                                <Dropdown overlay={menu} trigger={['click']}>
+                                                    <Tag
+                                                        color={getPriorityColor(record.priority)}
+                                                        size="small"
+                                                        style={{ cursor: 'pointer' }}
+                                                    >
+                                                        {getPriorityText(record.priority)}
+                                                    </Tag>
+                                                </Dropdown>
+                                            );
+                                        }
                                     },
                                     {
                                         title: '结算',
@@ -774,37 +810,7 @@ const ProjectDetail: React.FC = () => {
                 </div>
             </Modal>
 
-            {/* 修改紧急度模态窗 */}
-            <Modal
-                title={`修改紧急度 - ${currentPriorityTask?.taskName}`}
-                open={priorityModalVisible}
-                onOk={handleConfirmPriority}
-                onCancel={() => setPriorityModalVisible(false)}
-                confirmLoading={priorityLoading}
-                width={400}
-            >
-                <div style={{ marginBottom: 16 }}>
-                    <p>请选择新的紧急度：</p>
-                </div>
-                <Select
-                    value={selectedPriority}
-                    onChange={setSelectedPriority}
-                    style={{ width: '100%' }}
-                >
-                    <Select.Option value="low">
-                        <Tag color="default">低</Tag>
-                    </Select.Option>
-                    <Select.Option value="medium">
-                        <Tag color="blue">中</Tag>
-                    </Select.Option>
-                    <Select.Option value="high">
-                        <Tag color="orange">高</Tag>
-                    </Select.Option>
-                    <Select.Option value="urgent">
-                        <Tag color="red">紧急</Tag>
-                    </Select.Option>
-                </Select>
-            </Modal>
+
         </div>
     );
 };
