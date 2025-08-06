@@ -10,15 +10,7 @@ export interface ITask extends Document {
     assignedDesigners: string[]; // 分配的设计师ID数组
 
     // 规格信息
-    specification?: {
-        id: string;
-        name: string;
-        length: number;
-        width: number;
-        height?: number;
-        unit: string;
-        resolution?: string;
-    };
+    specificationId?: string; // 关联规格ID
 
     // 数量和金额
     quantity: number;
@@ -73,18 +65,7 @@ const TaskSchema = new Schema<ITask>({
     assignedDesigners: [{ type: String }],
 
     // 规格信息
-    specification: {
-        type: {
-            id: { type: String },
-            name: { type: String },
-            length: { type: Number },
-            width: { type: Number },
-            height: { type: Number },
-            unit: { type: String },
-            resolution: { type: String }
-        },
-        required: false
-    },
+    specificationId: { type: String },
 
     // 数量和金额
     quantity: { type: Number, required: true },

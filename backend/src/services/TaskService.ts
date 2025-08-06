@@ -42,12 +42,12 @@ export class TaskService {
         }
     }
 
-    /**
-     * 批量创建任务
-     */
-    async createTasks(tasksData: Partial<ITask>[]): Promise<ITask[]> {
-        return await Task.insertMany(tasksData);
-    }
+         /**
+      * 批量创建任务
+      */
+     async createTasks(tasksData: Partial<ITask>[]): Promise<ITask[]> {
+         return await Task.insertMany(tasksData) as ITask[];
+     }
 
     /**
      * 根据ID获取任务
@@ -123,9 +123,9 @@ export class TaskService {
         // 处理 undefined 值，将其转换为 null 以便 Mongoose 正确处理
         const processedData: any = { ...updateData };
 
-        // 如果 specification 是 undefined，设置为 null 来清除该字段
-        if (updateData.specification === undefined) {
-            processedData.specification = null;
+        // 如果 specificationId 是 undefined，设置为 null 来清除该字段
+        if (updateData.specificationId === undefined) {
+            processedData.specificationId = null;
         }
 
         const updatedTask = await Task.findByIdAndUpdate(id, processedData, { new: true });
@@ -149,7 +149,7 @@ export class TaskService {
     /**
      * 更新任务状态
      */
-    async updateTaskStatus(id: string, status: string, progress?: number, updatedBy: string): Promise<ITask | null> {
+    async updateTaskStatus(id: string, status: string, updatedBy: string, progress?: number): Promise<ITask | null> {
         const updateData: any = { status };
         if (progress !== undefined) updateData.progress = progress;
         if (status === 'completed') updateData.completedDate = new Date();

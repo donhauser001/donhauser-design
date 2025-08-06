@@ -71,15 +71,7 @@ export class ProjectService {
       taskName: string;
       serviceId: string;
       assignedDesigners: string[];
-      specification?: {
-        id: string;
-        name: string;
-        length: number;
-        width: number;
-        height?: number;
-        unit: string;
-        resolution?: string;
-      };
+      specificationId?: string;
       quantity: number;
       unit: string;
       subtotal: number;
