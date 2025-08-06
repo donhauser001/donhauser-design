@@ -13,7 +13,8 @@ import {
     DatePicker,
     InputNumber,
     Tag,
-    Modal
+    Modal,
+    Tabs
 } from 'antd';
 import {
     SaveOutlined,
@@ -339,217 +340,235 @@ const CreateProject: React.FC = () => {
                         assistantDesigners: []
                     }}
                 >
-                    {/* 基本信息 */}
-                    <Card
-                        size="small"
-                        title={
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ color: '#1890ff' }}>📋</span>
-                                <span>基本信息</span>
-                            </div>
-                        }
-                        style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
-                    >
-                        <Row gutter={24}>
-                            <Col span={24}>
-                                <Form.Item
-                                    name="projectName"
-                                    label="项目名称"
-                                    rules={[{ required: true, message: '请输入项目名称' }]}
-                                >
-                                    <Input placeholder="请输入项目名称" />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Card>
+                    <Tabs
+                        defaultActiveKey="basic"
+                        type="card"
+                        size="large"
+                        style={{ marginBottom: 24 }}
+                        items={[
+                            {
+                                key: 'basic',
+                                label: (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ color: '#1890ff' }}>📋</span>
+                                        <span>基本信息</span>
+                                    </div>
+                                ),
+                                children: (
+                                    <div>
+                                        {/* 基本信息 */}
+                                        <Card
+                                            size="small"
+                                            title={
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ color: '#1890ff' }}>📋</span>
+                                                    <span>基本信息</span>
+                                                </div>
+                                            }
+                                            style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
+                                        >
+                                            <Row gutter={24}>
+                                                <Col span={24}>
+                                                    <Form.Item
+                                                        name="projectName"
+                                                        label="项目名称"
+                                                        rules={[{ required: true, message: '请输入项目名称' }]}
+                                                    >
+                                                        <Input placeholder="请输入项目名称" />
+                                                    </Form.Item>
+                                                </Col>
+                                            </Row>
+                                        </Card>
 
-                    {/* 客户信息 */}
-                    <Card
-                        size="small"
-                        title={
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ color: '#52c41a' }}>👥</span>
-                                <span>客户信息</span>
-                            </div>
-                        }
-                        style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
-                    >
-                        <Row gutter={24}>
-                            <Col span={12}>
-                                <Form.Item
-                                    name="clientId"
-                                    label="客户"
-                                    rules={[{ required: true, message: '请选择客户' }]}
-                                >
-                                    <Select
-                                        placeholder="请选择客户"
-                                        onChange={handleClientChange}
-                                        showSearch
-                                        filterOption={(input, option) => {
-                                            const label = option?.label || option?.children;
-                                            return String(label).toLowerCase().includes(input.toLowerCase());
-                                        }}
-                                    >
-                                        {clients.map(client => (
-                                            <Option key={client._id} value={client._id}>
-                                                {client.name}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                                <Form.Item
-                                    name="contactIds"
-                                    label="联系人"
-                                    rules={[{ required: true, message: '请选择联系人' }]}
-                                >
-                                    <Select
-                                        mode="multiple"
-                                        placeholder={selectedClient ? `请选择 ${selectedClient.name} 的联系人` : '请先选择客户'}
-                                        onChange={handleContactChange}
-                                        showSearch
-                                        disabled={!selectedClient}
-                                        filterOption={(input, option) => {
-                                            const label = option?.label || option?.children;
-                                            return String(label).toLowerCase().includes(input.toLowerCase());
-                                        }}
-                                    >
-                                        {filteredContacts.map(contact => (
-                                            <Option key={contact._id} value={contact._id}>
-                                                {contact.realName} {contact.position ? `(${contact.position})` : ''}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="clientRequirements" label="客户嘱托">
-                                    <TextArea rows={6} placeholder="请输入客户嘱托" />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Card>
+                                        {/* 客户信息 */}
+                                        <Card
+                                            size="small"
+                                            title={
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ color: '#52c41a' }}>👥</span>
+                                                    <span>客户信息</span>
+                                                </div>
+                                            }
+                                            style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
+                                        >
+                                            <Row gutter={24}>
+                                                <Col span={12}>
+                                                    <Form.Item
+                                                        name="clientId"
+                                                        label="客户"
+                                                        rules={[{ required: true, message: '请选择客户' }]}
+                                                    >
+                                                        <Select
+                                                            placeholder="请选择客户"
+                                                            onChange={handleClientChange}
+                                                            showSearch
+                                                            filterOption={(input, option) => {
+                                                                const label = option?.label || option?.children;
+                                                                return String(label).toLowerCase().includes(input.toLowerCase());
+                                                            }}
+                                                        >
+                                                            {clients.map(client => (
+                                                                <Option key={client._id} value={client._id}>
+                                                                    {client.name}
+                                                                </Option>
+                                                            ))}
+                                                        </Select>
+                                                    </Form.Item>
+                                                    <Form.Item
+                                                        name="contactIds"
+                                                        label="联系人"
+                                                        rules={[{ required: true, message: '请选择联系人' }]}
+                                                    >
+                                                        <Select
+                                                            mode="multiple"
+                                                            placeholder={selectedClient ? `请选择 ${selectedClient.name} 的联系人` : '请先选择客户'}
+                                                            onChange={handleContactChange}
+                                                            showSearch
+                                                            disabled={!selectedClient}
+                                                            filterOption={(input, option) => {
+                                                                const label = option?.label || option?.children;
+                                                                return String(label).toLowerCase().includes(input.toLowerCase());
+                                                            }}
+                                                        >
+                                                            {filteredContacts.map(contact => (
+                                                                <Option key={contact._id} value={contact._id}>
+                                                                    {contact.realName} {contact.position ? `(${contact.position})` : ''}
+                                                                </Option>
+                                                            ))}
+                                                        </Select>
+                                                    </Form.Item>
+                                                </Col>
+                                                <Col span={12}>
+                                                    <Form.Item name="clientRequirements" label="客户嘱托">
+                                                        <TextArea rows={6} placeholder="请输入客户嘱托" />
+                                                    </Form.Item>
+                                                </Col>
+                                            </Row>
+                                        </Card>
 
-                    {/* 隐藏字段用于存储客户和联系人信息 */}
-                    <Form.Item name="clientName" hidden>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="contactNames" hidden>
-                        <Input />
-                    </Form.Item>
-                    <Form.Item name="contactPhones" hidden>
-                        <Input />
-                    </Form.Item>
+                                        {/* 团队信息 */}
+                                        <Card
+                                            size="small"
+                                            title={
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ color: '#fa8c16' }}>👨‍🎨</span>
+                                                    <span>团队信息</span>
+                                                </div>
+                                            }
+                                            style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
+                                        >
+                                            <Row gutter={24}>
+                                                <Col span={8}>
+                                                    <Form.Item
+                                                        name="undertakingTeam"
+                                                        label="承接团队"
+                                                        rules={[{ required: true, message: '请选择承接团队' }]}
+                                                    >
+                                                        <Select
+                                                            placeholder="请选择承接团队"
+                                                            showSearch
+                                                            filterOption={(input, option) => {
+                                                                const label = option?.label || option?.children;
+                                                                return String(label).toLowerCase().includes(input.toLowerCase());
+                                                            }}
+                                                        >
+                                                            {enterprises.map(enterprise => (
+                                                                <Option key={enterprise._id} value={enterprise._id}>
+                                                                    {enterprise.enterpriseAlias || enterprise.enterpriseName}
+                                                                </Option>
+                                                            ))}
+                                                        </Select>
+                                                    </Form.Item>
+                                                </Col>
+                                                <Col span={8}>
+                                                    <Form.Item
+                                                        name="mainDesigners"
+                                                        label="主创设计师"
+                                                        rules={[{ required: true, message: '请选择主创设计师' }]}
+                                                    >
+                                                        <Select
+                                                            mode="multiple"
+                                                            placeholder="请选择主创设计师"
+                                                            showSearch
+                                                            filterOption={(input, option) => {
+                                                                const label = option?.label || option?.children;
+                                                                return String(label).toLowerCase().includes(input.toLowerCase());
+                                                            }}
+                                                        >
+                                                            {designers.map(designer => (
+                                                                <Option key={designer._id} value={designer._id}>
+                                                                    {designer.realName} {designer.position ? `(${designer.position})` : ''}
+                                                                </Option>
+                                                            ))}
+                                                        </Select>
+                                                    </Form.Item>
+                                                </Col>
+                                                <Col span={8}>
+                                                    <Form.Item
+                                                        name="assistantDesigners"
+                                                        label="助理设计师"
+                                                    >
+                                                        <Select
+                                                            mode="multiple"
+                                                            placeholder="请选择助理设计师"
+                                                            showSearch
+                                                            filterOption={(input, option) => {
+                                                                const label = option?.label || option?.children;
+                                                                return String(label).toLowerCase().includes(input.toLowerCase());
+                                                            }}
+                                                        >
+                                                            {designers.map(designer => (
+                                                                <Option key={designer._id} value={designer._id}>
+                                                                    {designer.realName} {designer.position ? `(${designer.position})` : ''}
+                                                                </Option>
+                                                            ))}
+                                                        </Select>
+                                                    </Form.Item>
+                                                </Col>
+                                            </Row>
+                                        </Card>
 
-                    {/* 团队信息 */}
-                    <Card
-                        size="small"
-                        title={
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ color: '#fa8c16' }}>👨‍🎨</span>
-                                <span>团队信息</span>
-                            </div>
-                        }
-                        style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
-                    >
-                        <Row gutter={24}>
-                            <Col span={8}>
-                                <Form.Item
-                                    name="undertakingTeam"
-                                    label="承接团队"
-                                    rules={[{ required: true, message: '请选择承接团队' }]}
-                                >
-                                    <Select
-                                        placeholder="请选择承接团队"
-                                        showSearch
-                                        filterOption={(input, option) => {
-                                            const label = option?.label || option?.children;
-                                            return String(label).toLowerCase().includes(input.toLowerCase());
-                                        }}
-                                    >
-                                        {enterprises.map(enterprise => (
-                                            <Option key={enterprise._id} value={enterprise._id}>
-                                                {enterprise.enterpriseAlias || enterprise.enterpriseName}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                            <Col span={8}>
-                                <Form.Item
-                                    name="mainDesigners"
-                                    label="主创设计师"
-                                    rules={[{ required: true, message: '请选择主创设计师' }]}
-                                >
-                                    <Select
-                                        mode="multiple"
-                                        placeholder="请选择主创设计师"
-                                        showSearch
-                                        filterOption={(input, option) => {
-                                            const label = option?.label || option?.children;
-                                            return String(label).toLowerCase().includes(input.toLowerCase());
-                                        }}
-                                    >
-                                        {designers.map(designer => (
-                                            <Option key={designer._id} value={designer._id}>
-                                                {designer.realName} {designer.position ? `(${designer.position})` : ''}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                            <Col span={8}>
-                                <Form.Item
-                                    name="assistantDesigners"
-                                    label="助理设计师"
-                                >
-                                    <Select
-                                        mode="multiple"
-                                        placeholder="请选择助理设计师"
-                                        showSearch
-                                        filterOption={(input, option) => {
-                                            const label = option?.label || option?.children;
-                                            return String(label).toLowerCase().includes(input.toLowerCase());
-                                        }}
-                                    >
-                                        {designers.map(designer => (
-                                            <Option key={designer._id} value={designer._id}>
-                                                {designer.realName} {designer.position ? `(${designer.position})` : ''}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Card>
-
-                    {/* 备注 */}
-                    <Card
-                        size="small"
-                        title={
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ color: '#722ed1' }}>📝</span>
-                                <span>备注信息</span>
-                            </div>
-                        }
-                        style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
-                    >
-                        <Form.Item name="remark" label="项目备注">
-                            <TextArea rows={3} placeholder="请输入项目备注信息" />
-                        </Form.Item>
-                    </Card>
-
-                    {/* 任务信息 */}
-                    <Card
-                        size="small"
-                        title={
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ color: '#eb2f96' }}>📋</span>
-                                <span>任务信息</span>
-                                <Tag color="orange">{tasks.length} 个任务</Tag>
-                            </div>
-                        }
-                        style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
-                    >
+                                        {/* 备注 */}
+                                        <Card
+                                            size="small"
+                                            title={
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ color: '#722ed1' }}>📝</span>
+                                                    <span>备注信息</span>
+                                                </div>
+                                            }
+                                            style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
+                                        >
+                                            <Form.Item name="remark" label="项目备注">
+                                                <TextArea rows={3} placeholder="请输入项目备注信息" />
+                                            </Form.Item>
+                                        </Card>
+                                    </div>
+                                )
+                            },
+                            {
+                                key: 'tasks',
+                                label: (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ color: '#eb2f96' }}>📋</span>
+                                        <span>任务信息</span>
+                                        <Tag color="orange">{tasks.length}</Tag>
+                                    </div>
+                                ),
+                                children: (
+                                    <div>
+                                        {/* 任务信息 */}
+                                        <Card
+                                            size="small"
+                                            title={
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ color: '#eb2f96' }}>📋</span>
+                                                    <span>任务信息</span>
+                                                    <Tag color="orange">{tasks.length} 个任务</Tag>
+                                                </div>
+                                            }
+                                            style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
+                                        >
 
                         {/* 任务列表 */}
                         {tasks.map((task, index) => (
@@ -757,7 +776,89 @@ const CreateProject: React.FC = () => {
                                 </Row>
                             </Card>
                         )}
-                    </Card>
+                                    </div>
+                                )
+                            },
+                            {
+                                key: 'order',
+                                label: (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span style={{ color: '#13c2c2' }}>💰</span>
+                                        <span>订单信息</span>
+                                    </div>
+                                ),
+                                children: (
+                                    <div>
+                                        {/* 订单信息 */}
+                                        <Card
+                                            size="small"
+                                            title={
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ color: '#13c2c2' }}>💰</span>
+                                                    <span>订单信息</span>
+                                                </div>
+                                            }
+                                            style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
+                                        >
+                                            <Row gutter={24}>
+                                                <Col span={12}>
+                                                    <Form.Item name="orderNumber" label="订单编号">
+                                                        <Input placeholder="系统自动生成" disabled />
+                                                    </Form.Item>
+                                                </Col>
+                                                <Col span={12}>
+                                                    <Form.Item name="orderDate" label="订单日期">
+                                                        <DatePicker 
+                                                            style={{ width: '100%' }} 
+                                                            placeholder="请选择订单日期"
+                                                        />
+                                                    </Form.Item>
+                                                </Col>
+                                            </Row>
+                                            <Row gutter={24}>
+                                                <Col span={12}>
+                                                    <Form.Item name="paymentTerms" label="付款条件">
+                                                        <Select placeholder="请选择付款条件">
+                                                            <Option value="advance">预付款</Option>
+                                                            <Option value="installment">分期付款</Option>
+                                                            <Option value="completion">完工付款</Option>
+                                                            <Option value="monthly">月结</Option>
+                                                        </Select>
+                                                    </Form.Item>
+                                                </Col>
+                                                <Col span={12}>
+                                                    <Form.Item name="deliveryDate" label="交付日期">
+                                                        <DatePicker 
+                                                            style={{ width: '100%' }} 
+                                                            placeholder="请选择交付日期"
+                                                        />
+                                                    </Form.Item>
+                                                </Col>
+                                            </Row>
+                                            <Row gutter={24}>
+                                                <Col span={24}>
+                                                    <Form.Item name="orderRemarks" label="订单备注">
+                                                        <TextArea rows={4} placeholder="请输入订单备注信息" />
+                                                    </Form.Item>
+                                                </Col>
+                                            </Row>
+                                        </Card>
+                                    </div>
+                                )
+                            }
+                        ]}
+                    />
+
+                    {/* 隐藏字段用于存储客户和联系人信息 */}
+                    <Form.Item name="clientName" hidden>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item name="contactNames" hidden>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item name="contactPhones" hidden>
+                        <Input />
+                    </Form.Item>
                 </Form>
             </Card>
         </div>
