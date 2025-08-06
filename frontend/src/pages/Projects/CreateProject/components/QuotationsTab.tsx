@@ -163,6 +163,9 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                 <Title level={5} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <FileTextOutlined style={{ color: '#1890ff' }} />
                                     {quotation.name}
+                                    <Text type="secondary" style={{ fontSize: '14px', fontWeight: 'normal' }}>
+                                        ({dayjs(quotation.createTime).format('YYYY-MM-DD')} | {quotation.validUntil ? dayjs(quotation.validUntil).format('YYYY-MM-DD') : '长期有效'})
+                                    </Text>
                                 </Title>
                                 {quotation.isDefault && (
                                     <Tag color="gold" style={{ marginLeft: '8px' }}>
@@ -180,19 +183,6 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                 {quotation.description}
                             </Paragraph>
                         )}
-
-                        <Space split={<Divider type="vertical" />} style={{ marginBottom: '12px' }}>
-                            <Space>
-                                <CalendarOutlined style={{ color: '#666' }} />
-                                <Text type="secondary">创建时间: {dayjs(quotation.createTime).format('YYYY-MM-DD HH:mm')}</Text>
-                            </Space>
-                            <Space>
-                                <CalendarOutlined style={{ color: '#666' }} />
-                                <Text type="secondary">
-                                    有效期至: {quotation.validUntil ? dayjs(quotation.validUntil).format('YYYY-MM-DD') : '长期有效'}
-                                </Text>
-                            </Space>
-                        </Space>
 
                         <div style={{ marginTop: '12px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
