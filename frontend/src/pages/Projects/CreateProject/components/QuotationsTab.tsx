@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Empty, Tag, Typography, Space, Divider, Row, Col, Collapse, InputNumber, Button, Checkbox } from 'antd';
-import { FileTextOutlined, CalendarOutlined, DollarOutlined, CheckCircleOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { Card, Empty, Tag, Typography, Row, Col, Collapse, InputNumber, Checkbox } from 'antd';
+import { FileTextOutlined } from '@ant-design/icons';
 import { Quotation, Service } from '../types';
 import dayjs from 'dayjs';
 
-const { Panel } = Collapse;
+
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -29,7 +29,6 @@ interface ServiceWithDetails extends Service {
 const QuotationsTab: React.FC<QuotationsTabProps> = ({
     quotations,
     selectedClient,
-    services,
     onServicesChange,
     selectedServiceIds = [],
     onSelectedServiceIdsChange,
@@ -181,7 +180,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
                             border: '1px solid #f0f0f0',
                             borderRadius: '8px'
                         }}
-                        bodyStyle={{ padding: '16px' }}
+                        styles={{ body: { padding: '16px' } }}
                     >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                             <div>
@@ -218,19 +217,17 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
                                     ghost
                                     size="small"
                                     style={{ background: 'transparent' }}
-                                >
-                                    {Object.entries(groupedServices).map(([category, categoryServices]) => (
-                                        <Panel
-                                            header={
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
-                                                        {category}
-                                                    </span>
-                                                    <Tag color="blue">{categoryServices.length} 项</Tag>
-                                                </div>
-                                            }
-                                            key={category}
-                                        >
+                                    items={Object.entries(groupedServices).map(([category, categoryServices]) => ({
+                                        key: category,
+                                        label: (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
+                                                    {category}
+                                                </span>
+                                                <Tag color="blue">{categoryServices.length} 项</Tag>
+                                            </div>
+                                        ),
+                                        children: (
                                             <div style={{ paddingLeft: '16px' }}>
                                                 <Row gutter={[16, 16]}>
                                                     {categoryServices.map((service) => (
@@ -248,7 +245,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
                                                                         ? '#f6ffed'
                                                                         : '#ffffff'
                                                                 }}
-                                                                bodyStyle={{ padding: '12px' }}
+                                                                styles={{ body: { padding: '12px' } }}
                                                             >
                                                                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
                                                                     <Checkbox
@@ -348,12 +345,10 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
                                                     ))}
                                                 </Row>
                                             </div>
-                                        </Panel>
-                                    ))}
-                                </Collapse>
+                                        )
+                                    }))}
+                                />
                             </div>
-
-
                         </div>
                     </Card>
                 ))}
