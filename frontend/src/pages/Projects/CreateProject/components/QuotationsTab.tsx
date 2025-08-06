@@ -95,7 +95,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                     size="small"
                     title={
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ color: '#1890ff' }}>📋</span>
+                            <FileTextOutlined style={{ color: '#1890ff' }} />
                             <span>报价单信息</span>
                             <Tag color="blue">包含服务项目 0 项</Tag>
                         </div>
@@ -118,7 +118,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                     size="small"
                     title={
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ color: '#1890ff' }}>📋</span>
+                            <FileTextOutlined style={{ color: '#1890ff' }} />
                             <span>报价单信息</span>
                             <Tag color="blue">包含服务项目 0 项</Tag>
                         </div>
@@ -140,7 +140,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                 size="small"
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ color: '#1890ff' }}>📋</span>
+                        <FileTextOutlined style={{ color: '#1890ff' }} />
                         <span>报价单信息</span>
                         <Tag color="blue">包含服务项目 {quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项</Tag>
                     </div>

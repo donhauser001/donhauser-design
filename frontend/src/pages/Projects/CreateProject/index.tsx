@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Form, Button, Card, Space, Steps, Tag, Input } from 'antd';
-import { SaveOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { SaveOutlined, ArrowLeftOutlined, FileTextOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useCreateProject } from './hooks';
 import { createProject, validateProjectData } from './services';
@@ -131,20 +131,20 @@ const CreateProject: React.FC = () => {
                             {
                                 title: '基本信息',
                                 description: '填写项目基本信息',
-                                icon: <span style={{ color: '#1890ff' }}>📋</span>,
+                                icon: <FileTextOutlined style={{ color: '#1890ff' }} />,
                                 status: currentStep >= 0 ? 'process' : 'wait'
                             },
                             {
                                 title: '任务列表',
                                 description: `选择服务项目 ${quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项`,
-                                icon: <span style={{ color: '#1890ff' }}>📋</span>,
+                                icon: <FileTextOutlined style={{ color: '#1890ff' }} />,
                                 status: currentStep >= 1 ? 'process' : 'wait',
                                 disabled: !selectedClient
                             },
                             {
                                 title: '订单信息',
                                 description: '确认订单详情',
-                                icon: <span style={{ color: '#13c2c2' }}>💰</span>,
+                                icon: <ShoppingCartOutlined style={{ color: '#13c2c2' }} />,
                                 status: currentStep >= 2 ? 'process' : 'wait',
                                 disabled: !selectedClient
                             }

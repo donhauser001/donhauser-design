@@ -1,5 +1,6 @@
 import React from 'react';
 import { Form, Input, Select, Row, Col, Card } from 'antd';
+import { FileTextOutlined, TeamOutlined, UserOutlined, EditOutlined } from '@ant-design/icons';
 import { Client, Contact, Enterprise, Designer } from '../types';
 
 const { Option } = Select;
@@ -33,7 +34,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                 size="small"
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ color: '#1890ff' }}>📋</span>
+                        <FileTextOutlined style={{ color: '#1890ff' }} />
                         <span>基本信息</span>
                     </div>
                 }
@@ -57,7 +58,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                 size="small"
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ color: '#52c41a' }}>👥</span>
+                        <TeamOutlined style={{ color: '#52c41a' }} />
                         <span>客户信息</span>
                     </div>
                 }
@@ -123,7 +124,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                 size="small"
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ color: '#fa8c16' }}>👨‍🎨</span>
+                        <UserOutlined style={{ color: '#fa8c16' }} />
                         <span>团队信息</span>
                     </div>
                 }
@@ -205,7 +206,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                 size="small"
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ color: '#722ed1' }}>📝</span>
+                        <EditOutlined style={{ color: '#722ed1' }} />
                         <span>备注信息</span>
                     </div>
                 }
