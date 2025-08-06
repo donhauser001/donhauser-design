@@ -32,7 +32,7 @@ export interface ITask extends Document {
 
     // 状态和优先级
     status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold';
-    priority: 'low' | 'medium' | 'high' | 'urgent';
+    priority: 'low' | 'medium' | 'high' | 'urgent' | 'waiting' | 'on-hold' | 'completed';
 
     // 进度
     progress: number; // 进度百分比 0-100
@@ -98,7 +98,7 @@ const TaskSchema = new Schema<ITask>({
     },
     priority: {
         type: String,
-        enum: ['low', 'medium', 'high', 'urgent'],
+        enum: ['low', 'medium', 'high', 'urgent', 'waiting', 'on-hold', 'completed'],
         default: 'medium'
     },
 

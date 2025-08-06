@@ -1,9 +1,11 @@
 import Task, { ITask } from '../models/Task';
 import ProjectLog from '../models/ProjectLog';
 import { UserService } from './UserService';
+import { SpecificationService } from './SpecificationService';
 
 class TaskService {
     private userService = new UserService();
+    private specificationService = new SpecificationService();
     /**
      * 创建任务
      */
@@ -64,11 +66,12 @@ class TaskService {
     async getTasksByProject(projectId: string): Promise<any[]> {
         const tasks = await Task.find({ projectId }).sort({ createdAt: 1 });
 
-        // 为每个任务获取设计师名字
-        const tasksWithDesignerNames = await Promise.all(
+        // 为每个任务获取设计师名字和规格信息
+        const tasksWithDetails = await Promise.all(
             tasks.map(async (task) => {
                 let mainDesignerNames: string[] = [];
                 let assistantDesignerNames: string[] = [];
+                let specification = null;
 
                 // 获取主创设计师名字
                 if (task.mainDesigners && task.mainDesigners.length > 0) {
@@ -98,15 +101,36 @@ class TaskService {
                     }
                 }
 
+                // 获取规格信息
+                if (task.specificationId) {
+                    try {
+                        const spec = await this.specificationService.getSpecificationById(task.specificationId);
+                        if (spec) {
+                            specification = {
+                                id: (spec as any)._id.toString(),
+                                name: spec.name,
+                                length: spec.length,
+                                width: spec.width,
+                                height: spec.height,
+                                unit: spec.unit,
+                                resolution: spec.resolution
+                            };
+                        }
+                    } catch (error) {
+                        console.error('获取规格信息失败:', error);
+                    }
+                }
+
                 return {
                     ...task.toObject(),
                     mainDesignerNames,
-                    assistantDesignerNames
+                    assistantDesignerNames,
+                    specification
                 };
             })
         );
 
-        return tasksWithDesignerNames;
+        return tasksWithDetails;
     }
 
     /**
