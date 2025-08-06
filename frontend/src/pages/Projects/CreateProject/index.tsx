@@ -13,10 +13,22 @@ const CreateProject: React.FC = () => {
     const navigate = useNavigate();
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
-    const [currentStep, setCurrentStep] = useState(0);
-    const [selectedServices, setSelectedServices] = useState<any[]>([]);
-    const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
-    const [serviceQuantities, setServiceQuantities] = useState<Record<string, number>>({});
+    const [currentStep, setCurrentStep] = useState(() => {
+        const saved = localStorage.getItem('createProject_currentStep');
+        return saved ? parseInt(saved) : 0;
+    });
+    const [selectedServices, setSelectedServices] = useState<any[]>(() => {
+        const saved = localStorage.getItem('createProject_selectedServices');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(() => {
+        const saved = localStorage.getItem('createProject_selectedServiceIds');
+        return saved ? JSON.parse(saved) : [];
+    });
+    const [serviceQuantities, setServiceQuantities] = useState<Record<string, number>>(() => {
+        const saved = localStorage.getItem('createProject_serviceQuantities');
+        return saved ? JSON.parse(saved) : {};
+    });
 
     const {
         clients,
@@ -59,6 +71,9 @@ const CreateProject: React.FC = () => {
             // 创建项目
             await createProject(projectData, tasks);
 
+            // 清空所有暂存数据
+            clearStoredData();
+
             // 跳转到项目列表
             navigate('/projects');
         } catch (error) {
@@ -66,6 +81,22 @@ const CreateProject: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    // 清空暂存数据
+    const clearStoredData = () => {
+        localStorage.removeItem('createProject_currentStep');
+        localStorage.removeItem('createProject_selectedServices');
+        localStorage.removeItem('createProject_selectedServiceIds');
+        localStorage.removeItem('createProject_serviceQuantities');
+        localStorage.removeItem('createProject_formData');
+        localStorage.removeItem('createProject_selectedClientId');
+        form.resetFields();
+        setSelectedClient(null);
+        setSelectedServices([]);
+        setSelectedServiceIds([]);
+        setServiceQuantities({});
+        setCurrentStep(0);
     };
 
     const handleNext = () => {
@@ -92,6 +123,61 @@ const CreateProject: React.FC = () => {
         setCurrentStep(step);
     };
 
+    // 保存状态到 localStorage
+    useEffect(() => {
+        localStorage.setItem('createProject_currentStep', currentStep.toString());
+    }, [currentStep]);
+
+    useEffect(() => {
+        localStorage.setItem('createProject_selectedServices', JSON.stringify(selectedServices));
+    }, [selectedServices]);
+
+    useEffect(() => {
+        localStorage.setItem('createProject_selectedServiceIds', JSON.stringify(selectedServiceIds));
+    }, [selectedServiceIds]);
+
+    useEffect(() => {
+        localStorage.setItem('createProject_serviceQuantities', JSON.stringify(serviceQuantities));
+    }, [serviceQuantities]);
+
+    // 监听表单值变化并保存
+    useEffect(() => {
+        const saveFormData = () => {
+            const formData = form.getFieldsValue();
+            localStorage.setItem('createProject_formData', JSON.stringify(formData));
+        };
+
+        // 监听表单值变化
+        const unsubscribe = form.subscribe(({ values }) => {
+            if (values) {
+                localStorage.setItem('createProject_formData', JSON.stringify(values));
+            }
+        });
+
+        return unsubscribe;
+    }, [form]);
+
+    // 恢复客户选择
+    useEffect(() => {
+        const savedClientId = localStorage.getItem('createProject_selectedClientId');
+        if (savedClientId && clients.length > 0) {
+            const client = clients.find(c => c._id === savedClientId);
+            if (client) {
+                setSelectedClient(client);
+                handleClientChange(savedClientId);
+            }
+        }
+    }, [clients, handleClientChange]);
+
+    // 保存客户选择
+    useEffect(() => {
+        if (selectedClient) {
+            localStorage.setItem('createProject_selectedClientId', selectedClient._id);
+        } else {
+            localStorage.removeItem('createProject_selectedClientId');
+        }
+    }, [selectedClient]);
+
     return (
         <div style={{ padding: '24px', background: '#f5f5f5', minHeight: '100vh' }}>
             <Card
@@ -102,12 +188,20 @@ const CreateProject: React.FC = () => {
                     </div>
                 }
                 extra={
-                    <Button
-                        icon={<ArrowLeftOutlined />}
-                        onClick={() => navigate('/projects')}
-                    >
-                        返回列表
-                    </Button>
+                    <Space>
+                        <Button
+                            onClick={clearStoredData}
+                            size="small"
+                        >
+                            清空暂存
+                        </Button>
+                        <Button
+                            icon={<ArrowLeftOutlined />}
+                            onClick={() => navigate('/projects')}
+                        >
+                            返回列表
+                        </Button>
+                    </Space>
                 }
                 style={{
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
@@ -123,7 +217,11 @@ const CreateProject: React.FC = () => {
                         progressStatus: 'consulting',
                         settlementStatus: 'unpaid',
                         mainDesigners: [],
-                        assistantDesigners: []
+                        assistantDesigners: [],
+                        ...(() => {
+                            const saved = localStorage.getItem('createProject_formData');
+                            return saved ? JSON.parse(saved) : {};
+                        })()
                     }}
                 >
                     <Steps
