@@ -291,6 +291,12 @@ const ProjectDetail: React.FC = () => {
                                         {getSettlementStatusText(project.settlementStatus)}
                                     </Tag>
                                 </Descriptions.Item>
+                                <Descriptions.Item label="主创设计师">
+                                    {(project.mainDesignerNames || project.mainDesigners).join('，')}
+                                </Descriptions.Item>
+                                <Descriptions.Item label="助理设计师">
+                                    {(project.assistantDesignerNames || project.assistantDesigners).join('，')}
+                                </Descriptions.Item>
                             </Descriptions>
                         </Card>
 
@@ -325,41 +331,8 @@ const ProjectDetail: React.FC = () => {
                         </Card>
                     </Col>
 
-                    {/* 右侧：团队信息、客户嘱托和备注 */}
+                    {/* 右侧：客户嘱托和备注 */}
                     <Col span={5}>
-                        {/* 团队信息 */}
-                        <Card title="团队信息" style={{ marginBottom: 16 }}>
-                            <div style={{ marginBottom: 16 }}>
-                                <h4>主创设计师</h4>
-                                <List
-                                    size="small"
-                                    dataSource={project.mainDesignerNames || project.mainDesigners}
-                                    renderItem={(designer) => (
-                                        <List.Item>
-                                            <List.Item.Meta
-                                                avatar={<Avatar size="small" icon={<UserOutlined />} />}
-                                                title={designer}
-                                            />
-                                        </List.Item>
-                                    )}
-                                />
-                            </div>
-                            <div>
-                                <h4>助理设计师</h4>
-                                <List
-                                    size="small"
-                                    dataSource={project.assistantDesignerNames || project.assistantDesigners}
-                                    renderItem={(designer) => (
-                                        <List.Item>
-                                            <List.Item.Meta
-                                                avatar={<Avatar size="small" icon={<UserOutlined />} />}
-                                                title={designer}
-                                            />
-                                        </List.Item>
-                                    )}
-                                />
-                            </div>
-                        </Card>
 
                         {/* 客户嘱托和备注选项卡 */}
                         {(project.clientRequirements || project.remark) && (
