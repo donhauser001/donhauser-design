@@ -15,6 +15,7 @@ interface BasicInfoTabProps {
     filteredContacts: Contact[];
     handleClientChange: (clientId: string) => void;
     handleContactChange: (contactIds: string[]) => void;
+    form: any; // 传递表单实例
 }
 
 const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
@@ -25,10 +26,10 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
     selectedClient,
     filteredContacts,
     handleClientChange,
-    handleContactChange
+    handleContactChange,
+    form
 }) => {
     // 从表单中获取客户ID，确保在恢复时也能正确显示
-    const [form] = Form.useForm();
     const clientId = Form.useWatch('clientId', form);
     const hasClient = selectedClient || clientId;
     return (

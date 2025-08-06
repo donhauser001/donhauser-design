@@ -301,6 +301,7 @@ const CreateProject: React.FC = () => {
                                 filteredContacts={filteredContacts}
                                 handleClientChange={handleClientChange}
                                 handleContactChange={handleContactChange}
+                                form={form}
                             />
                         )}
                         {currentStep === 1 && (
