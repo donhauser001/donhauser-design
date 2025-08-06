@@ -243,7 +243,7 @@ const ProjectDetail: React.FC = () => {
                                                 <span key={index}>
                                                     {name}
                                                     {project.contactPhones[index] && (
-                                                        <span style={{ color: '#999' }}>（{project.contactPhones[index]}）</span>
+                                                        <span style={{ color: '#999' }}> {project.contactPhones[index]}</span>
                                                     )}
                                                     {index < project.contactNames.length - 1 && '，'}
                                                 </span>
