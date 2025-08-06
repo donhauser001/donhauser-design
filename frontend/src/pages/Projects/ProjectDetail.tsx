@@ -470,23 +470,26 @@ const ProjectDetail: React.FC = () => {
                 {`
                     .ant-table-tbody > tr {
                         position: relative;
+                        border-bottom: 1px solid #f0f0f0;
                     }
                     .ant-table-tbody > tr::after {
                         content: '';
                         position: absolute;
                         bottom: 0;
                         left: 0;
-                        height: 3px;
+                        height: 4px;
                         background: linear-gradient(to right, #d32f2f 0%, #e53935 10%, #f44336 20%, #ff9800 30%, #ffb74d 40%, #8bc34a 50%, #66bb6a 60%, #4caf50 70%, #388e3c 80%, #2e7d32 90%);
                         transition: width 0.3s ease;
-                        z-index: 1;
+                        z-index: 10;
                         width: 0%;
+                        border-radius: 0 2px 2px 0;
                     }
                     ${tasks.map(task => {
                     const progressRatio = task.currentProcessStep?.progressRatio || 0;
+                    console.log(`Task ${task.taskName} progress: ${progressRatio}%`);
                     return `
                             .task-row-${task._id}::after {
-                                width: ${progressRatio}%;
+                                width: ${progressRatio}% !important;
                             }
                         `;
                 }).join('')}
@@ -654,19 +657,20 @@ const ProjectDetail: React.FC = () => {
 
 
                         {/* 任务列表 */}
-                        <Card title="任务列表" style={{ marginBottom: 16 }}>
+                        <Card title="任务列表" style={{ marginBottom: 16, width: '100%' }}>
                             <Table
                                 dataSource={tasks.slice(0, 5)}
                                 pagination={false}
                                 size="small"
                                 rowKey="_id"
                                 rowClassName={(record: Task) => `task-row-${record._id}`}
+                                style={{ width: '100%' }}
                                 columns={[
                                     {
                                         title: '任务名称',
                                         dataIndex: 'taskName',
                                         key: 'taskName',
-                                        width: 200,
+                                        width: '25%',
                                         render: (text: string, record: Task) => {
                                             console.log('Task process info:', {
                                                 taskId: record._id,
@@ -728,7 +732,7 @@ const ProjectDetail: React.FC = () => {
                                     {
                                         title: '规格',
                                         key: 'specification',
-                                        width: 120,
+                                        width: '15%',
                                         render: (_, record: Task) => (
                                             <SpecificationSelector
                                                 value={record.specification}
@@ -740,7 +744,7 @@ const ProjectDetail: React.FC = () => {
                                     {
                                         title: '紧急度',
                                         key: 'priority',
-                                        width: 80,
+                                        width: '10%',
                                         render: (_, record: Task) => {
                                             const menu = (
                                                 <Menu
@@ -832,21 +836,21 @@ const ProjectDetail: React.FC = () => {
                                     {
                                         title: '数量',
                                         key: 'quantity',
-                                        width: 80,
+                                        width: '8%',
                                         render: (_, record: Task) => `${record.quantity}${record.unit}`
                                     },
 
                                     {
                                         title: '截止日期',
                                         key: 'dueDate',
-                                        width: 100,
+                                        width: '12%',
                                         render: (_, record: Task) =>
                                             record.dueDate ? dayjs(record.dueDate).format('MM-DD') : '-'
                                     },
                                     {
                                         title: '设计师',
                                         key: 'designers',
-                                        width: 200,
+                                        width: '20%',
                                         render: (_, record: Task) => {
                                             const hasMainDesigners = record.mainDesignerNames && record.mainDesignerNames.length > 0;
                                             const hasAssistantDesigners = record.assistantDesignerNames && record.assistantDesignerNames.length > 0;
@@ -935,7 +939,7 @@ const ProjectDetail: React.FC = () => {
                                     {
                                         title: '金额',
                                         key: 'amount',
-                                        width: 120,
+                                        width: '10%',
                                         render: (_, record: Task) => (
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <span>¥{record.subtotal.toFixed(2)}</span>
