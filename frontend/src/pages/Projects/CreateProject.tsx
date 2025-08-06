@@ -42,6 +42,13 @@ interface Contact {
     position?: string;
 }
 
+interface Enterprise {
+    _id: string;
+    enterpriseName: string;
+    creditCode: string;
+    status: 'active' | 'inactive';
+}
+
 interface Service {
     _id: string;
     serviceName: string;
@@ -76,6 +83,7 @@ const CreateProject: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [clients, setClients] = useState<Client[]>([]);
     const [contacts, setContacts] = useState<Contact[]>([]);
+    const [enterprises, setEnterprises] = useState<Enterprise[]>([]);
     const [services, setServices] = useState<Service[]>([]);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -111,6 +119,19 @@ const CreateProject: React.FC = () => {
         }
     };
 
+    // 获取企业列表
+    const fetchEnterprises = async () => {
+        try {
+            const response = await fetch('/api/enterprises?status=active&limit=100');
+            const data = await response.json();
+            if (data.success) {
+                setEnterprises(data.data);
+            }
+        } catch (error) {
+            console.error('获取企业列表失败:', error);
+        }
+    };
+
     // 获取服务列表
     const fetchServices = async () => {
         try {
@@ -127,6 +148,7 @@ const CreateProject: React.FC = () => {
     useEffect(() => {
         fetchClients();
         fetchContacts();
+        fetchEnterprises();
         fetchServices();
     }, []);
 
@@ -296,10 +318,19 @@ const CreateProject: React.FC = () => {
                                 label="承接团队"
                                 rules={[{ required: true, message: '请选择承接团队' }]}
                             >
-                                <Select placeholder="请选择承接团队">
-                                    <Option value="team1">设计团队A</Option>
-                                    <Option value="team2">设计团队B</Option>
-                                    <Option value="team3">设计团队C</Option>
+                                <Select
+                                    placeholder="请选择承接团队"
+                                    showSearch
+                                    filterOption={(input, option) => {
+                                        const label = option?.label || option?.children;
+                                        return String(label).toLowerCase().includes(input.toLowerCase());
+                                    }}
+                                >
+                                    {enterprises.map(enterprise => (
+                                        <Option key={enterprise._id} value={enterprise._id}>
+                                            {enterprise.enterpriseName}
+                                        </Option>
+                                    ))}
                                 </Select>
                             </Form.Item>
                         </Col>
