@@ -43,7 +43,34 @@ export class ServicePricingService {
     // 根据ID获取服务定价
     static async getServicePricingById(id: string): Promise<IServicePricing | null> {
         try {
-            return await ServicePricing.findById(id)
+            const service = await ServicePricing.findById(id)
+
+            if (!service) {
+                return null
+            }
+
+            // 如果已经有价格政策名称，直接返回
+            if (service.pricingPolicyNames && service.pricingPolicyNames.length > 0) {
+                return service
+            }
+
+            // 如果没有价格政策名称，但有价格政策ID，则获取名称
+            if (service.pricingPolicyIds && service.pricingPolicyIds.length > 0) {
+                const policies = await PricingPolicy.find({ _id: { $in: service.pricingPolicyIds } })
+                const pricingPolicyNames = policies.map(policy => policy.alias)
+
+                // 更新服务定价的价格政策名称
+                await ServicePricing.findByIdAndUpdate(service._id, {
+                    pricingPolicyNames: pricingPolicyNames
+                })
+
+                return {
+                    ...service.toObject(),
+                    pricingPolicyNames: pricingPolicyNames
+                }
+            }
+
+            return service
         } catch (error) {
             throw new Error('获取服务定价详情失败')
         }
