@@ -480,6 +480,14 @@ const ProjectList: React.FC = () => {
                 <Row gutter={16} align="middle">
                     <Col flex="auto">
                         <Space size="middle">
+                            <Button
+                                icon={<ClearOutlined />}
+                                onClick={handleViewAll}
+                                disabled={!searchText && !progressFilter && !settlementFilter && !teamFilter}
+                                size="small"
+                            >
+                                查看全部
+                            </Button>
                             <Search
                                 placeholder="搜索项目名称或客户名称"
                                 allowClear
@@ -515,13 +523,6 @@ const ProjectList: React.FC = () => {
                     </Col>
                     <Col>
                         <Space>
-                            <Button
-                                icon={<ClearOutlined />}
-                                onClick={handleViewAll}
-                                disabled={!searchText && !progressFilter && !settlementFilter && !teamFilter}
-                            >
-                                查看全部
-                            </Button>
                             <Button
                                 icon={<ReloadOutlined />}
                                 onClick={() => {
