@@ -574,9 +574,9 @@ const ProjectDetail: React.FC = () => {
                                                         }
                                                     }}
                                                 >
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                         {hasMainDesigners && (
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                                 <div style={{
                                                                     width: '8px',
                                                                     height: '8px',
