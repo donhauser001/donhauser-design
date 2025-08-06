@@ -34,7 +34,12 @@ import {
     CreditCardOutlined,
     WalletOutlined,
     CheckOutlined,
-    CrownOutlined
+    CrownOutlined,
+    FireOutlined,
+    ThunderboltOutlined,
+    SmileOutlined,
+    MailOutlined,
+    PauseOutlined
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -339,6 +344,20 @@ const ProjectDetail: React.FC = () => {
         return colors[priority] || 'default';
     };
 
+    // 优先级图标映射
+    const getPriorityIcon = (priority: string) => {
+        const icons: Record<string, React.ReactNode> = {
+            'urgent': <FireOutlined />,
+            'high': <ThunderboltOutlined />,
+            'medium': <ClockCircleOutlined />,
+            'low': <SmileOutlined />,
+            'waiting': <MailOutlined />,
+            'on-hold': <PauseOutlined />,
+            'completed': <CheckCircleOutlined />
+        };
+        return icons[priority] || null;
+    };
+
     if (loading) {
         return <div style={{ padding: '24px' }}>加载中...</div>;
     }
@@ -536,7 +555,7 @@ const ProjectDetail: React.FC = () => {
                                         key: 'status',
                                         width: 120,
                                         render: (_, record: Task) => (
-                                            <Tag color={getTaskStatusColor(record.status)} size="small">
+                                            <Tag color={getTaskStatusColor(record.status)}>
                                                 {getTaskStatusText(record.status)}
                                             </Tag>
                                         )
@@ -554,7 +573,7 @@ const ProjectDetail: React.FC = () => {
                                                             key: 'urgent',
                                                             label: (
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ color: '#ff4500' }}>🔥</span>
+                                                                    <FireOutlined style={{ color: '#ff4500' }} />
                                                                     <span>十万火急</span>
                                                                 </div>
                                                             )
@@ -563,7 +582,7 @@ const ProjectDetail: React.FC = () => {
                                                             key: 'high',
                                                             label: (
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ color: '#ffa500' }}>⚡</span>
+                                                                    <ThunderboltOutlined style={{ color: '#ffa500' }} />
                                                                     <span>尽快完成</span>
                                                                 </div>
                                                             )
@@ -572,7 +591,7 @@ const ProjectDetail: React.FC = () => {
                                                             key: 'medium',
                                                             label: (
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ color: '#2c65da' }}>🕐</span>
+                                                                    <ClockCircleOutlined style={{ color: '#2c65da' }} />
                                                                     <span>正常进行</span>
                                                                 </div>
                                                             )
@@ -581,7 +600,7 @@ const ProjectDetail: React.FC = () => {
                                                             key: 'low',
                                                             label: (
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ color: '#159ebb' }}>😊</span>
+                                                                    <SmileOutlined style={{ color: '#159ebb' }} />
                                                                     <span>不太着急</span>
                                                                 </div>
                                                             )
@@ -590,7 +609,7 @@ const ProjectDetail: React.FC = () => {
                                                             key: 'waiting',
                                                             label: (
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ color: '#9370db' }}>📧</span>
+                                                                    <MailOutlined style={{ color: '#9370db' }} />
                                                                     <span>等待反馈</span>
                                                                 </div>
                                                             )
@@ -599,7 +618,7 @@ const ProjectDetail: React.FC = () => {
                                                             key: 'on-hold',
                                                             label: (
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ color: '#808080' }}>⏸️</span>
+                                                                    <PauseOutlined style={{ color: '#808080' }} />
                                                                     <span>暂时搁置</span>
                                                                 </div>
                                                             )
@@ -608,7 +627,7 @@ const ProjectDetail: React.FC = () => {
                                                             key: 'completed',
                                                             label: (
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span style={{ color: '#f35c43' }}>✅</span>
+                                                                    <CheckCircleOutlined style={{ color: '#f35c43' }} />
                                                                     <span>完工大吉</span>
                                                                 </div>
                                                             )
@@ -621,10 +640,12 @@ const ProjectDetail: React.FC = () => {
                                                 <Dropdown overlay={menu} trigger={['click']}>
                                                     <Tag
                                                         color={getPriorityColor(record.priority)}
-                                                        size="small"
                                                         style={{ cursor: 'pointer' }}
                                                     >
-                                                        {getPriorityText(record.priority)}
+                                                        <Space size={4}>
+                                                            {getPriorityIcon(record.priority)}
+                                                            {getPriorityText(record.priority)}
+                                                        </Space>
                                                     </Tag>
                                                 </Dropdown>
                                             );
@@ -635,7 +656,7 @@ const ProjectDetail: React.FC = () => {
                                         key: 'settlement',
                                         width: 100,
                                         render: (_, record: Task) => (
-                                            <Tag color={getSettlementStatusColor(record.settlementStatus)} size="small">
+                                            <Tag color={getSettlementStatusColor(record.settlementStatus)}>
                                                 {getSettlementStatusText(record.settlementStatus)}
                                             </Tag>
                                         )
