@@ -75,8 +75,23 @@ const SaveConfirmModal: React.FC<SaveConfirmModalProps> = ({
                         </Col>
                         <Col span={12}>
                             <div style={{ marginBottom: '8px' }}>
-                                <Text strong>主创设计师：</Text>
-                                <Text>{projectData?.mainDesignerNames || '未选择'}</Text>
+                                <Text strong>设计师：</Text>
+                                <Text>
+                                    {(() => {
+                                        const mainDesigners = projectData?.mainDesignerNames || '';
+                                        const assistantDesigners = projectData?.assistantDesignerNames || '';
+                                        
+                                        if (mainDesigners && assistantDesigners) {
+                                            return `${mainDesigners}（主创），${assistantDesigners}（助理）`;
+                                        } else if (mainDesigners) {
+                                            return `${mainDesigners}（主创）`;
+                                        } else if (assistantDesigners) {
+                                            return `${assistantDesigners}（助理）`;
+                                        } else {
+                                            return '未选择';
+                                        }
+                                    })()}
+                                </Text>
                             </div>
                             <div style={{ marginBottom: '8px' }}>
                                 <Text strong>服务项目：</Text>
