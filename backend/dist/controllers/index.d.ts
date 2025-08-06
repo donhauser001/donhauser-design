@@ -8,7 +8,5 @@ export * from './PricingPolicyController';
 export * from './ServicePricingController';
 export * from './QuotationController';
 export * from './SpecificationController';
-export * from './ProjectController';
-export declare const projectController: {};
 export declare const clientController: {};
 //# sourceMappingURL=index.d.ts.map

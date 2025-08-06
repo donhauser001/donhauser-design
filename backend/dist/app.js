@@ -24,12 +24,8 @@ const additionalConfigs_1 = __importDefault(require("./routes/additionalConfigs"
 const pricingPolicies_1 = __importDefault(require("./routes/pricingPolicies"));
 const servicePricing_1 = __importDefault(require("./routes/servicePricing"));
 const quotations_1 = __importDefault(require("./routes/quotations"));
-const orders_1 = __importDefault(require("./routes/orders"));
-const orderVersions_1 = __importDefault(require("./routes/orderVersions"));
 const contractElements_1 = __importDefault(require("./routes/contractElements"));
 const specifications_1 = __importDefault(require("./routes/specifications"));
-const projects_1 = __importDefault(require("./routes/projects"));
-const tasks_1 = __importDefault(require("./routes/tasks"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
@@ -76,12 +72,8 @@ app.get('/', (req, res) => {
             pricingPolicies: '/api/pricing-policies',
             servicePricing: '/api/service-pricing',
             quotations: '/api/quotations',
-            orders: '/api/orders',
-            orderVersions: '/api/order-versions',
             contractElements: '/api/contract-elements',
-            specifications: '/api/specifications',
-            projects: '/api/projects',
-            tasks: '/api/tasks'
+            specifications: '/api/specifications'
         }
     });
 });
@@ -102,12 +94,8 @@ app.use('/api/additional-configs', additionalConfigs_1.default);
 app.use('/api/pricing-policies', pricingPolicies_1.default);
 app.use('/api/service-pricing', servicePricing_1.default);
 app.use('/api/quotations', quotations_1.default);
-app.use('/api/orders', orders_1.default);
-app.use('/api/order-versions', orderVersions_1.default);
 app.use('/api/contract-elements', contractElements_1.default);
 app.use('/api/specifications', specifications_1.default);
-app.use('/api/projects', projects_1.default);
-app.use('/api/tasks', tasks_1.default);
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: '服务器内部错误' });

@@ -14,7 +14,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.clientController = exports.projectController = void 0;
+exports.clientController = void 0;
 __exportStar(require("./EnterpriseController"), exports);
 __exportStar(require("./DepartmentController"), exports);
 __exportStar(require("./RoleController"), exports);
@@ -25,7 +25,5 @@ __exportStar(require("./PricingPolicyController"), exports);
 __exportStar(require("./ServicePricingController"), exports);
 __exportStar(require("./QuotationController"), exports);
 __exportStar(require("./SpecificationController"), exports);
-__exportStar(require("./ProjectController"), exports);
-exports.projectController = {};
 exports.clientController = {};
 //# sourceMappingURL=index.js.map

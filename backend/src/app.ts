@@ -21,12 +21,8 @@ import additionalConfigRoutes from './routes/additionalConfigs';
 import pricingPolicyRoutes from './routes/pricingPolicies';
 import servicePricingRoutes from './routes/servicePricing';
 import quotationRoutes from './routes/quotations';
-import orderRoutes from './routes/orders';
-import orderVersionRoutes from './routes/orderVersions';
 import contractElementRoutes from './routes/contractElements';
 import specificationRoutes from './routes/specifications';
-import projectRoutes from './routes/projects';
-import taskRoutes from './routes/tasks';
 
 // 加载环境变量
 dotenv.config();
@@ -86,12 +82,8 @@ app.get('/', (req, res) => {
       pricingPolicies: '/api/pricing-policies',
       servicePricing: '/api/service-pricing',
       quotations: '/api/quotations',
-      orders: '/api/orders',
-      orderVersions: '/api/order-versions',
       contractElements: '/api/contract-elements',
-      specifications: '/api/specifications',
-      projects: '/api/projects',
-      tasks: '/api/tasks'
+      specifications: '/api/specifications'
     }
   });
 });
@@ -116,12 +108,8 @@ app.use('/api/additional-configs', additionalConfigRoutes);
 app.use('/api/pricing-policies', pricingPolicyRoutes);
 app.use('/api/service-pricing', servicePricingRoutes);
 app.use('/api/quotations', quotationRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/order-versions', orderVersionRoutes);
 app.use('/api/contract-elements', contractElementRoutes);
 app.use('/api/specifications', specificationRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/tasks', taskRoutes);
 
 // 错误处理中间件
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

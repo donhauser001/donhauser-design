@@ -18,8 +18,6 @@ const pricingPolicies_1 = __importDefault(require("./pricingPolicies"));
 const pricingCategories_1 = __importDefault(require("./pricingCategories"));
 const servicePricing_1 = __importDefault(require("./servicePricing"));
 const quotations_1 = __importDefault(require("./quotations"));
-const orders_1 = __importDefault(require("./orders"));
-const orderVersions_1 = __importDefault(require("./orderVersions"));
 const specifications_1 = __importDefault(require("./specifications"));
 const router = (0, express_1.Router)();
 router.use('/users', users_1.default);
@@ -36,8 +34,6 @@ router.use('/pricing-policies', pricingPolicies_1.default);
 router.use('/pricing-categories', pricingCategories_1.default);
 router.use('/service-pricing', servicePricing_1.default);
 router.use('/quotations', quotations_1.default);
-router.use('/orders', orders_1.default);
-router.use('/order-versions', orderVersions_1.default);
 router.use('/specifications', specifications_1.default);
 exports.default = router;
 //# sourceMappingURL=index.js.map
