@@ -149,12 +149,12 @@ const ProjectList: React.FC = () => {
     // 状态标签颜色映射
     const getProgressStatusColor = (status: string) => {
         const colors: Record<string, string> = {
-            'consulting': 'blue',
-            'in-progress': 'processing',
-            'partial-delivery': 'orange',
-            'completed': 'success',
-            'on-hold': 'warning',
-            'cancelled': 'error'
+            'consulting': 'orange',      // 咨询中，橙色
+            'in-progress': 'blue',       // 进行中，蓝色
+            'on-hold': 'purple',         // 搁置，紫色
+            'cancelled': 'default',      // 已取消，灰色
+            'partial-delivery': 'cyan',  // 部分交付，蓝绿色
+            'completed': 'green'         // 完全交付，绿色
         };
         return colors[status] || 'default';
     };
