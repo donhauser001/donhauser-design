@@ -30,7 +30,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
     form
 }) => {
     // 从表单中获取客户ID，确保在恢复时也能正确显示
-    const clientId = Form.useWatch('clientId', form);
+    const clientId = form ? Form.useWatch('clientId', form) : undefined;
     const hasClient = selectedClient || clientId;
     return (
         <div>

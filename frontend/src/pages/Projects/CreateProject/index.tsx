@@ -174,23 +174,34 @@ const CreateProject: React.FC = () => {
     // 恢复客户选择
     useEffect(() => {
         const savedClientId = localStorage.getItem('createProject_selectedClientId');
+        console.log('恢复客户选择 - 保存的客户ID:', savedClientId);
+        console.log('当前客户列表长度:', clients.length);
+        
         if (savedClientId && clients.length > 0) {
             const client = clients.find(c => c._id === savedClientId);
+            console.log('找到的客户:', client);
+            
             if (client) {
                 handleClientChange(savedClientId);
                 // 同时设置表单的客户字段
                 form.setFieldsValue({ clientId: savedClientId });
+                console.log('已设置客户字段:', savedClientId);
 
                 // 延迟恢复联系人数据，确保客户数据加载完成
                 setTimeout(() => {
                     const savedFormData = localStorage.getItem('createProject_formData');
+                    console.log('保存的表单数据:', savedFormData);
+                    
                     if (savedFormData) {
                         const formData = JSON.parse(savedFormData);
+                        console.log('解析后的表单数据:', formData);
+                        
                         if (formData.contactIds) {
                             form.setFieldsValue({ contactIds: formData.contactIds });
+                            console.log('已设置联系人字段:', formData.contactIds);
                         }
                     }
-                }, 100);
+                }, 200); // 增加延迟时间
             }
         }
     }, [clients, handleClientChange, form]);
