@@ -408,52 +408,81 @@ const ProjectDetail: React.FC = () => {
 
                         {/* 任务列表 */}
                         <Card title="任务列表" style={{ marginBottom: 16 }}>
-                            <List
-                                size="small"
+                            <Table
                                 dataSource={tasks.slice(0, 5)}
-                                renderItem={(task) => (
-                                    <List.Item>
-                                        <List.Item.Meta
-                                            title={
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span>{task.taskName}</span>
-                                                    <Tag color={getPriorityColor(task.priority)} size="small">
-                                                        {getPriorityText(task.priority)}
-                                                    </Tag>
-                                                </div>
-                                            }
-                                            description={
-                                                <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                        <span>状态:</span>
-                                                        <Tag color={getTaskStatusColor(task.status)} size="small">
-                                                            {getTaskStatusText(task.status)}
-                                                        </Tag>
-                                                        <span>结算:</span>
-                                                        <Tag color={getSettlementStatusColor(task.settlementStatus)} size="small">
-                                                            {getSettlementStatusText(task.settlementStatus)}
-                                                        </Tag>
-                                                    </div>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                                                        <span>数量: {task.quantity}{task.unit}</span>
-                                                        <span>金额: ¥{task.subtotal.toFixed(2)}</span>
-                                                        <span>进度: {task.progress}%</span>
-                                                    </div>
-                                                    {task.dueDate && (
-                                                        <div style={{ color: '#666', fontSize: '12px' }}>
-                                                            截止日期: {dayjs(task.dueDate).format('YYYY-MM-DD')}
-                                                        </div>
-                                                    )}
-                                                    {task.assignedDesigners && task.assignedDesigners.length > 0 && (
-                                                        <div style={{ color: '#666', fontSize: '12px' }}>
-                                                            设计师: {task.assignedDesigners.join('，')}
-                                                        </div>
-                                                    )}
-                                                </Space>
-                                            }
-                                        />
-                                    </List.Item>
-                                )}
+                                pagination={false}
+                                size="small"
+                                rowKey="_id"
+                                columns={[
+                                    {
+                                        title: '任务名称',
+                                        dataIndex: 'taskName',
+                                        key: 'taskName',
+                                        width: 150,
+                                        render: (text: string, record: Task) => (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                <span>{text}</span>
+                                                <Tag color={getPriorityColor(record.priority)} size="small">
+                                                    {getPriorityText(record.priority)}
+                                                </Tag>
+                                            </div>
+                                        )
+                                    },
+                                    {
+                                        title: '状态',
+                                        key: 'status',
+                                        width: 120,
+                                        render: (_, record: Task) => (
+                                            <Tag color={getTaskStatusColor(record.status)} size="small">
+                                                {getTaskStatusText(record.status)}
+                                            </Tag>
+                                        )
+                                    },
+                                    {
+                                        title: '结算',
+                                        key: 'settlement',
+                                        width: 100,
+                                        render: (_, record: Task) => (
+                                            <Tag color={getSettlementStatusColor(record.settlementStatus)} size="small">
+                                                {getSettlementStatusText(record.settlementStatus)}
+                                            </Tag>
+                                        )
+                                    },
+                                    {
+                                        title: '数量',
+                                        key: 'quantity',
+                                        width: 80,
+                                        render: (_, record: Task) => `${record.quantity}${record.unit}`
+                                    },
+                                    {
+                                        title: '金额',
+                                        key: 'amount',
+                                        width: 100,
+                                        render: (_, record: Task) => `¥${record.subtotal.toFixed(2)}`
+                                    },
+                                    {
+                                        title: '进度',
+                                        key: 'progress',
+                                        width: 80,
+                                        render: (_, record: Task) => `${record.progress}%`
+                                    },
+                                    {
+                                        title: '截止日期',
+                                        key: 'dueDate',
+                                        width: 100,
+                                        render: (_, record: Task) =>
+                                            record.dueDate ? dayjs(record.dueDate).format('MM-DD') : '-'
+                                    },
+                                    {
+                                        title: '设计师',
+                                        key: 'designers',
+                                        width: 120,
+                                        render: (_, record: Task) =>
+                                            record.assignedDesigners && record.assignedDesigners.length > 0
+                                                ? record.assignedDesigners.join('，')
+                                                : '-'
+                                    }
+                                ]}
                             />
                             {tasks.length > 5 && (
                                 <div style={{ textAlign: 'center', marginTop: 8 }}>
