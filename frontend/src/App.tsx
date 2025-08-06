@@ -6,13 +6,7 @@ import Layout from './components/Layout'
 
 // 页面导入
 import Dashboard from './pages/Dashboard'
-import Projects from './pages/Projects'
 import './App.css'
-
-// 项目管理相关页面
-import TaskBoard from './pages/Projects/TaskBoard'
-import ProposalCenter from './pages/Projects/ProposalCenter'
-import ProjectDetail from './pages/Projects/ProjectDetail/index'
 
 // 客户管理相关页面
 import Contacts from './pages/Clients/Contacts'
@@ -20,7 +14,6 @@ import ClientList from './pages/Clients/ClientList'
 import ClientCategories from './pages/Clients/ClientCategories'
 
 // 财务管理相关页面
-import Orders from './pages/Finance/Orders'
 import Settlements from './pages/Finance/Settlements'
 import Invoices from './pages/Finance/Invoices'
 import Income from './pages/Finance/Income'
@@ -80,12 +73,6 @@ function App() {
           {/* 文件上传测试 */}
           <Route path="/test-upload" element={<FileUploadTest />} />
 
-          {/* 项目管理 */}
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:id" element={<ProjectDetail />} />
-          <Route path="/projects/task-board" element={<TaskBoard />} />
-          <Route path="/projects/proposal-center" element={<ProposalCenter />} />
-
           {/* 客户管理 */}
           <Route path="/clients" element={<ClientList />} />
           <Route path="/clients/contacts" element={<Contacts />} />
@@ -93,7 +80,6 @@ function App() {
           <Route path="/clients/categories" element={<ClientCategories />} />
 
           {/* 财务管理 */}
-          <Route path="/finance/orders" element={<Orders />} />
           <Route path="/finance/settlements" element={<Settlements />} />
           <Route path="/finance/invoices" element={<Invoices />} />
           <Route path="/finance/income" element={<Income />} />

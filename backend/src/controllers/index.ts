@@ -11,11 +11,7 @@ export * from './PricingPolicyController';
 export * from './ServicePricingController';
 export * from './QuotationController';
 export * from './SpecificationController';
-export * from './ProjectController';
 
-export const projectController = {
-  // 项目相关控制器方法
-};
 
 export const clientController = {
   // 客户相关控制器方法

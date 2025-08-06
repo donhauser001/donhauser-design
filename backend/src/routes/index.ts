@@ -13,8 +13,7 @@ import pricingPolicyRoutes from './pricingPolicies';
 import pricingCategoryRoutes from './pricingCategories';
 import servicePricingRoutes from './servicePricing';
 import quotationRoutes from './quotations';
-import orderRoutes from './orders';
-import orderVersionRoutes from './orderVersions';
+
 import specificationRoutes from './specifications';
 
 const router = Router();
@@ -61,11 +60,7 @@ router.use('/service-pricing', servicePricingRoutes);
 // 报价单路由
 router.use('/quotations', quotationRoutes);
 
-// 订单管理路由
-router.use('/orders', orderRoutes);
 
-// 订单版本管理路由
-router.use('/order-versions', orderVersionRoutes);
 
 // 规格管理路由
 router.use('/specifications', specificationRoutes);
