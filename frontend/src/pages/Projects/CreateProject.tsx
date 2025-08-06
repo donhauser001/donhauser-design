@@ -30,11 +30,14 @@ const { TextArea } = Input;
 interface Client {
     _id: string;
     name: string;
-    contacts: Array<{
-        _id: string;
-        name: string;
-        phone: string;
-    }>;
+}
+
+interface Contact {
+    _id: string;
+    realName: string;
+    phone: string;
+    email?: string;
+    username?: string;
 }
 
 interface Service {
@@ -70,6 +73,7 @@ const CreateProject: React.FC = () => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [clients, setClients] = useState<Client[]>([]);
+    const [contacts, setContacts] = useState<Contact[]>([]);
     const [services, setServices] = useState<Service[]>([]);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -84,6 +88,19 @@ const CreateProject: React.FC = () => {
             }
         } catch (error) {
             console.error('获取客户列表失败:', error);
+        }
+    };
+
+    // 获取联系人列表
+    const fetchContacts = async () => {
+        try {
+            const response = await fetch('/api/users?limit=100');
+            const data = await response.json();
+            if (data.success) {
+                setContacts(data.data);
+            }
+        } catch (error) {
+            console.error('获取联系人列表失败:', error);
         }
     };
 
@@ -102,6 +119,7 @@ const CreateProject: React.FC = () => {
 
     useEffect(() => {
         fetchClients();
+        fetchContacts();
         fetchServices();
     }, []);
 
@@ -122,14 +140,12 @@ const CreateProject: React.FC = () => {
 
     // 处理联系人选择
     const handleContactChange = (contactIds: string[]) => {
-        if (!selectedClient) return;
-
-        const selectedContacts = selectedClient.contacts.filter(
+        const selectedContacts = contacts.filter(
             contact => contactIds.includes(contact._id)
         );
 
         form.setFieldsValue({
-            contactNames: selectedContacts.map(c => c.name),
+            contactNames: selectedContacts.map(c => c.realName),
             contactPhones: selectedContacts.map(c => c.phone)
         });
     };
@@ -316,11 +332,14 @@ const CreateProject: React.FC = () => {
                                     mode="multiple"
                                     placeholder="请选择联系人"
                                     onChange={handleContactChange}
-                                    disabled={!selectedClient}
+                                    showSearch
+                                    filterOption={(input, option) =>
+                                        option?.children?.toLowerCase().includes(input.toLowerCase())
+                                    }
                                 >
-                                    {selectedClient?.contacts.map(contact => (
+                                    {contacts.map(contact => (
                                         <Option key={contact._id} value={contact._id}>
-                                            {contact.name} ({contact.phone})
+                                            {contact.realName} ({contact.phone})
                                         </Option>
                                     ))}
                                 </Select>
