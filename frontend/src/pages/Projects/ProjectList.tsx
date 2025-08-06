@@ -75,6 +75,9 @@ const ProjectList: React.FC = () => {
     const [progressFilter, setProgressFilter] = useState<string>('');
     const [settlementFilter, setSettlementFilter] = useState<string>('');
     const [teamFilter, setTeamFilter] = useState<string>('');
+    const [updateModalVisible, setUpdateModalVisible] = useState(false);
+    const [updatingProject, setUpdatingProject] = useState<Project | null>(null);
+    const [updatingLoading, setUpdatingLoading] = useState(false);
 
     // 获取项目列表
     const fetchProjects = async () => {
@@ -146,6 +149,52 @@ const ProjectList: React.FC = () => {
         }
     };
 
+    // 处理项目状态更新
+    const handleStartProject = async (project: Project) => {
+        setUpdatingProject(project);
+        setUpdateModalVisible(true);
+    };
+
+    const handleConfirmStartProject = async () => {
+        if (!updatingProject) return;
+
+        setUpdatingLoading(true);
+        try {
+            const response = await fetch(`/api/projects/${updatingProject._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    progressStatus: 'in-progress',
+                    startedAt: new Date().toISOString()
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                message.success('项目已正式开启并开始计时');
+                setUpdateModalVisible(false);
+                setUpdatingProject(null);
+                fetchProjects();
+                fetchStats();
+            } else {
+                message.error(data.message || '更新失败');
+            }
+        } catch (error) {
+            console.error('更新项目状态失败:', error);
+            message.error('更新项目状态失败');
+        } finally {
+            setUpdatingLoading(false);
+        }
+    };
+
+    const handleCancelStartProject = () => {
+        setUpdateModalVisible(false);
+        setUpdatingProject(null);
+    };
+
     // 状态标签颜色映射
     const getProgressStatusColor = (status: string) => {
         const colors: Record<string, string> = {
@@ -208,8 +257,18 @@ const ProjectList: React.FC = () => {
                     >
                         {text}
                     </Button>
-                    <Tag color={getProgressStatusColor(record.progressStatus)}>
+                    <Tag
+                        color={getProgressStatusColor(record.progressStatus)}
+                        style={{
+                            cursor: record.progressStatus === 'consulting' ? 'pointer' : 'default',
+                            userSelect: 'none'
+                        }}
+                        onClick={record.progressStatus === 'consulting' ? () => handleStartProject(record) : undefined}
+                    >
                         {getProgressStatusText(record.progressStatus)}
+                        {record.progressStatus === 'consulting' && (
+                            <span style={{ marginLeft: '4px', fontSize: '12px' }}>📋</span>
+                        )}
                     </Tag>
                 </div>
             )
@@ -419,6 +478,39 @@ const ProjectList: React.FC = () => {
                     scroll={{ x: 1000 }}
                 />
             </Card>
+
+            {/* 确认开启项目对话框 */}
+            <Modal
+                title="确认开启项目"
+                open={updateModalVisible}
+                onOk={handleConfirmStartProject}
+                onCancel={handleCancelStartProject}
+                confirmLoading={updatingLoading}
+                okText="确定开启"
+                cancelText="取消"
+            >
+                <div style={{ padding: '16px 0' }}>
+                    <p>您确定要正式开启以下项目吗？</p>
+                    <div style={{ 
+                        background: '#f5f5f5', 
+                        padding: '12px', 
+                        borderRadius: '6px',
+                        margin: '12px 0'
+                    }}>
+                        <p><strong>项目名称：</strong>{updatingProject?.projectName}</p>
+                        <p><strong>客户：</strong>{updatingProject?.clientName}</p>
+                        <p><strong>当前状态：</strong>
+                            <Tag color="orange">咨询中</Tag>
+                        </p>
+                        <p><strong>开启后状态：</strong>
+                            <Tag color="blue">进行中</Tag>
+                        </p>
+                    </div>
+                    <p style={{ color: '#666', fontSize: '14px' }}>
+                        ⚠️ 开启后项目将直接进入执行阶段，并开始计时。
+                    </p>
+                </div>
+            </Modal>
         </div>
     );
 };
