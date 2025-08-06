@@ -435,6 +435,25 @@ const ProjectDetail: React.FC = () => {
         return icons[priority] || null;
     };
 
+    // 根据进度比例获取颜色
+    const getProgressColor = (progressRatio: number) => {
+        const colors = [
+            '#ff4d4f', // 0-9%: 红色
+            '#ff7875', // 10-19%: 浅红色
+            '#ffa39e', // 20-29%: 粉红色
+            '#ffc53d', // 30-39%: 橙色
+            '#ffd666', // 40-49%: 浅橙色
+            '#bae637', // 50-59%: 黄绿色
+            '#95de64', // 60-69%: 浅绿色
+            '#73d13d', // 70-79%: 绿色
+            '#52c41a', // 80-89%: 深绿色
+            '#389e0d'  // 90-100%: 最深的绿色
+        ];
+
+        const index = Math.min(Math.floor(progressRatio / 10), colors.length - 1);
+        return colors[index];
+    };
+
     if (loading) {
         return <div style={{ padding: '24px' }}>加载中...</div>;
     }
@@ -652,8 +671,13 @@ const ProjectDetail: React.FC = () => {
                                                         <span>{text}</span>
                                                         <Dropdown menu={menu} trigger={['click']}>
                                                             <Tag
-                                                                color={record.currentProcessStep ? 'blue' : 'default'}
-                                                                style={{ cursor: 'pointer' }}
+                                                                style={{
+                                                                    cursor: 'pointer',
+                                                                    backgroundColor: record.currentProcessStep ?
+                                                                        getProgressColor(record.currentProcessStep.progressRatio) : '#f0f0f0',
+                                                                    color: record.currentProcessStep ? '#fff' : '#8c8c8c',
+                                                                    border: 'none'
+                                                                }}
                                                             >
                                                                 {record.currentProcessStep?.name || '未设置'}
                                                             </Tag>
