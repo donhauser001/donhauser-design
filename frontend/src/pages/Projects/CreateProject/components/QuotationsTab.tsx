@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, Empty, Tag, Typography, Row, Col, Collapse, InputNumber, Checkbox } from 'antd';
 import { FileTextOutlined } from '@ant-design/icons';
 import { Quotation, Service } from '../types';
@@ -42,14 +42,25 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
         const fetchServiceDetails = async () => {
             if (quotations.length > 0 && quotations[0].selectedServices.length > 0) {
                 try {
+                    // 检查是否已经获取过这些服务详情
+                    const serviceIds = quotations[0].selectedServices;
+                    const existingIds = serviceDetails.map(s => s._id);
+                    const newServiceIds = serviceIds.filter(id => !existingIds.includes(id));
+
+                    if (newServiceIds.length === 0) {
+                        return; // 如果所有服务详情都已获取，则不需要重复获取
+                    }
+
                     const details = await Promise.all(
-                        quotations[0].selectedServices.map(async (serviceId) => {
+                        newServiceIds.map(async (serviceId) => {
                             const response = await fetch(`/api/service-pricing/${serviceId}`);
                             const data = await response.json();
                             return data.success ? data.data : null;
                         })
                     );
-                    setServiceDetails(details.filter(Boolean));
+
+                    const newDetails = details.filter(Boolean);
+                    setServiceDetails(prev => [...prev, ...newDetails]);
                 } catch (error) {
                     console.error('获取服务详情失败:', error);
                 }
@@ -57,7 +68,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
         };
 
         fetchServiceDetails();
-    }, [quotations]);
+    }, [quotations.length, quotations[0]?._id]);
 
     // 按分类分组服务
     const groupedServices = serviceDetails.reduce((acc, service) => {
