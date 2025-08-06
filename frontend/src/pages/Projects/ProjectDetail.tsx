@@ -577,7 +577,13 @@ const ProjectDetail: React.FC = () => {
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                                         {hasMainDesigners && (
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-                                                                <CrownOutlined style={{ color: '#faad14', fontSize: '12px' }} />
+                                                                <div style={{
+                                                                    width: '8px',
+                                                                    height: '8px',
+                                                                    borderRadius: '50%',
+                                                                    backgroundColor: '#1890ff',
+                                                                    flexShrink: 0
+                                                                }} />
                                                                 <span style={{ fontSize: '12px' }}>
                                                                     {record.mainDesignerNames!.join('，')}
                                                                 </span>
@@ -585,7 +591,13 @@ const ProjectDetail: React.FC = () => {
                                                         )}
                                                         {hasAssistantDesigners && (
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                                <UserOutlined style={{ color: '#52c41a', fontSize: '12px' }} />
+                                                                <div style={{
+                                                                    width: '8px',
+                                                                    height: '8px',
+                                                                    borderRadius: '50%',
+                                                                    backgroundColor: '#8c8c8c',
+                                                                    flexShrink: 0
+                                                                }} />
                                                                 <span style={{ fontSize: '12px' }}>
                                                                     {record.assistantDesignerNames!.join('，')}
                                                                 </span>
