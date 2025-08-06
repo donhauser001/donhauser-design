@@ -64,8 +64,10 @@ interface Task {
     taskName: string;
     projectId: string;
     serviceId: string;
-    assignedDesigners: string[];
-    assignedDesignerNames?: string[];
+    mainDesigners: string[];
+    mainDesignerNames?: string[];
+    assistantDesigners: string[];
+    assistantDesignerNames?: string[];
     specificationId?: string;
     quantity: number;
     unit: string;
@@ -102,7 +104,8 @@ const ProjectDetail: React.FC = () => {
     const [assignModalVisible, setAssignModalVisible] = useState(false);
     const [currentTask, setCurrentTask] = useState<Task | null>(null);
     const [availableUsers, setAvailableUsers] = useState<any[]>([]);
-    const [selectedDesigners, setSelectedDesigners] = useState<string[]>([]);
+    const [selectedMainDesigners, setSelectedMainDesigners] = useState<string[]>([]);
+    const [selectedAssistantDesigners, setSelectedAssistantDesigners] = useState<string[]>([]);
     const [assignLoading, setAssignLoading] = useState(false);
 
     // 获取项目详情
@@ -158,7 +161,8 @@ const ProjectDetail: React.FC = () => {
     // 打开分配设计师模态窗
     const handleAssignDesigners = (task: Task) => {
         setCurrentTask(task);
-        setSelectedDesigners(task.assignedDesigners || []);
+        setSelectedMainDesigners(task.mainDesigners || []);
+        setSelectedAssistantDesigners(task.assistantDesigners || []);
         setAssignModalVisible(true);
         fetchAvailableUsers();
     };
@@ -173,7 +177,8 @@ const ProjectDetail: React.FC = () => {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    designerIds: selectedDesigners
+                    mainDesignerIds: selectedMainDesigners,
+                    assistantDesignerIds: selectedAssistantDesigners
                 })
             });
 
@@ -539,14 +544,17 @@ const ProjectDetail: React.FC = () => {
                                     {
                                         title: '设计师',
                                         key: 'designers',
-                                        width: 150,
+                                        width: 200,
                                         render: (_, record: Task) => {
-                                            const hasDesigners = record.assignedDesignerNames && record.assignedDesignerNames.length > 0;
+                                            const hasMainDesigners = record.mainDesignerNames && record.mainDesignerNames.length > 0;
+                                            const hasAssistantDesigners = record.assistantDesignerNames && record.assistantDesignerNames.length > 0;
+                                            const hasAnyDesigners = hasMainDesigners || hasAssistantDesigners;
+
                                             return (
-                                                <div 
-                                                    style={{ 
-                                                        display: 'flex', 
-                                                        alignItems: 'center', 
+                                                <div
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
                                                         gap: '4px',
                                                         position: 'relative'
                                                     }}
@@ -565,9 +573,25 @@ const ProjectDetail: React.FC = () => {
                                                         }
                                                     }}
                                                 >
-                                                    <span>
-                                                        {hasDesigners ? record.assignedDesignerNames!.join('，') : '-'}
-                                                    </span>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                        {hasMainDesigners && (
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                                <span style={{ fontSize: '12px' }}>
+                                                                    {record.mainDesignerNames!.join('，')}
+                                                                </span>
+                                                                <Tag color="blue">主创</Tag>
+                                                            </div>
+                                                        )}
+                                                        {hasAssistantDesigners && (
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                                <span style={{ fontSize: '12px' }}>
+                                                                    {record.assistantDesignerNames!.join('，')}
+                                                                </span>
+                                                                <Tag color="green">助理</Tag>
+                                                            </div>
+                                                        )}
+                                                        {!hasAnyDesigners && <span>-</span>}
+                                                    </div>
                                                     <EditOutlined
                                                         className="edit-icon"
                                                         onClick={() => handleAssignDesigners(record)}
@@ -577,7 +601,7 @@ const ProjectDetail: React.FC = () => {
                                                             cursor: 'pointer',
                                                             color: '#1890ff',
                                                             fontSize: '14px',
-                                                            marginLeft: '4px'
+                                                            marginLeft: '8px'
                                                         }}
                                                     />
                                                 </div>
@@ -635,21 +659,42 @@ const ProjectDetail: React.FC = () => {
                 <div style={{ marginBottom: 16 }}>
                     <p>请选择要分配给此任务的设计师：</p>
                 </div>
-                <Select
-                    mode="multiple"
-                    placeholder="请选择设计师"
-                    value={selectedDesigners}
-                    onChange={setSelectedDesigners}
-                    style={{ width: '100%' }}
-                    optionFilterProp="children"
-                    showSearch
-                >
-                    {availableUsers.map(user => (
-                        <Select.Option key={user._id} value={user._id}>
-                            {user.realName || user.username} ({user.role})
-                        </Select.Option>
-                    ))}
-                </Select>
+                <div style={{ marginBottom: 16 }}>
+                    <p style={{ marginBottom: 8, fontWeight: 'bold' }}>主创设计师：</p>
+                    <Select
+                        mode="multiple"
+                        placeholder="请选择主创设计师"
+                        value={selectedMainDesigners}
+                        onChange={setSelectedMainDesigners}
+                        style={{ width: '100%', marginBottom: 16 }}
+                        optionFilterProp="children"
+                        showSearch
+                    >
+                        {availableUsers.map(user => (
+                            <Select.Option key={user._id} value={user._id}>
+                                {user.realName || user.username} ({user.role})
+                            </Select.Option>
+                        ))}
+                    </Select>
+                </div>
+                <div>
+                    <p style={{ marginBottom: 8, fontWeight: 'bold' }}>助理设计师：</p>
+                    <Select
+                        mode="multiple"
+                        placeholder="请选择助理设计师"
+                        value={selectedAssistantDesigners}
+                        onChange={setSelectedAssistantDesigners}
+                        style={{ width: '100%' }}
+                        optionFilterProp="children"
+                        showSearch
+                    >
+                        {availableUsers.map(user => (
+                            <Select.Option key={user._id} value={user._id}>
+                                {user.realName || user.username} ({user.role})
+                            </Select.Option>
+                        ))}
+                    </Select>
+                </div>
             </Modal>
         </div>
     );

@@ -67,24 +67,41 @@ class TaskService {
         // 为每个任务获取设计师名字
         const tasksWithDesignerNames = await Promise.all(
             tasks.map(async (task) => {
-                let assignedDesignerNames: string[] = [];
+                let mainDesignerNames: string[] = [];
+                let assistantDesignerNames: string[] = [];
 
-                if (task.assignedDesigners && task.assignedDesigners.length > 0) {
+                // 获取主创设计师名字
+                if (task.mainDesigners && task.mainDesigners.length > 0) {
                     try {
-                        const designerPromises = task.assignedDesigners.map(async (designerId: string) => {
+                        const designerPromises = task.mainDesigners.map(async (designerId: string) => {
                             const user = await this.userService.getUserById(designerId);
                             return user ? user.realName || user.username : designerId;
                         });
-                        assignedDesignerNames = await Promise.all(designerPromises);
+                        mainDesignerNames = await Promise.all(designerPromises);
                     } catch (error) {
-                        console.error('获取设计师信息失败:', error);
-                        assignedDesignerNames = task.assignedDesigners;
+                        console.error('获取主创设计师信息失败:', error);
+                        mainDesignerNames = task.mainDesigners;
+                    }
+                }
+
+                // 获取助理设计师名字
+                if (task.assistantDesigners && task.assistantDesigners.length > 0) {
+                    try {
+                        const designerPromises = task.assistantDesigners.map(async (designerId: string) => {
+                            const user = await this.userService.getUserById(designerId);
+                            return user ? user.realName || user.username : designerId;
+                        });
+                        assistantDesignerNames = await Promise.all(designerPromises);
+                    } catch (error) {
+                        console.error('获取助理设计师信息失败:', error);
+                        assistantDesignerNames = task.assistantDesigners;
                     }
                 }
 
                 return {
                     ...task.toObject(),
-                    assignedDesignerNames
+                    mainDesignerNames,
+                    assistantDesignerNames
                 };
             })
         );
@@ -96,7 +113,12 @@ class TaskService {
      * 获取设计师分配的任务
      */
     async getTasksByDesigner(designerId: string, status?: string): Promise<ITask[]> {
-        const query: any = { assignedDesigners: designerId };
+        const query: any = {
+            $or: [
+                { mainDesigners: designerId },
+                { assistantDesigners: designerId }
+            ]
+        };
         if (status) {
             query.status = status;
         }
@@ -121,7 +143,12 @@ class TaskService {
 
         const filter: any = {};
         if (projectId) filter.projectId = projectId;
-        if (designerId) filter.assignedDesigners = designerId;
+        if (designerId) {
+            filter.$or = [
+                { mainDesigners: designerId },
+                { assistantDesigners: designerId }
+            ];
+        }
         if (status) filter.status = status;
         if (priority) filter.priority = priority;
         if (settlementStatus) filter.settlementStatus = settlementStatus;
@@ -229,7 +256,7 @@ class TaskService {
     /**
      * 分配设计师
      */
-    async assignDesigners(taskId: string, designerIds: string[], updatedBy: string): Promise<ITask | null> {
+    async assignDesigners(taskId: string, mainDesignerIds: string[], assistantDesignerIds: string[], updatedBy: string): Promise<ITask | null> {
         const task = await Task.findById(taskId);
         if (!task) {
             return null;
@@ -237,7 +264,10 @@ class TaskService {
 
         const updatedTask = await Task.findByIdAndUpdate(
             taskId,
-            { assignedDesigners: designerIds },
+            {
+                mainDesigners: mainDesignerIds,
+                assistantDesigners: assistantDesignerIds
+            },
             { new: true }
         );
 
@@ -251,8 +281,14 @@ class TaskService {
                 content: `任务设计师已重新分配`,
                 createdBy: updatedBy,
                 details: {
-                    oldValue: { assignedDesigners: task.assignedDesigners },
-                    newValue: { assignedDesigners: designerIds }
+                    oldValue: {
+                        mainDesigners: task.mainDesigners,
+                        assistantDesigners: task.assistantDesigners
+                    },
+                    newValue: {
+                        mainDesigners: mainDesignerIds,
+                        assistantDesigners: assistantDesignerIds
+                    }
                 }
             });
         }
@@ -308,7 +344,12 @@ class TaskService {
     }> {
         const filter: any = {};
         if (projectId) filter.projectId = projectId;
-        if (designerId) filter.assignedDesigners = designerId;
+        if (designerId) {
+            filter.$or = [
+                { mainDesigners: designerId },
+                { assistantDesigners: designerId }
+            ];
+        }
 
         const stats = await Task.aggregate([
             { $match: filter },

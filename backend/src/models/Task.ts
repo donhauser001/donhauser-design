@@ -7,7 +7,8 @@ export interface ITask extends Document {
     serviceId: string; // 关联服务
 
     // 人员分配
-    assignedDesigners: string[]; // 分配的设计师ID数组
+    mainDesigners: string[]; // 主创设计师ID数组
+    assistantDesigners: string[]; // 助理设计师ID数组
 
     // 规格信息
     specificationId?: string; // 关联规格ID
@@ -62,7 +63,8 @@ const TaskSchema = new Schema<ITask>({
     serviceId: { type: String, required: true },
 
     // 人员分配
-    assignedDesigners: [{ type: String }],
+    mainDesigners: [{ type: String }],
+    assistantDesigners: [{ type: String }],
 
     // 规格信息
     specificationId: { type: String },
