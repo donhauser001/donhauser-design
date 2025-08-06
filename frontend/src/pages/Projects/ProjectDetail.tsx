@@ -12,7 +12,8 @@ import {
     Divider,
     List,
     Avatar,
-    Tabs
+    Tabs,
+    Table
 } from 'antd';
 import {
     ArrowLeftOutlined,
