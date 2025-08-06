@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Empty, Tag, Typography, Space, Divider, Row, Col, Collapse, InputNumber, Button } from 'antd';
+import { Card, Empty, Tag, Typography, Space, Divider, Row, Col, Collapse, InputNumber, Button, Checkbox } from 'antd';
 import { FileTextOutlined, CalendarOutlined, DollarOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { Quotation, Service } from '../types';
 import dayjs from 'dayjs';
@@ -22,6 +22,7 @@ interface ServiceWithDetails extends Service {
 }
 
 const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClient, services }) => {
+    const [selectedServices, setSelectedServices] = useState<string[]>([]);
     const [serviceDetails, setServiceDetails] = useState<ServiceWithDetails[]>([]);
     const [serviceQuantities, setServiceQuantities] = useState<Record<string, number>>({});
 
@@ -57,15 +58,35 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
         return acc;
     }, {} as Record<string, ServiceWithDetails[]>);
 
+    const handleServiceToggle = (serviceId: string, checked: boolean) => {
+        if (checked) {
+            setSelectedServices(prev => [...prev, serviceId]);
+            // 默认设置数量为1
+            setServiceQuantities(prev => ({ ...prev, [serviceId]: 1 }));
+        } else {
+            setSelectedServices(prev => prev.filter(id => id !== serviceId));
+            // 移除数量设置
+            setServiceQuantities(prev => {
+                const newQuantities = { ...prev };
+                delete newQuantities[serviceId];
+                return newQuantities;
+            });
+        }
+    };
+
     const handleQuantityChange = (serviceId: string, quantity: number) => {
         setServiceQuantities(prev => ({ ...prev, [serviceId]: quantity }));
     };
 
-    const handleAddToOrder = (service: ServiceWithDetails) => {
-        const quantity = serviceQuantities[service._id] || 1;
-        // 这里可以添加将服务添加到订单的逻辑
-        console.log('添加到订单:', { service, quantity });
-        // 可以调用父组件的回调函数或使用其他状态管理方式
+    const handleAddToOrder = () => {
+        const selectedItems = selectedServices.map(serviceId => {
+            const service = serviceDetails.find(s => s._id === serviceId);
+            const quantity = serviceQuantities[serviceId] || 1;
+            return { service, quantity };
+        });
+
+        console.log('添加到订单:', selectedItems);
+        // 这里可以添加将选中服务添加到订单的逻辑
     };
     if (!selectedClient) {
         return (
@@ -176,6 +197,17 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                         <div style={{ marginTop: '12px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                 <Text strong>包含服务项目 ({quotation.selectedServices.length} 项):</Text>
+                                <div>
+                                    <Tag color="blue">已选择: {selectedServices.length} 项</Tag>
+                                    {selectedServices.length > 0 && (
+                                        <Tag color="green">
+                                            总价: ¥{serviceDetails
+                                                .filter(service => selectedServices.includes(service._id))
+                                                .reduce((sum, service) => sum + (service.unitPrice * (serviceQuantities[service._id] || 1)), 0)
+                                                .toLocaleString()}
+                                        </Tag>
+                                    )}
+                                </div>
                             </div>
                             <div style={{ marginTop: '12px' }}>
                                 <Collapse
@@ -208,7 +240,13 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                         }}
                                                     >
                                                         <Row gutter={16} align="middle">
-                                                            <Col span={8}>
+                                                            <Col span={1}>
+                                                                <Checkbox
+                                                                    checked={selectedServices.includes(service._id)}
+                                                                    onChange={(e) => handleServiceToggle(service._id, e.target.checked)}
+                                                                />
+                                                            </Col>
+                                                            <Col span={7}>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                                     <Text strong>{service.serviceName}</Text>
                                                                     {service.alias && (
@@ -246,23 +284,21 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                 </div>
                                                             </Col>
                                                             <Col span={3}>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <InputNumber
-                                                                        min={1}
-                                                                        max={999}
-                                                                        defaultValue={1}
-                                                                        size="small"
-                                                                        style={{ width: '60px' }}
-                                                                        onChange={(value) => handleQuantityChange(service._id, value || 1)}
-                                                                    />
-                                                                    <Button
-                                                                        type="primary"
-                                                                        size="small"
-                                                                        onClick={() => handleAddToOrder(service)}
-                                                                    >
-                                                                        添加到订单中
-                                                                    </Button>
-                                                                </div>
+                                                                {selectedServices.includes(service._id) && (
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                        <InputNumber
+                                                                            min={1}
+                                                                            max={999}
+                                                                            value={serviceQuantities[service._id] || 1}
+                                                                            size="small"
+                                                                            style={{ width: '60px' }}
+                                                                            onChange={(value) => handleQuantityChange(service._id, value || 1)}
+                                                                        />
+                                                                        <Text type="secondary" style={{ fontSize: '12px' }}>
+                                                                            数量
+                                                                        </Text>
+                                                                    </div>
+                                                                )}
                                                             </Col>
                                                         </Row>
                                                     </div>
@@ -272,6 +308,39 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                     ))}
                                 </Collapse>
                             </div>
+                            
+                            {/* 统一的添加到订单按钮 */}
+                            {selectedServices.length > 0 && (
+                                <div style={{ 
+                                    marginTop: '16px', 
+                                    padding: '16px', 
+                                    background: '#f8f9fa', 
+                                    borderRadius: '8px',
+                                    border: '1px solid #e9ecef'
+                                }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>
+                                            <Text strong>已选择 {selectedServices.length} 项服务</Text>
+                                            <div style={{ marginTop: '4px' }}>
+                                                <Text type="secondary">
+                                                    总价: ¥{serviceDetails
+                                                        .filter(service => selectedServices.includes(service._id))
+                                                        .reduce((sum, service) => sum + (service.unitPrice * (serviceQuantities[service._id] || 1)), 0)
+                                                        .toLocaleString()}
+                                                </Text>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            type="primary"
+                                            size="large"
+                                            onClick={handleAddToOrder}
+                                            style={{ minWidth: '120px' }}
+                                        >
+                                            添加到订单中
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </Card>
                 ))}
