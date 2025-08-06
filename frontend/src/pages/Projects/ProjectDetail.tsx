@@ -590,7 +590,16 @@ const ProjectDetail: React.FC = () => {
                                                                 <Tag color="green">助理</Tag>
                                                             </div>
                                                         )}
-                                                        {!hasAnyDesigners && <span>-</span>}
+                                                        {!hasAnyDesigners && (
+                                                            <Button
+                                                                type="link"
+                                                                size="small"
+                                                                onClick={() => handleAssignDesigners(record)}
+                                                                style={{ padding: 0, height: 'auto', fontSize: '12px' }}
+                                                            >
+                                                                指定
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                     <EditOutlined
                                                         className="edit-icon"
