@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Empty, Tag, Typography, Space, Divider, Row, Col, Collapse, InputNumber, Button, Checkbox } from 'antd';
-import { FileTextOutlined, CalendarOutlined, DollarOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { FileTextOutlined, CalendarOutlined, DollarOutlined, CheckCircleOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { Quotation, Service } from '../types';
 import dayjs from 'dayjs';
 
@@ -228,64 +228,85 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                             key={category}
                                         >
                                             <div style={{ paddingLeft: '16px' }}>
-                                                {categoryServices.map((service) => (
-                                                    <div
-                                                        key={service._id}
-                                                        style={{
-                                                            marginBottom: '12px',
-                                                            padding: '12px',
-                                                            border: '1px solid #f0f0f0',
-                                                            borderRadius: '6px',
-                                                            background: '#fafafa'
-                                                        }}
-                                                    >
-                                                        <Row gutter={16} align="middle">
-                                                            <Col span={1}>
-                                                                <Checkbox
-                                                                    checked={selectedServices.includes(service._id)}
-                                                                    onChange={(e) => handleServiceToggle(service._id, e.target.checked)}
-                                                                />
-                                                            </Col>
-                                                            <Col span={7}>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <Text strong>{service.serviceName}</Text>
-                                                                    {service.alias && (
-                                                                        <Text type="secondary" style={{ fontSize: '12px' }}>
-                                                                            ({service.alias})
+                                                <Row gutter={[16, 16]}>
+                                                    {categoryServices.map((service) => (
+                                                        <Col xs={24} sm={12} md={8} lg={6} key={service._id}>
+                                                            <Card
+                                                                size="small"
+                                                                hoverable
+                                                                style={{
+                                                                    border: selectedServices.includes(service._id) 
+                                                                        ? '2px solid #1890ff' 
+                                                                        : '1px solid #f0f0f0',
+                                                                    borderRadius: '8px',
+                                                                    transition: 'all 0.3s ease',
+                                                                    background: selectedServices.includes(service._id) 
+                                                                        ? '#f6ffed' 
+                                                                        : '#ffffff'
+                                                                }}
+                                                                bodyStyle={{ padding: '12px' }}
+                                                            >
+                                                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
+                                                                    <Checkbox
+                                                                        checked={selectedServices.includes(service._id)}
+                                                                        onChange={(e) => handleServiceToggle(service._id, e.target.checked)}
+                                                                    />
+                                                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                                                        <div style={{ marginBottom: '4px' }}>
+                                                                            <Text strong style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                                                                                {service.serviceName}
+                                                                            </Text>
+                                                                        </div>
+                                                                        {service.alias && (
+                                                                            <div style={{ marginBottom: '4px' }}>
+                                                                                <Text type="secondary" style={{ fontSize: '12px' }}>
+                                                                                    {service.alias}
+                                                                                </Text>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div style={{ marginBottom: '8px' }}>
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+                                                                        <Text type="danger" strong style={{ fontSize: '16px' }}>
+                                                                            ¥{service.unitPrice}
                                                                         </Text>
-                                                                    )}
+                                                                        <Text type="secondary" style={{ fontSize: '12px' }}>
+                                                                            /{service.unit}
+                                                                        </Text>
+                                                                    </div>
                                                                 </div>
-                                                            </Col>
-                                                            <Col span={4}>
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                                    <Text type="danger" strong>
-                                                                        ¥{service.unitPrice}
-                                                                    </Text>
-                                                                    <Text type="secondary" style={{ fontSize: '12px' }}>
-                                                                        /{service.unit}
-                                                                    </Text>
-                                                                </div>
-                                                            </Col>
-                                                            <Col span={5}>
-                                                                <div>
+                                                                
+                                                                <div style={{ marginBottom: '8px' }}>
                                                                     {service.pricingPolicyIds && service.pricingPolicyIds.length > 0 ? (
-                                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
                                                                             {service.pricingPolicyNames?.map((policyName, index) => (
-                                                                                <Tag key={index} color="green" size="small">
+                                                                                <Tag key={index} color="green" style={{ fontSize: '10px' }}>
                                                                                     {policyName}
                                                                                 </Tag>
                                                                             ))}
                                                                         </div>
                                                                     ) : (
-                                                                        <Text type="secondary" style={{ fontSize: '12px' }}>
+                                                                        <Text type="secondary" style={{ fontSize: '11px' }}>
                                                                             无政策
                                                                         </Text>
                                                                     )}
                                                                 </div>
-                                                            </Col>
-                                                            <Col span={3}>
+                                                                
                                                                 {selectedServices.includes(service._id) && (
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <div style={{ 
+                                                                        display: 'flex', 
+                                                                        alignItems: 'center', 
+                                                                        gap: '8px',
+                                                                        padding: '8px',
+                                                                        background: '#f0f8ff',
+                                                                        borderRadius: '4px',
+                                                                        border: '1px solid #d6e4ff'
+                                                                    }}>
+                                                                        <Text type="secondary" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
+                                                                            数量:
+                                                                        </Text>
                                                                         <InputNumber
                                                                             min={1}
                                                                             max={999}
@@ -294,15 +315,12 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                             style={{ width: '60px' }}
                                                                             onChange={(value) => handleQuantityChange(service._id, value || 1)}
                                                                         />
-                                                                        <Text type="secondary" style={{ fontSize: '12px' }}>
-                                                                            数量
-                                                                        </Text>
                                                                     </div>
                                                                 )}
-                                                            </Col>
-                                                        </Row>
-                                                    </div>
-                                                ))}
+                                                            </Card>
+                                                        </Col>
+                                                    ))}
+                                                </Row>
                                             </div>
                                         </Panel>
                                     ))}
