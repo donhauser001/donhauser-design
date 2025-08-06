@@ -15,6 +15,8 @@ const CreateProject: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const [selectedServices, setSelectedServices] = useState<any[]>([]);
+    const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>([]);
+    const [serviceQuantities, setServiceQuantities] = useState<Record<string, number>>({});
 
     const {
         clients,
@@ -220,6 +222,10 @@ const CreateProject: React.FC = () => {
                                 selectedClient={selectedClient}
                                 services={services}
                                 onServicesChange={setSelectedServices}
+                                selectedServiceIds={selectedServiceIds}
+                                onSelectedServiceIdsChange={setSelectedServiceIds}
+                                serviceQuantities={serviceQuantities}
+                                onServiceQuantitiesChange={setServiceQuantities}
                             />
                         )}
                         {currentStep === 2 && (
@@ -234,7 +240,7 @@ const CreateProject: React.FC = () => {
                                     clientRequirements: form.getFieldValue('clientRequirements'),
                                     remark: form.getFieldValue('remark')
                                 }}
-                                selectedContacts={filteredContacts.filter(c => 
+                                selectedContacts={filteredContacts.filter(c =>
                                     form.getFieldValue('contactIds')?.includes(c._id)
                                 )}
                                 enterprises={enterprises}

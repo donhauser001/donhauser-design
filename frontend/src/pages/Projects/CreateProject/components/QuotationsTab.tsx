@@ -13,6 +13,10 @@ interface QuotationsTabProps {
     selectedClient: any;
     services: Service[];
     onServicesChange?: (services: any[]) => void;
+    selectedServiceIds?: string[];
+    onSelectedServiceIdsChange?: (ids: string[]) => void;
+    serviceQuantities?: Record<string, number>;
+    onServiceQuantitiesChange?: (quantities: Record<string, number>) => void;
 }
 
 interface ServiceWithDetails extends Service {
@@ -22,10 +26,17 @@ interface ServiceWithDetails extends Service {
     pricingPolicyNames?: string[];
 }
 
-const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClient, services, onServicesChange }) => {
-    const [selectedServices, setSelectedServices] = useState<string[]>([]);
+const QuotationsTab: React.FC<QuotationsTabProps> = ({
+    quotations,
+    selectedClient,
+    services,
+    onServicesChange,
+    selectedServiceIds = [],
+    onSelectedServiceIdsChange,
+    serviceQuantities = {},
+    onServiceQuantitiesChange
+}) => {
     const [serviceDetails, setServiceDetails] = useState<ServiceWithDetails[]>([]);
-    const [serviceQuantities, setServiceQuantities] = useState<Record<string, number>>({});
 
     // 获取服务详细信息
     useEffect(() => {
@@ -61,26 +72,24 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
 
     const handleServiceToggle = (serviceId: string, checked: boolean) => {
         if (checked) {
-            setSelectedServices(prev => [...prev, serviceId]);
+            onSelectedServiceIdsChange?.([...selectedServiceIds, serviceId]);
             // 默认设置数量为1
-            setServiceQuantities(prev => ({ ...prev, [serviceId]: 1 }));
+            onServiceQuantitiesChange?.({ ...serviceQuantities, [serviceId]: 1 });
         } else {
-            setSelectedServices(prev => prev.filter(id => id !== serviceId));
+            onSelectedServiceIdsChange?.(selectedServiceIds.filter(id => id !== serviceId));
             // 移除数量设置
-            setServiceQuantities(prev => {
-                const newQuantities = { ...prev };
-                delete newQuantities[serviceId];
-                return newQuantities;
-            });
+            const newQuantities = { ...serviceQuantities };
+            delete newQuantities[serviceId];
+            onServiceQuantitiesChange?.(newQuantities);
         }
     };
 
     const handleQuantityChange = (serviceId: string, quantity: number) => {
-        setServiceQuantities(prev => ({ ...prev, [serviceId]: quantity }));
+        onServiceQuantitiesChange?.({ ...serviceQuantities, [serviceId]: quantity });
     };
 
     const handleAddToOrder = () => {
-        const selectedItems = selectedServices.map(serviceId => {
+        const selectedItems = selectedServiceIds.map(serviceId => {
             const service = serviceDetails.find(s => s._id === serviceId);
             const quantity = serviceQuantities[serviceId] || 1;
             return { service, quantity };
@@ -93,7 +102,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
     // 监听选中服务变化，通知父组件
     useEffect(() => {
         if (onServicesChange) {
-            const selectedItems = selectedServices.map(serviceId => {
+            const selectedItems = selectedServiceIds.map(serviceId => {
                 const service = serviceDetails.find(s => s._id === serviceId);
                 const quantity = serviceQuantities[serviceId] || 1;
                 return {
@@ -103,7 +112,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
             });
             onServicesChange(selectedItems);
         }
-    }, [selectedServices, serviceQuantities, serviceDetails, onServicesChange]);
+    }, [selectedServiceIds, serviceQuantities, serviceDetails, onServicesChange]);
     if (!selectedClient) {
         return (
             <div>
@@ -190,7 +199,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                 )}
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <Tag color="blue">已选择: {selectedServices.length} 项</Tag>
+                                <Tag color="blue">已选择: {selectedServiceIds.length} 项</Tag>
                                 <Tag color={quotation.status === 'active' ? 'green' : 'red'}>
                                     {quotation.status === 'active' ? '有效' : '无效'}
                                 </Tag>
@@ -230,12 +239,12 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                 size="small"
                                                                 hoverable
                                                                 style={{
-                                                                    border: selectedServices.includes(service._id)
+                                                                    border: selectedServiceIds.includes(service._id)
                                                                         ? '2px solid #1890ff'
                                                                         : '1px solid #f0f0f0',
                                                                     borderRadius: '8px',
                                                                     transition: 'all 0.3s ease',
-                                                                    background: selectedServices.includes(service._id)
+                                                                    background: selectedServiceIds.includes(service._id)
                                                                         ? '#f6ffed'
                                                                         : '#ffffff'
                                                                 }}
@@ -243,7 +252,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                             >
                                                                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
                                                                     <Checkbox
-                                                                        checked={selectedServices.includes(service._id)}
+                                                                        checked={selectedServiceIds.includes(service._id)}
                                                                         onChange={(e) => handleServiceToggle(service._id, e.target.checked)}
                                                                     />
                                                                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -311,7 +320,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                     )}
                                                                 </div>
 
-                                                                {selectedServices.includes(service._id) && (
+                                                                {selectedServiceIds.includes(service._id) && (
                                                                     <div style={{
                                                                         display: 'flex',
                                                                         alignItems: 'center',
