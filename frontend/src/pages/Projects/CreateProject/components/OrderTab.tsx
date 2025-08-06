@@ -67,7 +67,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             const discountRatio = selectedPolicy.discountRatio || 100;
             discountedPrice = (originalPrice * discountRatio) / 100;
             const discountAmount = originalPrice - discountedPrice;
-            calculationDetails = `${service.priceDescription || `按${service.unit}计费`}\n\n优惠：￥${discountAmount.toFixed(2)}`;
+            calculationDetails = `${service.priceDescription || `按${service.unit}计费`}\n\n<b>优惠</b>：￥${discountAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         } else if (selectedPolicy.type === 'tiered_discount' && selectedPolicy.tierSettings) {
             // 阶梯折扣
             const unitPrice = service.unitPrice;
@@ -107,7 +107,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                     }
 
                     // 生成详细的计算公式
-                    const tierDetail = `${tierRange}：￥${unitPrice.toFixed(2)} × ${tierQuantity}${service.unit} × ${discountRatio}% = ￥${tierDiscountedPrice.toFixed(2)}`;
+                    const tierDetail = `${tierRange}：￥${unitPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × ${tierQuantity}${service.unit} × ${discountRatio}% = ￥${tierDiscountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                     tierDetails.push(tierDetail);
                     remainingQuantity -= tierQuantity;
                 }
@@ -134,7 +134,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                 }
             }
 
-            calculationDetails = `${service.priceDescription || `按${service.unit}计费`}\n\n优惠说明: ${discountDescription}\n\n${tierDetails.join('\n')}\n\n小计：${tierDetails.map(detail => detail.split(' = ')[1]).join('+')}=￥${totalDiscountedPrice.toFixed(2)}\n优惠：￥${(originalPrice - totalDiscountedPrice).toFixed(2)}`;
+            calculationDetails = `${service.priceDescription || `按${service.unit}计费`}\n\n<b>优惠说明</b>: ${discountDescription}\n${tierDetails.join('\n')}\n\n<b>小计</b>：${tierDetails.map(detail => detail.split(' = ')[1]).join('+')}=￥${totalDiscountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n<b>优惠</b>：￥${(originalPrice - totalDiscountedPrice).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
 
         const discountAmount = originalPrice - discountedPrice;
@@ -263,12 +263,12 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                         {priceResult.discountAmount > 0 ? (
                             <div>
                                 <div style={{ textDecoration: 'line-through', color: '#999', fontSize: '12px' }}>
-                                    ¥{priceResult.originalPrice.toLocaleString()}
+                                    ¥{priceResult.originalPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </div>
-                                <Text type="danger" strong>¥{priceResult.discountedPrice.toLocaleString()}</Text>
+                                <Text type="danger" strong>¥{priceResult.discountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                             </div>
                         ) : (
-                            <Text type="danger" strong>¥{priceResult.discountedPrice.toLocaleString()}</Text>
+                            <Text type="danger" strong>¥{priceResult.discountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>
                         )}
                     </div>
                 );
@@ -383,18 +383,18 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                                 {totalDiscountAmount > 0 ? (
                                     <div style={{ textAlign: 'right' }}>
                                         <div style={{ textDecoration: 'line-through', color: '#999', fontSize: '12px' }}>
-                                            ¥{originalTotalAmount.toLocaleString()}
+                                            ¥{originalTotalAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </div>
                                         <Text type="danger" strong style={{ fontSize: '16px' }}>
-                                            ¥{totalAmount.toLocaleString()}
+                                            ¥{totalAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </Text>
                                         <div style={{ color: '#52c41a', fontSize: '12px' }}>
-                                            优惠: ¥{totalDiscountAmount.toLocaleString()}
+                                            优惠: ¥{totalDiscountAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </div>
                                     </div>
                                 ) : (
                                     <Text type="danger" strong style={{ fontSize: '16px' }}>
-                                        ¥{totalAmount.toLocaleString()}
+                                        ¥{totalAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </Text>
                                 )}
                             </Table.Summary.Cell>
