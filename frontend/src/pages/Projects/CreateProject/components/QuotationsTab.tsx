@@ -97,7 +97,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ color: '#1890ff' }}>📋</span>
                             <span>报价单信息</span>
-                            <Tag color="blue">0 个报价单</Tag>
+                            <Tag color="blue">包含服务项目 0 项</Tag>
                         </div>
                     }
                     style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
@@ -120,7 +120,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ color: '#1890ff' }}>📋</span>
                             <span>报价单信息</span>
-                            <Tag color="blue">0 个报价单</Tag>
+                            <Tag color="blue">包含服务项目 0 项</Tag>
                         </div>
                     }
                     style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
@@ -138,13 +138,13 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
         <div>
             <Card
                 size="small"
-                title={
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ color: '#1890ff' }}>📋</span>
-                        <span>报价单信息</span>
-                        <Tag color="blue">{quotations.length} 个报价单</Tag>
-                    </div>
-                }
+                                            title={
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span style={{ color: '#1890ff' }}>📋</span>
+                                    <span>报价单信息</span>
+                                    <Tag color="blue">包含服务项目 {quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项</Tag>
+                                </div>
+                            }
                 style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
             >
                 {quotations.map((quotation, index) => (
@@ -186,7 +186,6 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
 
                         <div style={{ marginTop: '12px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                <Text strong>包含服务项目 ({quotation.selectedServices.length} 项):</Text>
                                 <div>
                                     <Tag color="blue">已选择: {selectedServices.length} 项</Tag>
                                 </div>
