@@ -620,18 +620,8 @@ const ProjectDetail: React.FC = () => {
                                         title: '任务名称',
                                         dataIndex: 'taskName',
                                         key: 'taskName',
-                                        width: 150,
-                                        render: (text: string, record: Task) => (
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                <span>{text}</span>
-                                            </div>
-                                        )
-                                    },
-                                    {
-                                        title: '状态',
-                                        key: 'status',
-                                        width: 120,
-                                        render: (_, record: Task) => {
+                                        width: 200,
+                                        render: (text: string, record: Task) => {
                                             console.log('Task process info:', {
                                                 taskId: record._id,
                                                 processSteps: record.processSteps,
@@ -658,25 +648,32 @@ const ProjectDetail: React.FC = () => {
                                                 };
 
                                                 return (
-                                                    <Dropdown menu={menu} trigger={['click']}>
-                                                        <Tag
-                                                            color={record.currentProcessStep ? 'blue' : 'default'}
-                                                            style={{ cursor: 'pointer' }}
-                                                        >
-                                                            {record.currentProcessStep?.name || '未设置'}
-                                                        </Tag>
-                                                    </Dropdown>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <span>{text}</span>
+                                                        <Dropdown menu={menu} trigger={['click']}>
+                                                            <Tag
+                                                                color={record.currentProcessStep ? 'blue' : 'default'}
+                                                                style={{ cursor: 'pointer' }}
+                                                            >
+                                                                {record.currentProcessStep?.name || '未设置'}
+                                                            </Tag>
+                                                        </Dropdown>
+                                                    </div>
                                                 );
                                             }
 
                                             // 如果服务没有设置流程，显示"无流程"
                                             return (
-                                                <Tag color="default" style={{ color: '#8c8c8c' }}>
-                                                    无流程
-                                                </Tag>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span>{text}</span>
+                                                    <Tag color="default" style={{ color: '#8c8c8c' }}>
+                                                        无流程
+                                                    </Tag>
+                                                </div>
                                             );
                                         }
                                     },
+
                                     {
                                         title: '规格',
                                         key: 'specification',
