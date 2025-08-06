@@ -131,20 +131,68 @@ const CreateProject: React.FC = () => {
                             {
                                 title: '基本信息',
                                 description: '填写项目基本信息',
-                                icon: <FileTextOutlined style={{ color: '#666' }} />,
+                                icon: (
+                                    <div style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '50%',
+                                        backgroundColor: currentStep >= 0 ? '#1890ff' : '#f5f5f5',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        border: currentStep >= 0 ? '2px solid #1890ff' : '2px solid #d9d9d9'
+                                    }}>
+                                        <FileTextOutlined style={{ 
+                                            color: currentStep >= 0 ? '#fff' : '#666',
+                                            fontSize: '16px'
+                                        }} />
+                                    </div>
+                                ),
                                 status: currentStep >= 0 ? 'process' : 'wait'
                             },
                             {
                                 title: '任务列表',
                                 description: `选择服务项目 ${quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项`,
-                                icon: <FileTextOutlined style={{ color: '#666' }} />,
+                                icon: (
+                                    <div style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '50%',
+                                        backgroundColor: currentStep >= 1 ? '#1890ff' : '#f5f5f5',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        border: currentStep >= 1 ? '2px solid #1890ff' : '2px solid #d9d9d9'
+                                    }}>
+                                        <FileTextOutlined style={{ 
+                                            color: currentStep >= 1 ? '#fff' : '#666',
+                                            fontSize: '16px'
+                                        }} />
+                                    </div>
+                                ),
                                 status: currentStep >= 1 ? 'process' : 'wait',
                                 disabled: !selectedClient
                             },
                             {
                                 title: '订单信息',
                                 description: '确认订单详情',
-                                icon: <ShoppingCartOutlined style={{ color: '#666' }} />,
+                                icon: (
+                                    <div style={{
+                                        width: '32px',
+                                        height: '32px',
+                                        borderRadius: '50%',
+                                        backgroundColor: currentStep >= 2 ? '#1890ff' : '#f5f5f5',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        border: currentStep >= 2 ? '2px solid #1890ff' : '2px solid #d9d9d9'
+                                    }}>
+                                        <ShoppingCartOutlined style={{ 
+                                            color: currentStep >= 2 ? '#fff' : '#666',
+                                            fontSize: '16px'
+                                        }} />
+                                    </div>
+                                ),
                                 status: currentStep >= 2 ? 'process' : 'wait',
                                 disabled: !selectedClient
                             }

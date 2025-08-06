@@ -138,13 +138,13 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
         <div>
             <Card
                 size="small"
-                                    title={
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <FileTextOutlined style={{ color: '#666' }} />
-                            <span>报价单信息</span>
-                            <Tag color="blue">包含服务项目 {quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项</Tag>
-                        </div>
-                    }
+                title={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FileTextOutlined style={{ color: '#666' }} />
+                        <span>报价单信息</span>
+                        <Tag color="blue">包含服务项目 {quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项</Tag>
+                    </div>
+                }
                 style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
             >
                 {quotations.map((quotation, index) => (
