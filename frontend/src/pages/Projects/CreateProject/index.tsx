@@ -123,6 +123,23 @@ const CreateProject: React.FC = () => {
         setCurrentStep(step);
     };
 
+    // 处理数量变化，同步到第二步
+    const handleQuantityChange = (serviceId: string, quantity: number) => {
+        setServiceQuantities(prev => ({
+            ...prev,
+            [serviceId]: quantity
+        }));
+        
+        // 同时更新selectedServices中的数量
+        setSelectedServices(prev => 
+            prev.map(service => 
+                service._id === serviceId 
+                    ? { ...service, quantity } 
+                    : service
+            )
+        );
+    };
+
     // 保存状态到 localStorage
     useEffect(() => {
         localStorage.setItem('createProject_currentStep', currentStep.toString());
@@ -344,6 +361,7 @@ const CreateProject: React.FC = () => {
                                 )}
                                 enterprises={enterprises}
                                 designers={designers}
+                                onServiceQuantityChange={handleQuantityChange}
                             />
                         )}
                     </div>

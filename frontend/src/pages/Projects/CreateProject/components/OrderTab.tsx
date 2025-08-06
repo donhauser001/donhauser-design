@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Select, Row, Col, Card, Table, Tag, Typography, Space } from 'antd';
+import { Form, Input, Select, Row, Col, Card, Table, Tag, Typography, Space, InputNumber } from 'antd';
 import { UserOutlined, TeamOutlined, FileTextOutlined, EditOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
@@ -13,9 +13,10 @@ interface OrderTabProps {
     selectedContacts?: any[];
     enterprises?: any[];
     designers?: any[];
+    onServiceQuantityChange?: (serviceId: string, quantity: number) => void;
 }
 
-const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, projectData, selectedContacts, enterprises = [], designers = [] }) => {
+const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, projectData, selectedContacts, enterprises = [], designers = [], onServiceQuantityChange }) => {
     // 辅助函数：获取企业显示名称
     const getEnterpriseName = (enterpriseId: string) => {
         const enterprise = enterprises.find(e => e._id === enterpriseId);
@@ -69,8 +70,19 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             title: '数量',
             dataIndex: 'quantity',
             key: 'quantity',
-            render: (quantity: number) => (
-                <Text strong>{quantity}</Text>
+            render: (quantity: number, record: any) => (
+                <InputNumber
+                    min={1}
+                    max={9999}
+                    value={quantity}
+                    onChange={(value) => {
+                        if (onServiceQuantityChange && value !== null) {
+                            onServiceQuantityChange(record._id, value);
+                        }
+                    }}
+                    style={{ width: '80px' }}
+                    size="small"
+                />
             )
         },
         {
