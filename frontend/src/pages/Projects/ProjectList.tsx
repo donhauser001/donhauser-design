@@ -25,7 +25,20 @@ import {
     EyeOutlined,
     ReloadOutlined,
     FilterOutlined,
-    ClearOutlined
+    ClearOutlined,
+    FileTextOutlined,
+    SettingOutlined,
+    PauseCircleOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    DollarOutlined,
+    CreditCardOutlined,
+    WalletOutlined,
+    CheckOutlined,
+    UserOutlined,
+    CalendarOutlined,
+    TeamOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -420,13 +433,22 @@ const ProjectList: React.FC = () => {
                     >
                         {getProgressStatusText(record.progressStatus)}
                         {record.progressStatus === 'consulting' && (
-                            <span style={{ marginLeft: '4px', fontSize: '12px' }}>📋</span>
+                            <FileTextOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
                         )}
                         {record.progressStatus === 'in-progress' && (
-                            <span style={{ marginLeft: '4px', fontSize: '12px' }}>⚙️</span>
+                            <SettingOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                        )}
+                        {record.progressStatus === 'partial-delivery' && (
+                            <ClockCircleOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                        )}
+                        {record.progressStatus === 'completed' && (
+                            <CheckCircleOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
                         )}
                         {record.progressStatus === 'on-hold' && (
-                            <span style={{ marginLeft: '4px', fontSize: '12px' }}>⏸️</span>
+                            <PauseCircleOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                        )}
+                        {record.progressStatus === 'cancelled' && (
+                            <CloseCircleOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
                         )}
                     </Tag>
                 </div>
@@ -436,7 +458,13 @@ const ProjectList: React.FC = () => {
             title: '客户名称',
             dataIndex: 'clientName',
             key: 'clientName',
-            width: 150
+            width: 150,
+            render: (text: string) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <UserOutlined style={{ fontSize: '12px', color: '#666' }} />
+                    <span>{text}</span>
+                </div>
+            )
         },
         {
             title: '结算状态',
@@ -446,6 +474,18 @@ const ProjectList: React.FC = () => {
             render: (status: string) => (
                 <Tag color={getSettlementStatusColor(status)}>
                     {getSettlementStatusText(status)}
+                    {status === 'unpaid' && (
+                        <DollarOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                    )}
+                    {status === 'prepaid' && (
+                        <CreditCardOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                    )}
+                    {status === 'partial-paid' && (
+                        <WalletOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                    )}
+                    {status === 'fully-paid' && (
+                        <CheckOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                    )}
                 </Tag>
             )
         },
@@ -455,7 +495,10 @@ const ProjectList: React.FC = () => {
             key: 'taskCount',
             width: 100,
             render: (taskIds: string[]) => (
-                <Badge count={taskIds?.length || 0} showZero />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <TeamOutlined style={{ fontSize: '12px', color: '#666' }} />
+                    <Badge count={taskIds?.length || 0} showZero />
+                </div>
             )
         },
         {
@@ -463,7 +506,12 @@ const ProjectList: React.FC = () => {
             dataIndex: 'createdAt',
             key: 'createdAt',
             width: 120,
-            render: (date: string) => dayjs(date).format('YYYY-MM-DD')
+            render: (date: string) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <CalendarOutlined style={{ fontSize: '12px', color: '#666' }} />
+                    <span>{dayjs(date).format('YYYY-MM-DD')}</span>
+                </div>
+            )
         },
         {
             title: '操作',
