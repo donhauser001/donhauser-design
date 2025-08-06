@@ -81,7 +81,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                             onServiceQuantityChange(record._id, value);
                         }
                     }}
-                    style={{ width: '80px' }}
+                    style={{ width: '60px' }}
                     size="small"
                 />
             )

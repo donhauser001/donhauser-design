@@ -354,7 +354,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
                                                                             max={999}
                                                                             value={serviceQuantities[service._id] || 1}
                                                                             size="small"
-                                                                            style={{ width: '60px' }}
+                                                                            style={{ width: '50px' }}
                                                                             onChange={(value) => handleQuantityChange(service._id, value || 1)}
                                                                         />
                                                                     </div>
