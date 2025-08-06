@@ -235,27 +235,48 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                 size="small"
                                                                 hoverable
                                                                 style={{
-                                                                    border: selectedServices.includes(service._id) 
-                                                                        ? '2px solid #1890ff' 
+                                                                    border: selectedServices.includes(service._id)
+                                                                        ? '2px solid #1890ff'
                                                                         : '1px solid #f0f0f0',
                                                                     borderRadius: '8px',
                                                                     transition: 'all 0.3s ease',
-                                                                    background: selectedServices.includes(service._id) 
-                                                                        ? '#f6ffed' 
+                                                                    background: selectedServices.includes(service._id)
+                                                                        ? '#f6ffed'
                                                                         : '#ffffff'
                                                                 }}
                                                                 bodyStyle={{ padding: '12px' }}
                                                             >
-                                                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
+                                                                                                                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px' }}>
                                                                     <Checkbox
                                                                         checked={selectedServices.includes(service._id)}
                                                                         onChange={(e) => handleServiceToggle(service._id, e.target.checked)}
                                                                     />
                                                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                                                        <div style={{ marginBottom: '4px' }}>
-                                                                            <Text strong style={{ fontSize: '14px', lineHeight: '1.4' }}>
-                                                                                {service.serviceName}
-                                                                            </Text>
+                                                                        <div style={{ 
+                                                                            display: 'flex', 
+                                                                            justifyContent: 'space-between', 
+                                                                            alignItems: 'flex-start',
+                                                                            marginBottom: '4px'
+                                                                        }}>
+                                                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                                                <Text strong style={{ fontSize: '14px', lineHeight: '1.4' }}>
+                                                                                    {service.serviceName}
+                                                                                </Text>
+                                                                            </div>
+                                                                            <div style={{ 
+                                                                                display: 'flex', 
+                                                                                alignItems: 'center', 
+                                                                                gap: '4px',
+                                                                                marginLeft: '8px',
+                                                                                flexShrink: 0
+                                                                            }}>
+                                                                                <Text type="danger" strong style={{ fontSize: '16px' }}>
+                                                                                    ¥{service.unitPrice}
+                                                                                </Text>
+                                                                                <Text type="secondary" style={{ fontSize: '12px' }}>
+                                                                                    /{service.unit}
+                                                                                </Text>
+                                                                            </div>
                                                                         </div>
                                                                         {service.alias && (
                                                                             <div style={{ marginBottom: '4px' }}>
@@ -266,18 +287,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                         )}
                                                                     </div>
                                                                 </div>
-                                                                
-                                                                <div style={{ marginBottom: '8px' }}>
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
-                                                                        <Text type="danger" strong style={{ fontSize: '16px' }}>
-                                                                            ¥{service.unitPrice}
-                                                                        </Text>
-                                                                        <Text type="secondary" style={{ fontSize: '12px' }}>
-                                                                            /{service.unit}
-                                                                        </Text>
-                                                                    </div>
-                                                                </div>
-                                                                
+
                                                                 <div style={{ marginBottom: '8px' }}>
                                                                     {service.pricingPolicyIds && service.pricingPolicyIds.length > 0 ? (
                                                                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px' }}>
@@ -293,11 +303,11 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                         </Text>
                                                                     )}
                                                                 </div>
-                                                                
+
                                                                 {selectedServices.includes(service._id) && (
-                                                                    <div style={{ 
-                                                                        display: 'flex', 
-                                                                        alignItems: 'center', 
+                                                                    <div style={{
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
                                                                         gap: '8px',
                                                                         padding: '8px',
                                                                         background: '#f0f8ff',
@@ -326,13 +336,13 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                     ))}
                                 </Collapse>
                             </div>
-                            
+
                             {/* 统一的添加到订单按钮 */}
                             {selectedServices.length > 0 && (
-                                <div style={{ 
-                                    marginTop: '16px', 
-                                    padding: '16px', 
-                                    background: '#f8f9fa', 
+                                <div style={{
+                                    marginTop: '16px',
+                                    padding: '16px',
+                                    background: '#f8f9fa',
                                     borderRadius: '8px',
                                     border: '1px solid #e9ecef'
                                 }}>
