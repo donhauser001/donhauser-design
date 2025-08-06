@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose'
 
 export interface IEnterprise extends Document {
     enterpriseName: string;
+    enterpriseAlias?: string; // 企业别名
     creditCode: string;
     businessLicense: string;
     legalRepresentative: string;
@@ -22,6 +23,11 @@ const EnterpriseSchema = new Schema<IEnterprise>({
     enterpriseName: {
         type: String,
         required: true,
+        trim: true,
+        index: true
+    },
+    enterpriseAlias: {
+        type: String,
         trim: true,
         index: true
     },
@@ -101,6 +107,7 @@ export const Enterprise = mongoose.model<IEnterprise>('Enterprise', EnterpriseSc
 export interface Enterprise {
     id: string;
     enterpriseName: string;
+    enterpriseAlias?: string;
     creditCode: string;
     businessLicense: string;
     legalRepresentative: string;
@@ -119,6 +126,7 @@ export interface Enterprise {
 
 export interface CreateEnterpriseRequest {
     enterpriseName: string;
+    enterpriseAlias?: string;
     creditCode: string;
     businessLicense: string;
     legalRepresentative: string;
@@ -136,6 +144,7 @@ export interface CreateEnterpriseRequest {
 
 export interface UpdateEnterpriseRequest {
     enterpriseName?: string;
+    enterpriseAlias?: string;
     creditCode?: string;
     businessLicense?: string;
     legalRepresentative?: string;

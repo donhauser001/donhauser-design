@@ -2,19 +2,20 @@ import axios from 'axios'
 
 // 企业接口
 export interface Enterprise {
-  id: string
-  enterpriseName: string
-  creditCode: string
-  businessLicense: string
-  legalRepresentative: string
-  legalRepresentativeId: string
-  companyAddress: string
-  shippingAddress: string
-  contactPerson: string
-  contactPhone: string
-  invoiceInfo: string
-  status: 'active' | 'inactive'
-  createTime: string
+    id: string
+    enterpriseName: string
+    enterpriseAlias?: string
+    creditCode: string
+    businessLicense: string
+    legalRepresentative: string
+    legalRepresentativeId: string
+    companyAddress: string
+    shippingAddress: string
+    contactPerson: string
+    contactPhone: string
+    invoiceInfo: string
+    status: 'active' | 'inactive'
+    createTime: string
 }
 
 // 企业列表查询参数

@@ -45,6 +45,7 @@ interface Contact {
 interface Enterprise {
     _id: string;
     enterpriseName: string;
+    enterpriseAlias?: string;
     creditCode: string;
     status: 'active' | 'inactive';
 }
@@ -328,7 +329,7 @@ const CreateProject: React.FC = () => {
                                 >
                                     {enterprises.map(enterprise => (
                                         <Option key={enterprise._id} value={enterprise._id}>
-                                            {enterprise.enterpriseName}
+                                            {enterprise.enterpriseAlias || enterprise.enterpriseName}
                                         </Option>
                                     ))}
                                 </Select>
