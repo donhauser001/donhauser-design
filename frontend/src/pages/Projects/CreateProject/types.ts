@@ -33,6 +33,7 @@ export interface Service {
     serviceName: string;
     unitPrice: number;
     unit: string;
+    priceDescription?: string;
 }
 
 export interface Quotation {
