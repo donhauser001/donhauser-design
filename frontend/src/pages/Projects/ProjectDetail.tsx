@@ -108,6 +108,10 @@ const ProjectDetail: React.FC = () => {
     const [selectedMainDesigners, setSelectedMainDesigners] = useState<string[]>([]);
     const [selectedAssistantDesigners, setSelectedAssistantDesigners] = useState<string[]>([]);
     const [assignLoading, setAssignLoading] = useState(false);
+    const [priorityModalVisible, setPriorityModalVisible] = useState(false);
+    const [currentPriorityTask, setCurrentPriorityTask] = useState<Task | null>(null);
+    const [selectedPriority, setSelectedPriority] = useState<string>('');
+    const [priorityLoading, setPriorityLoading] = useState(false);
 
     // 获取项目详情
     const fetchProject = async () => {
@@ -197,6 +201,44 @@ const ProjectDetail: React.FC = () => {
             message.error('分配设计师失败');
         } finally {
             setAssignLoading(false);
+        }
+    };
+
+    // 打开修改紧急度模态窗
+    const handleChangePriority = (task: Task) => {
+        setCurrentPriorityTask(task);
+        setSelectedPriority(task.priority);
+        setPriorityModalVisible(true);
+    };
+
+    // 确认修改紧急度
+    const handleConfirmPriority = async () => {
+        if (!currentPriorityTask) return;
+
+        setPriorityLoading(true);
+        try {
+            const response = await fetch(`/api/tasks/${currentPriorityTask._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    priority: selectedPriority
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                message.success('紧急度修改成功');
+                setPriorityModalVisible(false);
+                fetchTasks(); // 重新获取任务列表
+            } else {
+                message.error(data.message || '紧急度修改失败');
+            }
+        } catch (error) {
+            console.error('修改紧急度失败:', error);
+            message.error('修改紧急度失败');
+        } finally {
+            setPriorityLoading(false);
         }
     };
 
@@ -509,7 +551,12 @@ const ProjectDetail: React.FC = () => {
                                         key: 'priority',
                                         width: 80,
                                         render: (_, record: Task) => (
-                                            <Tag color={getPriorityColor(record.priority)} size="small">
+                                            <Tag 
+                                                color={getPriorityColor(record.priority)} 
+                                                size="small"
+                                                style={{ cursor: 'pointer' }}
+                                                onClick={() => handleChangePriority(record)}
+                                            >
                                                 {getPriorityText(record.priority)}
                                             </Tag>
                                         )
@@ -725,6 +772,38 @@ const ProjectDetail: React.FC = () => {
                         ))}
                     </Select>
                 </div>
+            </Modal>
+
+            {/* 修改紧急度模态窗 */}
+            <Modal
+                title={`修改紧急度 - ${currentPriorityTask?.taskName}`}
+                open={priorityModalVisible}
+                onOk={handleConfirmPriority}
+                onCancel={() => setPriorityModalVisible(false)}
+                confirmLoading={priorityLoading}
+                width={400}
+            >
+                <div style={{ marginBottom: 16 }}>
+                    <p>请选择新的紧急度：</p>
+                </div>
+                <Select
+                    value={selectedPriority}
+                    onChange={setSelectedPriority}
+                    style={{ width: '100%' }}
+                >
+                    <Select.Option value="low">
+                        <Tag color="default">低</Tag>
+                    </Select.Option>
+                    <Select.Option value="medium">
+                        <Tag color="blue">中</Tag>
+                    </Select.Option>
+                    <Select.Option value="high">
+                        <Tag color="orange">高</Tag>
+                    </Select.Option>
+                    <Select.Option value="urgent">
+                        <Tag color="red">紧急</Tag>
+                    </Select.Option>
+                </Select>
             </Modal>
         </div>
     );
