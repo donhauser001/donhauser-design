@@ -384,7 +384,16 @@ const ProjectList: React.FC = () => {
                             <Button
                                 type="primary"
                                 icon={<PlusOutlined />}
-                                onClick={() => navigate('/projects/create')}
+                                onClick={() => {
+                                    // 清空暂存数据后跳转
+                                    localStorage.removeItem('createProject_currentStep');
+                                    localStorage.removeItem('createProject_selectedServices');
+                                    localStorage.removeItem('createProject_selectedServiceIds');
+                                    localStorage.removeItem('createProject_serviceQuantities');
+                                    localStorage.removeItem('createProject_formData');
+                                    localStorage.removeItem('createProject_selectedClientId');
+                                    navigate('/projects/create');
+                                }}
                             >
                                 新建项目
                             </Button>
