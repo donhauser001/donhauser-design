@@ -50,6 +50,13 @@ interface Enterprise {
     status: 'active' | 'inactive';
 }
 
+interface Designer {
+    _id: string;
+    realName: string;
+    position?: string;
+    role: string;
+}
+
 interface Service {
     _id: string;
     serviceName: string;
@@ -85,6 +92,7 @@ const CreateProject: React.FC = () => {
     const [clients, setClients] = useState<Client[]>([]);
     const [contacts, setContacts] = useState<Contact[]>([]);
     const [enterprises, setEnterprises] = useState<Enterprise[]>([]);
+    const [designers, setDesigners] = useState<Designer[]>([]);
     const [services, setServices] = useState<Service[]>([]);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
@@ -133,6 +141,23 @@ const CreateProject: React.FC = () => {
         }
     };
 
+    // 获取设计师列表（员工和超级管理员）
+    const fetchDesigners = async () => {
+        try {
+            const response = await fetch('/api/users?limit=100');
+            const data = await response.json();
+            if (data.success) {
+                // 过滤出员工和超级管理员角色的用户
+                const designerUsers = data.data.filter((user: any) =>
+                    user.role === '员工' || user.role === '超级管理员'
+                );
+                setDesigners(designerUsers);
+            }
+        } catch (error) {
+            console.error('获取设计师列表失败:', error);
+        }
+    };
+
     // 获取服务列表
     const fetchServices = async () => {
         try {
@@ -150,6 +175,7 @@ const CreateProject: React.FC = () => {
         fetchClients();
         fetchContacts();
         fetchEnterprises();
+        fetchDesigners();
         fetchServices();
     }, []);
 
@@ -413,10 +439,20 @@ const CreateProject: React.FC = () => {
                                 label="主创设计师"
                                 rules={[{ required: true, message: '请选择主创设计师' }]}
                             >
-                                <Select mode="multiple" placeholder="请选择主创设计师">
-                                    <Option value="designer1">设计师A</Option>
-                                    <Option value="designer2">设计师B</Option>
-                                    <Option value="designer3">设计师C</Option>
+                                <Select
+                                    mode="multiple"
+                                    placeholder="请选择主创设计师"
+                                    showSearch
+                                    filterOption={(input, option) => {
+                                        const label = option?.label || option?.children;
+                                        return String(label).toLowerCase().includes(input.toLowerCase());
+                                    }}
+                                >
+                                    {designers.map(designer => (
+                                        <Option key={designer._id} value={designer._id}>
+                                            {designer.realName} {designer.position ? `(${designer.position})` : ''}
+                                        </Option>
+                                    ))}
                                 </Select>
                             </Form.Item>
                         </Col>
@@ -425,10 +461,20 @@ const CreateProject: React.FC = () => {
                                 name="assistantDesigners"
                                 label="助理设计师"
                             >
-                                <Select mode="multiple" placeholder="请选择助理设计师">
-                                    <Option value="assistant1">助理A</Option>
-                                    <Option value="assistant2">助理B</Option>
-                                    <Option value="assistant3">助理C</Option>
+                                <Select
+                                    mode="multiple"
+                                    placeholder="请选择助理设计师"
+                                    showSearch
+                                    filterOption={(input, option) => {
+                                        const label = option?.label || option?.children;
+                                        return String(label).toLowerCase().includes(input.toLowerCase());
+                                    }}
+                                >
+                                    {designers.map(designer => (
+                                        <Option key={designer._id} value={designer._id}>
+                                            {designer.realName} {designer.position ? `(${designer.position})` : ''}
+                                        </Option>
+                                    ))}
                                 </Select>
                             </Form.Item>
                         </Col>
