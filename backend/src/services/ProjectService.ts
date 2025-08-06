@@ -102,7 +102,7 @@ export class ProjectService {
       logIds: []
     });
 
-    const savedProject = await project.save();
+    const savedProject = await project.save() as IProject;
 
     // 创建项目日志
     await this.createProjectLog({
@@ -128,7 +128,7 @@ export class ProjectService {
       const createdTasks = await this.taskService.createTasks(tasksData);
 
       // 更新项目中的任务ID列表
-      const taskIds = createdTasks.map(task => task._id.toString());
+      const taskIds = createdTasks.map((task: any) => task._id.toString());
       await Project.findByIdAndUpdate(savedProject._id, { taskIds });
 
       // 创建任务创建日志
@@ -355,7 +355,7 @@ export class ProjectService {
     // 更新项目的日志ID列表
     await Project.findByIdAndUpdate(
       logData.projectId,
-      { $push: { logIds: log._id.toString() } }
+      { $push: { logIds: (log as any)._id.toString() } }
     );
   }
 

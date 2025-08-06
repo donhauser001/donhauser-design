@@ -1,7 +1,7 @@
 import Task, { ITask } from '../models/Task';
 import ProjectLog from '../models/ProjectLog';
 
-export class TaskService {
+class TaskService {
     /**
      * 创建任务
      */
@@ -42,12 +42,12 @@ export class TaskService {
         }
     }
 
-         /**
-      * 批量创建任务
-      */
-     async createTasks(tasksData: Partial<ITask>[]): Promise<ITask[]> {
-         return await Task.insertMany(tasksData) as ITask[];
-     }
+    /**
+ * 批量创建任务
+ */
+    async createTasks(tasksData: Partial<ITask>[]): Promise<ITask[]> {
+        return await Task.insertMany(tasksData) as ITask[];
+    }
 
     /**
      * 根据ID获取任务
@@ -341,4 +341,7 @@ export class TaskService {
         });
         await log.save();
     }
-} 
+}
+
+export { TaskService };
+export default new TaskService(); 
