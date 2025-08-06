@@ -149,9 +149,11 @@ const CreateProject: React.FC = () => {
             const client = clients.find(c => c._id === savedClientId);
             if (client) {
                 handleClientChange(savedClientId);
+                // 同时设置表单的客户字段
+                form.setFieldsValue({ clientId: savedClientId });
             }
         }
-    }, [clients, handleClientChange]);
+    }, [clients, handleClientChange, form]);
 
     // 保存客户选择
     useEffect(() => {

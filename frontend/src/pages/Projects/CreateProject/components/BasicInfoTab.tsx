@@ -27,6 +27,10 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
     handleClientChange,
     handleContactChange
 }) => {
+    // 从表单中获取客户ID，确保在恢复时也能正确显示
+    const [form] = Form.useForm();
+    const clientId = Form.useWatch('clientId', form);
+    const hasClient = selectedClient || clientId;
     return (
         <div>
             {/* 基本信息 */}
@@ -97,14 +101,19 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                                 placeholder={selectedClient ? `请选择 ${selectedClient.name} 的联系人` : '请先选择客户'}
                                 onChange={handleContactChange}
                                 showSearch
-                                disabled={!selectedClient}
+                                disabled={!hasClient}
                                 filterOption={(input, option) => {
                                     const label = option?.label || option?.children;
                                     return String(label).toLowerCase().includes(input.toLowerCase());
                                 }}
+                                optionLabelProp="label"
                             >
                                 {filteredContacts.map(contact => (
-                                    <Option key={contact._id} value={contact._id}>
+                                    <Option
+                                        key={contact._id}
+                                        value={contact._id}
+                                        label={`${contact.realName} ${contact.position ? `(${contact.position})` : ''}`}
+                                    >
                                         {contact.realName} {contact.position ? `(${contact.position})` : ''}
                                     </Option>
                                 ))}
