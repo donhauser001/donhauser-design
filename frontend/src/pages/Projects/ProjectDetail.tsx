@@ -63,6 +63,7 @@ interface Task {
     projectId: string;
     serviceId: string;
     assignedDesigners: string[];
+    assignedDesignerNames?: string[];
     specificationId?: string;
     quantity: number;
     unit: string;
@@ -479,8 +480,8 @@ const ProjectDetail: React.FC = () => {
                                         key: 'designers',
                                         width: 120,
                                         render: (_, record: Task) =>
-                                            record.assignedDesigners && record.assignedDesigners.length > 0
-                                                ? record.assignedDesigners.join('，')
+                                            record.assignedDesignerNames && record.assignedDesignerNames.length > 0
+                                                ? record.assignedDesignerNames.join('，')
                                                 : '-'
                                     }
                                 ]}

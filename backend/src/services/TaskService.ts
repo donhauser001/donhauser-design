@@ -1,7 +1,9 @@
 import Task, { ITask } from '../models/Task';
 import ProjectLog from '../models/ProjectLog';
+import { UserService } from './UserService';
 
 class TaskService {
+    private userService = new UserService();
     /**
      * 创建任务
      */
@@ -59,8 +61,35 @@ class TaskService {
     /**
      * 获取项目相关的所有任务
      */
-    async getTasksByProject(projectId: string): Promise<ITask[]> {
-        return await Task.find({ projectId }).sort({ createdAt: 1 });
+    async getTasksByProject(projectId: string): Promise<any[]> {
+        const tasks = await Task.find({ projectId }).sort({ createdAt: 1 });
+
+        // 为每个任务获取设计师名字
+        const tasksWithDesignerNames = await Promise.all(
+            tasks.map(async (task) => {
+                let assignedDesignerNames: string[] = [];
+
+                if (task.assignedDesigners && task.assignedDesigners.length > 0) {
+                    try {
+                        const designerPromises = task.assignedDesigners.map(async (designerId: string) => {
+                            const user = await this.userService.getUserById(designerId);
+                            return user ? user.realName || user.username : designerId;
+                        });
+                        assignedDesignerNames = await Promise.all(designerPromises);
+                    } catch (error) {
+                        console.error('获取设计师信息失败:', error);
+                        assignedDesignerNames = task.assignedDesigners;
+                    }
+                }
+
+                return {
+                    ...task.toObject(),
+                    assignedDesignerNames
+                };
+            })
+        );
+
+        return tasksWithDesignerNames;
     }
 
     /**
