@@ -31,7 +31,8 @@ import {
     CloseCircleOutlined,
     CreditCardOutlined,
     WalletOutlined,
-    CheckOutlined
+    CheckOutlined,
+    CrownOutlined
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -575,19 +576,19 @@ const ProjectDetail: React.FC = () => {
                                                 >
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                                         {hasMainDesigners && (
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                                                                <CrownOutlined style={{ color: '#faad14', fontSize: '12px' }} />
                                                                 <span style={{ fontSize: '12px' }}>
                                                                     {record.mainDesignerNames!.join('，')}
                                                                 </span>
-                                                                <UserOutlined style={{ color: '#1890ff', fontSize: '12px' }} />
                                                             </div>
                                                         )}
                                                         {hasAssistantDesigners && (
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                                <UserOutlined style={{ color: '#52c41a', fontSize: '12px' }} />
                                                                 <span style={{ fontSize: '12px' }}>
                                                                     {record.assistantDesignerNames!.join('，')}
                                                                 </span>
-                                                                <TeamOutlined style={{ color: '#52c41a', fontSize: '12px' }} />
                                                             </div>
                                                         )}
                                                         {!hasAnyDesigners && (
