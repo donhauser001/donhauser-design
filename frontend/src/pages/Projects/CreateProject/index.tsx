@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Button, Card, Space, Tabs, Tag, Input } from 'antd';
+import { Form, Button, Card, Space, Steps, Tag, Input } from 'antd';
 import { SaveOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useCreateProject } from './hooks';
@@ -13,6 +13,7 @@ const CreateProject: React.FC = () => {
     const navigate = useNavigate();
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
+    const [currentStep, setCurrentStep] = useState(0);
 
     const {
         clients,
@@ -64,6 +65,30 @@ const CreateProject: React.FC = () => {
         }
     };
 
+    const handleNext = () => {
+        // 验证当前步骤
+        if (currentStep === 0) {
+            // 验证基本信息：必须选择客户
+            if (!selectedClient) {
+                return;
+            }
+        } else if (currentStep === 1) {
+            // 验证任务列表：必须选择至少一个服务
+            // 这里可以从QuotationsTab组件获取选中的服务数量
+            // 暂时跳过验证，允许用户直接进入下一步
+        }
+        
+        setCurrentStep(currentStep + 1);
+    };
+
+    const handlePrev = () => {
+        setCurrentStep(currentStep - 1);
+    };
+
+    const handleStepClick = (step: number) => {
+        setCurrentStep(step);
+    };
+
     return (
         <div style={{ padding: '24px', background: '#f5f5f5', minHeight: '100vh' }}>
             <Card
@@ -74,23 +99,12 @@ const CreateProject: React.FC = () => {
                     </div>
                 }
                 extra={
-                    <Space>
-                        <Button
-                            icon={<ArrowLeftOutlined />}
-                            onClick={() => navigate('/projects')}
-                        >
-                            返回列表
-                        </Button>
-                        <Button
-                            type="primary"
-                            icon={<SaveOutlined />}
-                            loading={loading}
-                            onClick={() => form.submit()}
-                            size="large"
-                        >
-                            保存项目
-                        </Button>
-                    </Space>
+                    <Button
+                        icon={<ArrowLeftOutlined />}
+                        onClick={() => navigate('/projects')}
+                    >
+                        返回列表
+                    </Button>
                 }
                 style={{
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
@@ -109,62 +123,96 @@ const CreateProject: React.FC = () => {
                         assistantDesigners: []
                     }}
                 >
-                    <Tabs
-                        defaultActiveKey="basic"
-                        type="card"
-                        size="large"
+                    <Steps
+                        current={currentStep}
+                        onChange={handleStepClick}
                         style={{ marginBottom: 24 }}
                         items={[
                             {
-                                key: 'basic',
-                                label: (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#1890ff' }}>📋</span>
-                                        <span>基本信息</span>
-                                    </div>
-                                ),
-                                children: (
-                                    <BasicInfoTab
-                                        clients={clients}
-                                        contacts={contacts}
-                                        enterprises={enterprises}
-                                        designers={designers}
-                                        selectedClient={selectedClient}
-                                        filteredContacts={filteredContacts}
-                                        handleClientChange={handleClientChange}
-                                        handleContactChange={handleContactChange}
-                                    />
-                                )
+                                title: '基本信息',
+                                description: '填写项目基本信息',
+                                icon: <span style={{ color: '#1890ff' }}>📋</span>,
+                                status: currentStep >= 0 ? 'process' : 'wait'
                             },
                             {
-                                key: 'quotations',
-                                label: (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#1890ff' }}>📋</span>
-                                        <span>任务列表</span>
-                                        <Tag color="blue">{quotations.length > 0 ? quotations[0].selectedServices.length : 0}</Tag>
-                                    </div>
-                                ),
-                                children: (
-                                    <QuotationsTab
-                                        quotations={quotations}
-                                        selectedClient={selectedClient}
-                                        services={services}
-                                    />
-                                )
+                                title: '任务列表',
+                                description: `选择服务项目 ${quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项`,
+                                icon: <span style={{ color: '#1890ff' }}>📋</span>,
+                                status: currentStep >= 1 ? 'process' : 'wait',
+                                disabled: !selectedClient
                             },
                             {
-                                key: 'order',
-                                label: (
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span style={{ color: '#13c2c2' }}>💰</span>
-                                        <span>订单信息</span>
-                                    </div>
-                                ),
-                                children: <OrderTab />
+                                title: '订单信息',
+                                description: '确认订单详情',
+                                icon: <span style={{ color: '#13c2c2' }}>💰</span>,
+                                status: currentStep >= 2 ? 'process' : 'wait',
+                                disabled: !selectedClient
                             }
                         ]}
                     />
+
+                    {/* 步骤内容 */}
+                    <div style={{ marginTop: 24 }}>
+                        {currentStep === 0 && (
+                            <BasicInfoTab
+                                clients={clients}
+                                contacts={contacts}
+                                enterprises={enterprises}
+                                designers={designers}
+                                selectedClient={selectedClient}
+                                filteredContacts={filteredContacts}
+                                handleClientChange={handleClientChange}
+                                handleContactChange={handleContactChange}
+                            />
+                        )}
+                        {currentStep === 1 && (
+                            <QuotationsTab
+                                quotations={quotations}
+                                selectedClient={selectedClient}
+                                services={services}
+                            />
+                        )}
+                        {currentStep === 2 && (
+                            <OrderTab />
+                        )}
+                    </div>
+
+                    {/* 步骤导航按钮 */}
+                    <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        marginTop: 24,
+                        paddingTop: 24,
+                        borderTop: '1px solid #f0f0f0'
+                    }}>
+                        <Button 
+                            onClick={handlePrev} 
+                            disabled={currentStep === 0}
+                        >
+                            上一步
+                        </Button>
+                        <div>
+                            {currentStep < 2 ? (
+                                <Button 
+                                    type="primary" 
+                                    onClick={handleNext}
+                                    disabled={currentStep === 0 && !selectedClient}
+                                >
+                                    下一步
+                                </Button>
+                            ) : (
+                                <Button
+                                    type="primary"
+                                    icon={<SaveOutlined />}
+                                    loading={loading}
+                                    onClick={() => form.submit()}
+                                    size="large"
+                                >
+                                    保存项目
+                                </Button>
+                            )}
+                        </div>
+                    </div>
 
                     {/* 隐藏字段用于存储客户和联系人信息 */}
                     <Form.Item name="clientName" hidden>

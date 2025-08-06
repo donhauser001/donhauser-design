@@ -328,30 +328,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                 </Collapse>
                             </div>
 
-                            {/* 统一的添加到订单按钮 */}
-                            {selectedServices.length > 0 && (
-                                <div style={{
-                                    marginTop: '16px',
-                                    padding: '16px',
-                                    background: '#f8f9fa',
-                                    borderRadius: '8px',
-                                    border: '1px solid #e9ecef'
-                                }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div>
-                                            <Text strong>已选择 {selectedServices.length} 项服务</Text>
-                                        </div>
-                                        <Button
-                                            type="primary"
-                                            size="large"
-                                            onClick={handleAddToOrder}
-                                            style={{ minWidth: '120px' }}
-                                        >
-                                            添加到订单中
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
+
                         </div>
                     </Card>
                 ))}
