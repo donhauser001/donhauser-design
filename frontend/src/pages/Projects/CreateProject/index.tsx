@@ -153,7 +153,7 @@ const CreateProject: React.FC = () => {
                             },
                             {
                                 title: '任务列表',
-                                description: `选择服务项目 ${quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项`,
+                                description: `已选${selectedServices.length}个服务项目`,
                                 icon: (
                                     <div style={{
                                         width: '32px',
