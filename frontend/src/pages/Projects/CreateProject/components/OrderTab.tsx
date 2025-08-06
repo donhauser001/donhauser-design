@@ -61,9 +61,9 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             dataIndex: 'unitPrice',
             key: 'unitPrice',
             render: (price: number, record: any) => (
-                <div style={{ textAlign: 'right' }}>
+                <div style={{ textAlign: 'left' }}>
                     <Text type="danger" strong>¥{price}</Text>
-                    <div style={{ fontSize: '12px', color: '#999' }}>/{record.unit}</div>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>/{record.unit}</Text>
                 </div>
             )
         },
@@ -72,18 +72,21 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             dataIndex: 'quantity',
             key: 'quantity',
             render: (quantity: number, record: any) => (
-                <InputNumber
-                    min={1}
-                    max={9999}
-                    value={quantity}
-                    onChange={(value) => {
-                        if (onServiceQuantityChange && value !== null) {
-                            onServiceQuantityChange(record._id, value);
-                        }
-                    }}
-                    style={{ width: '60px' }}
-                    size="small"
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <InputNumber
+                        min={1}
+                        max={9999}
+                        value={quantity}
+                        onChange={(value) => {
+                            if (onServiceQuantityChange && value !== null) {
+                                onServiceQuantityChange(record._id, value);
+                            }
+                        }}
+                        style={{ width: '60px' }}
+                        size="small"
+                    />
+                    <Text type="secondary" style={{ fontSize: '12px' }}>{record.unit}</Text>
+                </div>
             )
         },
         {

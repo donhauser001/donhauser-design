@@ -349,14 +349,17 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
                                                                         <Text type="secondary" style={{ fontSize: '12px', whiteSpace: 'nowrap' }}>
                                                                             数量:
                                                                         </Text>
-                                                                        <InputNumber
-                                                                            min={1}
-                                                                            max={999}
-                                                                            value={serviceQuantities[service._id] || 1}
-                                                                            size="small"
-                                                                            style={{ width: '50px' }}
-                                                                            onChange={(value) => handleQuantityChange(service._id, value || 1)}
-                                                                        />
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                                            <InputNumber
+                                                                                min={1}
+                                                                                max={999}
+                                                                                value={serviceQuantities[service._id] || 1}
+                                                                                size="small"
+                                                                                style={{ width: '50px' }}
+                                                                                onChange={(value) => handleQuantityChange(service._id, value || 1)}
+                                                                            />
+                                                                            <Text type="secondary" style={{ fontSize: '12px' }}>{service.unit}</Text>
+                                                                        </div>
                                                                     </div>
                                                                 )}
                                                             </Card>
