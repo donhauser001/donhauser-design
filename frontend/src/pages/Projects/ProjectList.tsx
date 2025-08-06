@@ -498,6 +498,7 @@ const ProjectList: React.FC = () => {
                                 placeholder="进度状态"
                                 allowClear
                                 style={{ width: 120 }}
+                                value={progressFilter}
                                 onChange={setProgressFilter}
                             >
                                 <Option value="consulting">咨询中</Option>
@@ -511,6 +512,7 @@ const ProjectList: React.FC = () => {
                                 placeholder="结算状态"
                                 allowClear
                                 style={{ width: 120 }}
+                                value={settlementFilter}
                                 onChange={setSettlementFilter}
                             >
                                 <Option value="unpaid">未付款</Option>
