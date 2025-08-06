@@ -38,6 +38,7 @@ interface Contact {
     phone: string;
     email?: string;
     username?: string;
+    company?: string;
 }
 
 interface Service {
@@ -77,6 +78,11 @@ const CreateProject: React.FC = () => {
     const [services, setServices] = useState<Service[]>([]);
     const [selectedClient, setSelectedClient] = useState<Client | null>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
+
+    // 根据选择的客户过滤联系人
+    const filteredContacts = selectedClient
+        ? contacts.filter(contact => contact.company === selectedClient.name)
+        : [];
 
     // 获取客户列表
     const fetchClients = async () => {
@@ -140,7 +146,7 @@ const CreateProject: React.FC = () => {
 
     // 处理联系人选择
     const handleContactChange = (contactIds: string[]) => {
-        const selectedContacts = contacts.filter(
+        const selectedContacts = filteredContacts.filter(
             contact => contactIds.includes(contact._id)
         );
 
@@ -328,18 +334,20 @@ const CreateProject: React.FC = () => {
                                 name="contactIds"
                                 label="联系人"
                                 rules={[{ required: true, message: '请选择联系人' }]}
+                                help={selectedClient ? `显示 ${selectedClient.name} 的联系人` : '请先选择客户'}
                             >
                                 <Select
                                     mode="multiple"
-                                    placeholder="请选择联系人"
+                                    placeholder={selectedClient ? `请选择 ${selectedClient.name} 的联系人` : '请先选择客户'}
                                     onChange={handleContactChange}
                                     showSearch
+                                    disabled={!selectedClient}
                                     filterOption={(input, option) => {
                                         const label = option?.label || option?.children;
                                         return String(label).toLowerCase().includes(input.toLowerCase());
                                     }}
                                 >
-                                    {contacts.map(contact => (
+                                    {filteredContacts.map(contact => (
                                         <Option key={contact._id} value={contact._id}>
                                             {contact.realName} ({contact.phone})
                                         </Option>
