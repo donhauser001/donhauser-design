@@ -164,7 +164,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                     <FileTextOutlined style={{ color: '#1890ff' }} />
                                     {quotation.name}
                                     <Text type="secondary" style={{ fontSize: '14px', fontWeight: 'normal' }}>
-                                        ({dayjs(quotation.createTime).format('YYYY-MM-DD')} | {quotation.validUntil ? dayjs(quotation.validUntil).format('YYYY-MM-DD') : '长期有效'})
+                                        创建时间: {dayjs(quotation.createTime).format('YYYY-MM-DD')} | 有效期至: {quotation.validUntil ? dayjs(quotation.validUntil).format('YYYY-MM-DD') : '长期有效'}
                                     </Text>
                                 </Title>
                                 {quotation.isDefault && (
