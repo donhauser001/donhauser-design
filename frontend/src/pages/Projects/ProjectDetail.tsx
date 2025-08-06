@@ -295,22 +295,36 @@ const ProjectDetail: React.FC = () => {
 
 
 
-                        {/* 客户嘱托 */}
-                        {project.clientRequirements && (
-                            <Card title="客户嘱托" style={{ marginBottom: 16 }}>
-                                <p>{project.clientRequirements}</p>
-                            </Card>
-                        )}
-
-                        {/* 备注 */}
-                        {project.remark && (
-                            <Card title="备注" style={{ marginBottom: 16 }}>
-                                <p>{project.remark}</p>
-                            </Card>
-                        )}
+                        {/* 任务概览 */}
+                        <Card title="任务概览" style={{ marginBottom: 16 }}>
+                            <List
+                                size="small"
+                                dataSource={tasks.slice(0, 5)}
+                                renderItem={(task) => (
+                                    <List.Item>
+                                        <List.Item.Meta
+                                            title={task.taskName}
+                                            description={
+                                                <Space direction="vertical" size="small">
+                                                    <div>状态: <Tag size="small">{task.status}</Tag></div>
+                                                    <div>金额: ¥{task.subtotal}</div>
+                                                </Space>
+                                            }
+                                        />
+                                    </List.Item>
+                                )}
+                            />
+                            {tasks.length > 5 && (
+                                <div style={{ textAlign: 'center', marginTop: 8 }}>
+                                    <Button type="link" onClick={() => navigate(`/projects/${id}/tasks`)}>
+                                        查看全部任务 ({tasks.length})
+                                    </Button>
+                                </div>
+                            )}
+                        </Card>
                     </Col>
 
-                    {/* 右侧：团队和任务 */}
+                    {/* 右侧：团队信息、客户嘱托和备注 */}
                     <Col span={8}>
                         {/* 团队信息 */}
                         <Card title="团队信息" style={{ marginBottom: 16 }}>
@@ -346,33 +360,19 @@ const ProjectDetail: React.FC = () => {
                             </div>
                         </Card>
 
-                        {/* 任务概览 */}
-                        <Card title="任务概览">
-                            <List
-                                size="small"
-                                dataSource={tasks.slice(0, 5)}
-                                renderItem={(task) => (
-                                    <List.Item>
-                                        <List.Item.Meta
-                                            title={task.taskName}
-                                            description={
-                                                <Space direction="vertical" size="small">
-                                                    <div>状态: <Tag size="small">{task.status}</Tag></div>
-                                                    <div>金额: ¥{task.subtotal}</div>
-                                                </Space>
-                                            }
-                                        />
-                                    </List.Item>
-                                )}
-                            />
-                            {tasks.length > 5 && (
-                                <div style={{ textAlign: 'center', marginTop: 8 }}>
-                                    <Button type="link" onClick={() => navigate(`/projects/${id}/tasks`)}>
-                                        查看全部任务 ({tasks.length})
-                                    </Button>
-                                </div>
-                            )}
-                        </Card>
+                        {/* 客户嘱托 */}
+                        {project.clientRequirements && (
+                            <Card title="客户嘱托" style={{ marginBottom: 16 }}>
+                                <p>{project.clientRequirements}</p>
+                            </Card>
+                        )}
+
+                        {/* 备注 */}
+                        {project.remark && (
+                            <Card title="备注" style={{ marginBottom: 16 }}>
+                                <p>{project.remark}</p>
+                            </Card>
+                        )}
                     </Col>
                 </Row>
             </Card>
