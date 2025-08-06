@@ -286,7 +286,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                             </div>
                                                                         )}
                                                                         <div style={{ marginBottom: '4px' }}>
-                                                                            <Text type="secondary" style={{ fontSize: '11px', color: '#999' }}>
+                                                                            <Text type="secondary" style={{ fontSize: '12px', color: '#999' }}>
                                                                                 价格说明：按{service.unit}计费
                                                                             </Text>
                                                                         </div>
