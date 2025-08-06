@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { message } from 'antd';
 import { Client, Contact, Enterprise, Designer, Service, Task, Quotation } from './types';
-import { getQuotationsByClientId } from '../../api/quotations';
+import { getQuotationsByClientId } from '../../../api/quotations';
 
 export const useCreateProject = () => {
     const [clients, setClients] = useState<Client[]>([]);
