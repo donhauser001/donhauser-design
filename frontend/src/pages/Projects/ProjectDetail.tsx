@@ -638,7 +638,7 @@ const ProjectDetail: React.FC = () => {
                                                 currentProcessStep: record.currentProcessStep,
                                                 serviceId: record.serviceId
                                             });
-                                            
+
                                             if (record.processSteps && record.processSteps.length > 0) {
                                                 const menu = {
                                                     items: record.processSteps.map(step => ({
@@ -669,10 +669,10 @@ const ProjectDetail: React.FC = () => {
                                                 );
                                             }
 
-                                            // 如果没有流程信息，显示原来的状态
+                                            // 如果服务没有设置流程，显示"无流程"
                                             return (
-                                                <Tag color={getTaskStatusColor(record.status)}>
-                                                    {getTaskStatusText(record.status)}
+                                                <Tag color="default" style={{ color: '#8c8c8c' }}>
+                                                    无流程
                                                 </Tag>
                                             );
                                         }
