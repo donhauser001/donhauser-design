@@ -61,7 +61,12 @@ const SaveConfirmModal: React.FC<SaveConfirmModalProps> = ({
                             </div>
                             <div style={{ marginBottom: '8px' }}>
                                 <Text strong>客户：</Text>
-                                <Text>{projectData?.clientName || '未选择'}</Text>
+                                <Text>
+                                    {projectData?.clientName && projectData?.contactNames
+                                        ? `${projectData.clientName}-${projectData.contactNames}`
+                                        : projectData?.clientName || '未选择'
+                                    }
+                                </Text>
                             </div>
                             <div style={{ marginBottom: '8px' }}>
                                 <Text strong>承接团队：</Text>
