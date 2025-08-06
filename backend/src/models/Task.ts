@@ -34,6 +34,10 @@ export interface ITask extends Document {
     status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold';
     priority: 'low' | 'medium' | 'high' | 'urgent' | 'waiting' | 'on-hold' | 'completed';
 
+    // 流程节点状态
+    processStepId?: string; // 当前流程节点ID
+    processStepName?: string; // 当前流程节点名称
+
     // 进度
     progress: number; // 进度百分比 0-100
 
@@ -101,6 +105,10 @@ const TaskSchema = new Schema<ITask>({
         enum: ['low', 'medium', 'high', 'urgent', 'waiting', 'on-hold', 'completed'],
         default: 'medium'
     },
+
+    // 流程节点状态
+    processStepId: { type: String },
+    processStepName: { type: String },
 
     // 进度
     progress: { type: Number, default: 0, min: 0, max: 100 },

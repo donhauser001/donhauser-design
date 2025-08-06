@@ -101,6 +101,22 @@ interface Task {
     billingDescription: string;
     status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold';
     priority: 'low' | 'medium' | 'high' | 'urgent' | 'waiting' | 'on-hold' | 'completed';
+    processStepId?: string;
+    processStepName?: string;
+    processSteps?: Array<{
+        id: string;
+        name: string;
+        description: string;
+        order: number;
+        progressRatio: number;
+    }>;
+    currentProcessStep?: {
+        id: string;
+        name: string;
+        description: string;
+        order: number;
+        progressRatio: number;
+    };
     progress: number;
     startDate?: string;
     dueDate?: string;
@@ -269,6 +285,31 @@ const ProjectDetail: React.FC = () => {
         } catch (error) {
             console.error('修改规格失败:', error);
             message.error('修改规格失败');
+        }
+    };
+
+    // 处理流程状态变更
+    const handleProcessStepChange = async (task: Task, stepId: string) => {
+        try {
+            const response = await fetch(`/api/tasks/${task._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    processStepId: stepId
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                message.success('流程状态修改成功');
+                fetchTasks(); // 重新获取任务列表
+            } else {
+                message.error(data.message || '流程状态修改失败');
+            }
+        } catch (error) {
+            console.error('修改流程状态失败:', error);
+            message.error('修改流程状态失败');
         }
     };
 
@@ -590,11 +631,46 @@ const ProjectDetail: React.FC = () => {
                                         title: '状态',
                                         key: 'status',
                                         width: 120,
-                                        render: (_, record: Task) => (
-                                            <Tag color={getTaskStatusColor(record.status)}>
-                                                {getTaskStatusText(record.status)}
-                                            </Tag>
-                                        )
+                                        render: (_, record: Task) => {
+                                            if (record.processSteps && record.processSteps.length > 0) {
+                                                const menu = (
+                                                    <Menu
+                                                        onClick={({ key }) => handleProcessStepChange(record, key)}
+                                                        items={record.processSteps.map(step => ({
+                                                            key: step.id,
+                                                            label: (
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                    <span>{step.name}</span>
+                                                                    {step.progressRatio > 0 && (
+                                                                        <span style={{ fontSize: '10px', color: '#8c8c8c' }}>
+                                                                            ({step.progressRatio}%)
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            )
+                                                        }))}
+                                                    />
+                                                );
+
+                                                return (
+                                                    <Dropdown overlay={menu} trigger={['click']}>
+                                                        <Tag
+                                                            color={record.currentProcessStep ? 'blue' : 'default'}
+                                                            style={{ cursor: 'pointer' }}
+                                                        >
+                                                            {record.currentProcessStep?.name || '未设置'}
+                                                        </Tag>
+                                                    </Dropdown>
+                                                );
+                                            }
+
+                                            // 如果没有流程信息，显示原来的状态
+                                            return (
+                                                <Tag color={getTaskStatusColor(record.status)}>
+                                                    {getTaskStatusText(record.status)}
+                                                </Tag>
+                                            );
+                                        }
                                     },
                                     {
                                         title: '规格',

@@ -2,10 +2,14 @@ import Task, { ITask } from '../models/Task';
 import ProjectLog from '../models/ProjectLog';
 import { UserService } from './UserService';
 import { SpecificationService } from './SpecificationService';
+import { ServicePricingService } from './ServicePricingService';
+import { ServiceProcessService } from './ServiceProcessService';
 
 class TaskService {
     private userService = new UserService();
     private specificationService = new SpecificationService();
+    private servicePricingService = new ServicePricingService();
+    private serviceProcessService = new ServiceProcessService();
     /**
      * 创建任务
      */
@@ -66,12 +70,26 @@ class TaskService {
     async getTasksByProject(projectId: string): Promise<any[]> {
         const tasks = await Task.find({ projectId }).sort({ createdAt: 1 });
 
-        // 为每个任务获取设计师名字和规格信息
+        // 为每个任务获取设计师名字、规格信息和流程信息
         const tasksWithDetails = await Promise.all(
             tasks.map(async (task) => {
                 let mainDesignerNames: string[] = [];
                 let assistantDesignerNames: string[] = [];
                 let specification = null;
+                let processSteps: Array<{
+                    id: string;
+                    name: string;
+                    description: string;
+                    order: number;
+                    progressRatio: number;
+                }> = [];
+                let currentProcessStep: {
+                    id: string;
+                    name: string;
+                    description: string;
+                    order: number;
+                    progressRatio: number;
+                } | null = null;
 
                 // 获取主创设计师名字
                 if (task.mainDesigners && task.mainDesigners.length > 0) {
@@ -121,11 +139,50 @@ class TaskService {
                     }
                 }
 
+                // 获取流程信息
+                try {
+                    // 获取服务定价信息
+                    const servicePricing = await ServicePricingService.getServicePricingById(task.serviceId);
+                    if (servicePricing && servicePricing.serviceProcessId) {
+                        // 获取服务流程
+                        const serviceProcess = await this.serviceProcessService.getProcessById(servicePricing.serviceProcessId);
+                        if (serviceProcess && serviceProcess.steps) {
+                            processSteps = serviceProcess.steps.map((step: any) => ({
+                                id: step.id,
+                                name: step.name,
+                                description: step.description,
+                                order: step.order,
+                                progressRatio: step.progressRatio
+                            }));
+
+                            // 如果任务没有设置流程节点，默认选择第一个
+                            if (!task.processStepId && processSteps.length > 0) {
+                                const firstStep = processSteps[0];
+                                currentProcessStep = firstStep;
+
+                                // 更新任务的流程节点信息
+                                await Task.findByIdAndUpdate(task._id, {
+                                    processStepId: firstStep.id,
+                                    processStepName: firstStep.name
+                                });
+                            } else if (task.processStepId) {
+                                // 找到当前流程节点
+                                const foundStep = processSteps.find((step: any) => step.id === task.processStepId);
+                                currentProcessStep = foundStep || null;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('获取流程信息失败:', error);
+                }
+
                 return {
                     ...task.toObject(),
                     mainDesignerNames,
                     assistantDesignerNames,
-                    specification
+                    specification,
+                    processSteps,
+                    currentProcessStep
                 };
             })
         );
