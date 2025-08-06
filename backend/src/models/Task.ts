@@ -25,6 +25,18 @@ export interface ITask extends Document {
     unit: string;
     subtotal: number;
 
+    // 价格政策
+    pricingPolicies: Array<{
+        policyId: string;
+        policyName: string;
+        policyType: 'uniform_discount' | 'tiered_discount';
+        discountRatio: number;
+        calculationDetails: string;
+    }>;
+
+    // 计费说明
+    billingDescription: string;
+
     // 状态和优先级
     status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold';
     priority: 'low' | 'medium' | 'high' | 'urgent';
@@ -78,6 +90,22 @@ const TaskSchema = new Schema<ITask>({
     quantity: { type: Number, required: true },
     unit: { type: String, required: true },
     subtotal: { type: Number, required: true },
+
+    // 价格政策
+    pricingPolicies: [{
+        policyId: { type: String, required: true },
+        policyName: { type: String, required: true },
+        policyType: {
+            type: String,
+            enum: ['uniform_discount', 'tiered_discount'],
+            required: true
+        },
+        discountRatio: { type: Number, required: true },
+        calculationDetails: { type: String, required: true }
+    }],
+
+    // 计费说明
+    billingDescription: { type: String, required: true },
 
     // 状态和优先级
     status: {

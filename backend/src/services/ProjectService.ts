@@ -83,6 +83,14 @@ export class ProjectService {
       quantity: number;
       unit: string;
       subtotal: number;
+      pricingPolicies?: Array<{
+        policyId: string;
+        policyName: string;
+        policyType: 'uniform_discount' | 'tiered_discount';
+        discountRatio: number;
+        calculationDetails: string;
+      }>;
+      billingDescription: string;
       priority?: string;
       dueDate?: Date;
       remarks?: string;
@@ -121,7 +129,8 @@ export class ProjectService {
         status: 'pending',
         progress: 0,
         settlementStatus: 'unpaid',
-        attachmentIds: []
+        attachmentIds: [],
+        pricingPolicies: task.pricingPolicies || []
       }));
 
       const createdTasks = await this.taskService.createTasks(tasksData);
@@ -172,7 +181,7 @@ export class ProjectService {
   }): Promise<IProject | null> {
     const { updatedBy, ...updateFields } = updateData;
     const project = await Project.findById(id);
-    
+
     if (!project) {
       return null;
     }
@@ -271,12 +280,12 @@ export class ProjectService {
    */
   async updateSettlementStatus(id: string, status: string, updatedBy: string): Promise<IProject | null> {
     const updateData: any = { settlementStatus: status, updatedBy };
-    
+
     // 如果状态变为完全结算，设置结算时间
     if (status === 'fully-paid') {
       updateData.settledAt = new Date();
     }
-    
+
     return await this.updateProject(id, updateData);
   }
 

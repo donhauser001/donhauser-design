@@ -8,7 +8,7 @@ export class TaskService {
     async createTask(taskData: Partial<ITask>): Promise<ITask> {
         try {
             // 验证必填字段
-            const requiredFields = ['taskName', 'serviceId', 'projectId', 'quantity', 'unit', 'subtotal'];
+            const requiredFields = ['taskName', 'serviceId', 'projectId', 'quantity', 'unit', 'subtotal', 'billingDescription'];
             const missingFields = requiredFields.filter(field => !taskData[field as keyof ITask]);
 
             if (missingFields.length > 0) {
