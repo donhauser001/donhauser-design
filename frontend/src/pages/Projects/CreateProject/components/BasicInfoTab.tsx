@@ -178,9 +178,14 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                                     const label = option?.label || option?.children;
                                     return String(label).toLowerCase().includes(input.toLowerCase());
                                 }}
+                                optionLabelProp="label"
                             >
                                 {designers.map(designer => (
-                                    <Option key={designer._id} value={designer._id}>
+                                    <Option 
+                                        key={designer._id} 
+                                        value={designer._id}
+                                        label={`${designer.realName} ${designer.position ? `(${designer.position})` : ''}`}
+                                    >
                                         {designer.realName} {designer.position ? `(${designer.position})` : ''}
                                     </Option>
                                 ))}
@@ -200,9 +205,14 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                                     const label = option?.label || option?.children;
                                     return String(label).toLowerCase().includes(input.toLowerCase());
                                 }}
+                                optionLabelProp="label"
                             >
                                 {designers.map(designer => (
-                                    <Option key={designer._id} value={designer._id}>
+                                    <Option 
+                                        key={designer._id} 
+                                        value={designer._id}
+                                        label={`${designer.realName} ${designer.position ? `(${designer.position})` : ''}`}
+                                    >
                                         {designer.realName} {designer.position ? `(${designer.position})` : ''}
                                     </Option>
                                 ))}
