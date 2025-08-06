@@ -67,7 +67,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             const discountRatio = selectedPolicy.discountRatio || 100;
             discountedPrice = (originalPrice * discountRatio) / 100;
             const discountAmount = originalPrice - discountedPrice;
-            calculationDetails = `${service.priceDescription || `按${service.unit}计费`}\n\n<b>优惠</b>：￥${discountAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            calculationDetails = `${service.priceDescription || `按${service.unit}计费`}\n\n<b>优惠说明</b>:\n统一按照${discountRatio}%计费\n小计:￥${service.unitPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}×${service.quantity}${service.unit}×${discountRatio}%=￥${discountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n<b>优惠</b>：￥${discountAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         } else if (selectedPolicy.type === 'tiered_discount' && selectedPolicy.tierSettings) {
             // 阶梯折扣
             const unitPrice = service.unitPrice;
@@ -134,7 +134,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                 }
             }
 
-            calculationDetails = `${service.priceDescription || `按${service.unit}计费`}\n\n<b>优惠说明</b>: ${discountDescription}\n${tierDetails.join('\n')}\n\n<b>小计</b>：${tierDetails.map(detail => detail.split(' = ')[1]).join('+')}=￥${totalDiscountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n<b>优惠</b>：￥${(originalPrice - totalDiscountedPrice).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            calculationDetails = `${service.priceDescription || `按${service.unit}计费`}\n\n<b>优惠说明</b>:\n${discountDescription}\n${tierDetails.join('\n')}\n\n<b>小计</b>：${tierDetails.map(detail => detail.split(' = ')[1]).join('+')}=￥${totalDiscountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n<b>优惠</b>：￥${(originalPrice - totalDiscountedPrice).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
 
         const discountAmount = originalPrice - discountedPrice;
