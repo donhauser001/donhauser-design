@@ -324,7 +324,6 @@ const SpecificationSelector: React.FC<SpecificationSelectorProps> = ({
           <Dropdown menu={menu} trigger={['click']} disabled={disabled}>
             <Button
               size="small"
-              icon={<PlusOutlined />}
               style={{ display: 'flex', alignItems: 'center' }}
             >
               选择规格
