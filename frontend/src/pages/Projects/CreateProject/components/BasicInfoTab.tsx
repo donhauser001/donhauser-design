@@ -32,6 +32,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
     // 从表单中获取客户ID，确保在恢复时也能正确显示
     const clientId = form ? Form.useWatch('clientId', form) : undefined;
     const hasClient = selectedClient || clientId;
+    
     return (
         <div>
             {/* 基本信息 */}
@@ -178,15 +179,10 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                                     const label = option?.label || option?.children;
                                     return String(label).toLowerCase().includes(input.toLowerCase());
                                 }}
-                                optionLabelProp="label"
                             >
                                 {designers.map(designer => (
-                                    <Option 
-                                        key={designer._id} 
-                                        value={designer._id}
-                                        label={`${designer.realName} ${designer.position ? `(${designer.position})` : ''}`}
-                                    >
-                                        {designer.realName} {designer.position ? `(${designer.position})` : ''}
+                                    <Option key={designer._id} value={designer._id}>
+                                        {designer.realName}({designer.role})
                                     </Option>
                                 ))}
                             </Select>
@@ -205,15 +201,10 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                                     const label = option?.label || option?.children;
                                     return String(label).toLowerCase().includes(input.toLowerCase());
                                 }}
-                                optionLabelProp="label"
                             >
                                 {designers.map(designer => (
-                                    <Option 
-                                        key={designer._id} 
-                                        value={designer._id}
-                                        label={`${designer.realName} ${designer.position ? `(${designer.position})` : ''}`}
-                                    >
-                                        {designer.realName} {designer.position ? `(${designer.position})` : ''}
+                                    <Option key={designer._id} value={designer._id}>
+                                        {designer.realName}({designer.role})
                                     </Option>
                                 ))}
                             </Select>
@@ -222,7 +213,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                 </Row>
             </Card>
 
-            {/* 备注 */}
+            {/* 备注信息 */}
             <Card
                 size="small"
                 title={
@@ -233,9 +224,13 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                 }
                 style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
             >
-                <Form.Item name="remark" label="项目备注">
-                    <TextArea rows={3} placeholder="请输入项目备注信息" />
-                </Form.Item>
+                <Row gutter={24}>
+                    <Col span={24}>
+                        <Form.Item name="remark" label="项目备注">
+                            <TextArea rows={4} placeholder="请输入项目备注" />
+                        </Form.Item>
+                    </Col>
+                </Row>
             </Card>
         </div>
     );
