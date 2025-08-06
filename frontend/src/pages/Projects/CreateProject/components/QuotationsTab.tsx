@@ -186,12 +186,12 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                 <CalendarOutlined style={{ color: '#666' }} />
                                 <Text type="secondary">创建时间: {dayjs(quotation.createTime).format('YYYY-MM-DD HH:mm')}</Text>
                             </Space>
-                            {quotation.validUntil && (
-                                <Space>
-                                    <CalendarOutlined style={{ color: '#666' }} />
-                                    <Text type="secondary">有效期至: {dayjs(quotation.validUntil).format('YYYY-MM-DD')}</Text>
-                                </Space>
-                            )}
+                            <Space>
+                                <CalendarOutlined style={{ color: '#666' }} />
+                                <Text type="secondary">
+                                    有效期至: {quotation.validUntil ? dayjs(quotation.validUntil).format('YYYY-MM-DD') : '长期有效'}
+                                </Text>
+                            </Space>
                         </Space>
 
                         <div style={{ marginTop: '12px' }}>
