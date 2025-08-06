@@ -92,7 +92,7 @@ const CreateProject: React.FC = () => {
         localStorage.removeItem('createProject_formData');
         localStorage.removeItem('createProject_selectedClientId');
         form.resetFields();
-        setSelectedClient(null);
+        handleClientChange(''); // 清空客户选择
         setSelectedServices([]);
         setSelectedServiceIds([]);
         setServiceQuantities({});
@@ -148,7 +148,6 @@ const CreateProject: React.FC = () => {
         if (savedClientId && clients.length > 0) {
             const client = clients.find(c => c._id === savedClientId);
             if (client) {
-                setSelectedClient(client);
                 handleClientChange(savedClientId);
             }
         }
