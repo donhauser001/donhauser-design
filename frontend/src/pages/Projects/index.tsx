@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import ProjectList from './ProjectList';
 import CreateProject from './CreateProject';
-import ProjectDetail from './ProjectDetail';
+import ProjectDetail from './ProjectDetail/index';
 
 const Projects: React.FC = () => {
     return (
