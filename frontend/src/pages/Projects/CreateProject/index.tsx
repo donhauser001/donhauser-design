@@ -226,10 +226,19 @@ const CreateProject: React.FC = () => {
                             <OrderTab
                                 selectedClient={selectedClient}
                                 selectedServices={selectedServices}
-                                projectData={form.getFieldsValue()}
+                                projectData={{
+                                    projectName: form.getFieldValue('projectName'),
+                                    undertakingTeam: form.getFieldValue('undertakingTeam'),
+                                    mainDesigners: form.getFieldValue('mainDesigners'),
+                                    assistantDesigners: form.getFieldValue('assistantDesigners'),
+                                    clientRequirements: form.getFieldValue('clientRequirements'),
+                                    remark: form.getFieldValue('remark')
+                                }}
                                 selectedContacts={filteredContacts.filter(c => 
                                     form.getFieldValue('contactIds')?.includes(c._id)
                                 )}
+                                enterprises={enterprises}
+                                designers={designers}
                             />
                         )}
                     </div>

@@ -11,9 +11,26 @@ interface OrderTabProps {
     selectedServices: any[];
     projectData: any;
     selectedContacts?: any[];
+    enterprises?: any[];
+    designers?: any[];
 }
 
-const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, projectData, selectedContacts }) => {
+const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, projectData, selectedContacts, enterprises = [], designers = [] }) => {
+    // 辅助函数：获取企业显示名称
+    const getEnterpriseName = (enterpriseId: string) => {
+        const enterprise = enterprises.find(e => e._id === enterpriseId);
+        return enterprise ? (enterprise.enterpriseAlias || enterprise.enterpriseName) : '未选择';
+    };
+
+    // 辅助函数：获取设计师显示名称
+    const getDesignerNames = (designerIds: string[]) => {
+        if (!designerIds || designerIds.length === 0) return '未选择';
+        return designerIds.map(id => {
+            const designer = designers.find(d => d._id === id);
+            return designer ? designer.realName : '未知';
+        }).join(', ');
+    };
+
     // 表格列定义
     const columns = [
         {
@@ -124,8 +141,9 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                                 <Text strong>团队信息</Text>
                             </div>
                             <div style={{ paddingLeft: '24px' }}>
-                                <div><Text>承接团队：{projectData?.undertakingTeam || '未选择'}</Text></div>
-                                <div><Text>主创设计师：{projectData?.mainDesigners?.join(', ') || '未选择'}</Text></div>
+                                <div><Text>承接团队：{getEnterpriseName(projectData?.undertakingTeam)}</Text></div>
+                                <div><Text>主创设计师：{getDesignerNames(projectData?.mainDesigners)}</Text></div>
+                                <div><Text>助理设计师：{getDesignerNames(projectData?.assistantDesigners)}</Text></div>
                             </div>
                         </div>
                     </Col>
