@@ -579,7 +579,7 @@ const ProjectDetail: React.FC = () => {
                                                                 <span style={{ fontSize: '12px' }}>
                                                                     {record.mainDesignerNames!.join('，')}
                                                                 </span>
-                                                                <Tag color="blue">主创</Tag>
+                                                                <UserOutlined style={{ color: '#1890ff', fontSize: '12px' }} />
                                                             </div>
                                                         )}
                                                         {hasAssistantDesigners && (
@@ -587,7 +587,7 @@ const ProjectDetail: React.FC = () => {
                                                                 <span style={{ fontSize: '12px' }}>
                                                                     {record.assistantDesignerNames!.join('，')}
                                                                 </span>
-                                                                <Tag color="green">助理</Tag>
+                                                                <TeamOutlined style={{ color: '#52c41a', fontSize: '12px' }} />
                                                             </div>
                                                         )}
                                                         {!hasAnyDesigners && (
