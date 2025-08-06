@@ -310,9 +310,10 @@ const CreateProject: React.FC = () => {
                                     placeholder="请选择客户"
                                     onChange={handleClientChange}
                                     showSearch
-                                    filterOption={(input, option) =>
-                                        option?.children?.toLowerCase().includes(input.toLowerCase())
-                                    }
+                                    filterOption={(input, option) => {
+                                        const label = option?.label || option?.children;
+                                        return String(label).toLowerCase().includes(input.toLowerCase());
+                                    }}
                                 >
                                     {clients.map(client => (
                                         <Option key={client._id} value={client._id}>
@@ -333,9 +334,10 @@ const CreateProject: React.FC = () => {
                                     placeholder="请选择联系人"
                                     onChange={handleContactChange}
                                     showSearch
-                                    filterOption={(input, option) =>
-                                        option?.children?.toLowerCase().includes(input.toLowerCase())
-                                    }
+                                    filterOption={(input, option) => {
+                                        const label = option?.label || option?.children;
+                                        return String(label).toLowerCase().includes(input.toLowerCase());
+                                    }}
                                 >
                                     {contacts.map(contact => (
                                         <Option key={contact._id} value={contact._id}>
