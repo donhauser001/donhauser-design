@@ -78,6 +78,10 @@ const ProjectList: React.FC = () => {
     const [updateModalVisible, setUpdateModalVisible] = useState(false);
     const [updatingProject, setUpdatingProject] = useState<Project | null>(null);
     const [updatingLoading, setUpdatingLoading] = useState(false);
+    const [statusChangeModalVisible, setStatusChangeModalVisible] = useState(false);
+    const [statusChangeProject, setStatusChangeProject] = useState<Project | null>(null);
+    const [selectedNewStatus, setSelectedNewStatus] = useState<string>('');
+    const [statusChangeLoading, setStatusChangeLoading] = useState(false);
 
     // 获取项目列表
     const fetchProjects = async () => {
@@ -195,6 +199,68 @@ const ProjectList: React.FC = () => {
         setUpdatingProject(null);
     };
 
+    // 处理进行中项目的状态变更
+    const handleChangeProjectStatus = async (project: Project) => {
+        setStatusChangeProject(project);
+        setSelectedNewStatus('');
+        setStatusChangeModalVisible(true);
+    };
+
+    const handleConfirmStatusChange = async () => {
+        if (!statusChangeProject || !selectedNewStatus) return;
+
+        setStatusChangeLoading(true);
+        try {
+            const updateData: any = {
+                progressStatus: selectedNewStatus
+            };
+
+            // 根据新状态设置相应的时间字段
+            if (selectedNewStatus === 'on-hold') {
+                // 暂停项目，不需要额外时间字段
+            } else if (selectedNewStatus === 'cancelled') {
+                // 取消项目，可以设置取消时间
+                updateData.cancelledAt = new Date().toISOString();
+            } else if (selectedNewStatus === 'consulting') {
+                // 回到咨询状态，清除开始时间
+                updateData.startedAt = null;
+            }
+
+            const response = await fetch(`/api/projects/${statusChangeProject._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updateData)
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                const statusText = getProgressStatusText(selectedNewStatus);
+                message.success(`项目状态已更新为：${statusText}`);
+                setStatusChangeModalVisible(false);
+                setStatusChangeProject(null);
+                setSelectedNewStatus('');
+                fetchProjects();
+                fetchStats();
+            } else {
+                message.error(data.message || '更新失败');
+            }
+        } catch (error) {
+            console.error('更新项目状态失败:', error);
+            message.error('更新项目状态失败');
+        } finally {
+            setStatusChangeLoading(false);
+        }
+    };
+
+    const handleCancelStatusChange = () => {
+        setStatusChangeModalVisible(false);
+        setStatusChangeProject(null);
+        setSelectedNewStatus('');
+    };
+
     // 状态标签颜色映射
     const getProgressStatusColor = (status: string) => {
         const colors: Record<string, string> = {
@@ -260,14 +326,23 @@ const ProjectList: React.FC = () => {
                     <Tag
                         color={getProgressStatusColor(record.progressStatus)}
                         style={{
-                            cursor: record.progressStatus === 'consulting' ? 'pointer' : 'default',
+                            cursor: (record.progressStatus === 'consulting' || record.progressStatus === 'in-progress') ? 'pointer' : 'default',
                             userSelect: 'none'
                         }}
-                        onClick={record.progressStatus === 'consulting' ? () => handleStartProject(record) : undefined}
+                        onClick={
+                            record.progressStatus === 'consulting'
+                                ? () => handleStartProject(record)
+                                : record.progressStatus === 'in-progress'
+                                    ? () => handleChangeProjectStatus(record)
+                                    : undefined
+                        }
                     >
                         {getProgressStatusText(record.progressStatus)}
                         {record.progressStatus === 'consulting' && (
                             <span style={{ marginLeft: '4px', fontSize: '12px' }}>📋</span>
+                        )}
+                        {record.progressStatus === 'in-progress' && (
+                            <span style={{ marginLeft: '4px', fontSize: '12px' }}>⚙️</span>
                         )}
                     </Tag>
                 </div>
@@ -491,9 +566,9 @@ const ProjectList: React.FC = () => {
             >
                 <div style={{ padding: '16px 0' }}>
                     <p>您确定要正式开启以下项目吗？</p>
-                    <div style={{ 
-                        background: '#f5f5f5', 
-                        padding: '12px', 
+                    <div style={{
+                        background: '#f5f5f5',
+                        padding: '12px',
                         borderRadius: '6px',
                         margin: '12px 0'
                     }}>
@@ -509,6 +584,100 @@ const ProjectList: React.FC = () => {
                     <p style={{ color: '#666', fontSize: '14px' }}>
                         ⚠️ 开启后项目将直接进入执行阶段，并开始计时。
                     </p>
+                </div>
+            </Modal>
+
+            {/* 项目状态变更对话框 */}
+            <Modal
+                title="变更项目状态"
+                open={statusChangeModalVisible}
+                onOk={handleConfirmStatusChange}
+                onCancel={handleCancelStatusChange}
+                confirmLoading={statusChangeLoading}
+                okText="确定"
+                cancelText="取消"
+                okButtonProps={{ disabled: !selectedNewStatus }}
+            >
+                <div style={{ padding: '16px 0' }}>
+                    <p>要将项目切换到以下状态吗？</p>
+                    <div style={{
+                        background: '#f5f5f5',
+                        padding: '12px',
+                        borderRadius: '6px',
+                        margin: '12px 0'
+                    }}>
+                        <p><strong>项目名称：</strong>{statusChangeProject?.projectName}</p>
+                        <p><strong>客户：</strong>{statusChangeProject?.clientName}</p>
+                        <p><strong>当前状态：</strong>
+                            <Tag color="blue">进行中</Tag>
+                        </p>
+                    </div>
+
+                    <div style={{ margin: '16px 0' }}>
+                        <p style={{ marginBottom: '12px', fontWeight: 'bold' }}>选择新状态：</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div
+                                style={{
+                                    padding: '12px',
+                                    border: selectedNewStatus === 'on-hold' ? '2px solid #722ed1' : '1px solid #d9d9d9',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    backgroundColor: selectedNewStatus === 'on-hold' ? '#f9f0ff' : '#fff'
+                                }}
+                                onClick={() => setSelectedNewStatus('on-hold')}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Tag color="purple">暂停项目</Tag>
+                                    <span style={{ fontSize: '14px', color: '#666' }}>项目暂时搁置，可随时恢复</span>
+                                </div>
+                            </div>
+
+                            <div
+                                style={{
+                                    padding: '12px',
+                                    border: selectedNewStatus === 'cancelled' ? '2px solid #d9d9d9' : '1px solid #d9d9d9',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    backgroundColor: selectedNewStatus === 'cancelled' ? '#f5f5f5' : '#fff'
+                                }}
+                                onClick={() => setSelectedNewStatus('cancelled')}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Tag color="default">取消项目</Tag>
+                                    <span style={{ fontSize: '14px', color: '#666' }}>项目终止，不可恢复</span>
+                                </div>
+                            </div>
+
+                            <div
+                                style={{
+                                    padding: '12px',
+                                    border: selectedNewStatus === 'consulting' ? '2px solid #fa8c16' : '1px solid #d9d9d9',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    backgroundColor: selectedNewStatus === 'consulting' ? '#fff7e6' : '#fff'
+                                }}
+                                onClick={() => setSelectedNewStatus('consulting')}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <Tag color="orange">回到咨询状态</Tag>
+                                    <span style={{ fontSize: '14px', color: '#666' }}>项目回到咨询阶段，重新确认需求</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {selectedNewStatus && (
+                        <div style={{
+                            background: '#e6f7ff',
+                            padding: '12px',
+                            borderRadius: '6px',
+                            border: '1px solid #91d5ff'
+                        }}>
+                            <p style={{ margin: 0, color: '#1890ff' }}>
+                                <strong>即将变更：</strong>进行中 → {getProgressStatusText(selectedNewStatus)}
+                            </p>
+                        </div>
+                    )}
                 </div>
             </Modal>
         </div>
