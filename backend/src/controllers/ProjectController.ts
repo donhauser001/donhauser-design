@@ -10,7 +10,7 @@ export class ProjectController {
    */
   static async getProjects(req: Request, res: Response) {
     try {
-      const { page, limit, search, progressStatus, settlementStatus, undertakingTeam, clientId } = req.query;
+      const { page, limit, search, progressStatus, settlementStatus, undertakingTeam, clientId, excludeStatus } = req.query;
 
       const result = await ProjectService.getProjects({
         page: page ? parseInt(page as string) : undefined,
@@ -19,7 +19,8 @@ export class ProjectController {
         progressStatus: progressStatus as string,
         settlementStatus: settlementStatus as string,
         undertakingTeam: undertakingTeam as string,
-        clientId: clientId as string
+        clientId: clientId as string,
+        excludeStatus: excludeStatus as string
       });
 
       res.json({

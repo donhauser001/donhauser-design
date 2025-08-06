@@ -96,6 +96,11 @@ const ProjectList: React.FC = () => {
                 ...(teamFilter && { undertakingTeam: teamFilter })
             });
 
+            // 如果没有选择进度状态筛选，默认排除已取消的项目
+            if (!progressFilter) {
+                params.append('excludeStatus', 'cancelled');
+            }
+
             const response = await fetch(`/api/projects?${params}`);
             const data = await response.json();
 

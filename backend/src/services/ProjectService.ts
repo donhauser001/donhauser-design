@@ -16,8 +16,9 @@ export class ProjectService {
     settlementStatus?: string;
     undertakingTeam?: string;
     clientId?: string;
+    excludeStatus?: string;
   }): Promise<{ projects: IProject[], total: number }> {
-    const { page = 1, limit = 50, search, progressStatus, settlementStatus, undertakingTeam, clientId } = params;
+    const { page = 1, limit = 50, search, progressStatus, settlementStatus, undertakingTeam, clientId, excludeStatus } = params;
     const skip = (page - 1) * limit;
 
     const filter: any = {};
@@ -31,6 +32,7 @@ export class ProjectService {
     if (settlementStatus) filter.settlementStatus = settlementStatus;
     if (undertakingTeam) filter.undertakingTeam = undertakingTeam;
     if (clientId) filter.clientId = clientId;
+    if (excludeStatus) filter.progressStatus = { $ne: excludeStatus };
 
     const [projects, total] = await Promise.all([
       Project.find(filter)
