@@ -24,6 +24,7 @@ interface ServiceWithDetails extends Service {
 const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClient, services }) => {
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
     const [serviceDetails, setServiceDetails] = useState<ServiceWithDetails[]>([]);
+    const [categorySelections, setCategorySelections] = useState<Record<string, boolean>>({});
 
     // 获取服务详细信息
     useEffect(() => {
@@ -73,8 +74,34 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
         }
     };
 
+    const handleCategorySelectAll = (category: string, checked: boolean) => {
+        const categoryServices = groupedServices[category] || [];
+        const categoryServiceIds = categoryServices.map(service => service._id);
+        
+        if (checked) {
+            setSelectedServices(prev => [...new Set([...prev, ...categoryServiceIds])]);
+        } else {
+            setSelectedServices(prev => prev.filter(id => !categoryServiceIds.includes(id)));
+        }
+        
+        setCategorySelections(prev => ({ ...prev, [category]: checked }));
+    };
+
     const isAllSelected = serviceDetails.length > 0 && selectedServices.length === serviceDetails.length;
     const isIndeterminate = selectedServices.length > 0 && selectedServices.length < serviceDetails.length;
+
+    const isCategoryAllSelected = (category: string) => {
+        const categoryServices = groupedServices[category] || [];
+        const categoryServiceIds = categoryServices.map(service => service._id);
+        return categoryServices.length > 0 && categoryServiceIds.every(id => selectedServices.includes(id));
+    };
+
+    const isCategoryIndeterminate = (category: string) => {
+        const categoryServices = groupedServices[category] || [];
+        const categoryServiceIds = categoryServices.map(service => service._id);
+        const selectedInCategory = categoryServiceIds.filter(id => selectedServices.includes(id));
+        return selectedInCategory.length > 0 && selectedInCategory.length < categoryServices.length;
+    };
     if (!selectedClient) {
         return (
             <div>
@@ -215,6 +242,12 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                         <Panel 
                                             header={
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <Checkbox
+                                                        checked={isCategoryAllSelected(category)}
+                                                        indeterminate={isCategoryIndeterminate(category)}
+                                                        onChange={(e) => handleCategorySelectAll(category, e.target.checked)}
+                                                        style={{ marginRight: '8px' }}
+                                                    />
                                                     <span style={{ fontWeight: 'bold', color: '#1890ff' }}>
                                                         {category}
                                                     </span>
@@ -242,46 +275,47 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                                                                     onChange={(e) => handleServiceToggle(service._id, e.target.checked)}
                                                                 />
                                                             </Col>
-                                                            <Col span={8}>
-                                                                <div>
+                                                            <Col span={10}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                                     <Text strong>{service.serviceName}</Text>
                                                                     {service.alias && (
-                                                                        <div style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
-                                                                            别名: {service.alias}
-                                                                        </div>
+                                                                        <Text type="secondary" style={{ fontSize: '12px' }}>
+                                                                            ({service.alias})
+                                                                        </Text>
                                                                     )}
                                                                 </div>
                                                             </Col>
                                                             <Col span={4}>
-                                                                <div style={{ textAlign: 'center' }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                                                     <Text type="danger" strong>
                                                                         ¥{service.unitPrice}
                                                                     </Text>
-                                                                    <div style={{ fontSize: '12px', color: '#666' }}>
+                                                                    <Text type="secondary" style={{ fontSize: '12px' }}>
                                                                         /{service.unit}
-                                                                    </div>
+                                                                    </Text>
                                                                 </div>
                                                             </Col>
                                                             <Col span={6}>
                                                                 <div>
                                                                     {service.pricingPolicyIds && service.pricingPolicyIds.length > 0 ? (
-                                                                        <div>
-                                                                            <Tag color="green" icon={<CheckCircleOutlined />}>
-                                                                                已关联定价政策
-                                                                            </Tag>
-                                                                            <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                                                                                {service.pricingPolicyNames?.join(', ')}
-                                                                            </div>
+                                                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                                                            {service.pricingPolicyNames?.map((policyName, index) => (
+                                                                                <Tag key={index} color="green" size="small">
+                                                                                    {policyName}
+                                                                                </Tag>
+                                                                            ))}
                                                                         </div>
                                                                     ) : (
-                                                                        <Tag color="orange">无定价政策</Tag>
+                                                                        <Text type="secondary" style={{ fontSize: '12px' }}>
+                                                                            无政策
+                                                                        </Text>
                                                                     )}
                                                                 </div>
                                                             </Col>
-                                                            <Col span={5}>
+                                                            <Col span={3}>
                                                                 <div style={{ textAlign: 'right' }}>
-                                                                    <Tag color="blue">
-                                                                        已选择: {selectedServices.includes(service._id) ? '是' : '否'}
+                                                                    <Tag color={selectedServices.includes(service._id) ? "green" : "default"} size="small">
+                                                                        {selectedServices.includes(service._id) ? '已选' : '未选'}
                                                                     </Tag>
                                                                 </div>
                                                             </Col>
