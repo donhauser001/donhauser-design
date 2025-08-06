@@ -12,6 +12,7 @@ interface QuotationsTabProps {
     quotations: Quotation[];
     selectedClient: any;
     services: Service[];
+    onServicesChange?: (services: any[]) => void;
 }
 
 interface ServiceWithDetails extends Service {
@@ -21,7 +22,7 @@ interface ServiceWithDetails extends Service {
     pricingPolicyNames?: string[];
 }
 
-const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClient, services }) => {
+const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClient, services, onServicesChange }) => {
     const [selectedServices, setSelectedServices] = useState<string[]>([]);
     const [serviceDetails, setServiceDetails] = useState<ServiceWithDetails[]>([]);
     const [serviceQuantities, setServiceQuantities] = useState<Record<string, number>>({});
@@ -88,6 +89,21 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
         console.log('添加到订单:', selectedItems);
         // 这里可以添加将选中服务添加到订单的逻辑
     };
+
+    // 监听选中服务变化，通知父组件
+    useEffect(() => {
+        if (onServicesChange) {
+            const selectedItems = selectedServices.map(serviceId => {
+                const service = serviceDetails.find(s => s._id === serviceId);
+                const quantity = serviceQuantities[serviceId] || 1;
+                return {
+                    ...service,
+                    quantity
+                };
+            });
+            onServicesChange(selectedItems);
+        }
+    }, [selectedServices, serviceQuantities, serviceDetails, onServicesChange]);
     if (!selectedClient) {
         return (
             <div>

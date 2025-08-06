@@ -14,6 +14,7 @@ const CreateProject: React.FC = () => {
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
+    const [selectedServices, setSelectedServices] = useState<any[]>([]);
 
     const {
         clients,
@@ -77,7 +78,7 @@ const CreateProject: React.FC = () => {
             // 这里可以从QuotationsTab组件获取选中的服务数量
             // 暂时跳过验证，允许用户直接进入下一步
         }
-        
+
         setCurrentStep(currentStep + 1);
     };
 
@@ -142,7 +143,7 @@ const CreateProject: React.FC = () => {
                                         justifyContent: 'center',
                                         border: currentStep >= 0 ? '2px solid #1890ff' : '2px solid #d9d9d9'
                                     }}>
-                                        <FileTextOutlined style={{ 
+                                        <FileTextOutlined style={{
                                             color: currentStep >= 0 ? '#fff' : '#666',
                                             fontSize: '16px'
                                         }} />
@@ -164,7 +165,7 @@ const CreateProject: React.FC = () => {
                                         justifyContent: 'center',
                                         border: currentStep >= 1 ? '2px solid #1890ff' : '2px solid #d9d9d9'
                                     }}>
-                                        <FileTextOutlined style={{ 
+                                        <FileTextOutlined style={{
                                             color: currentStep >= 1 ? '#fff' : '#666',
                                             fontSize: '16px'
                                         }} />
@@ -187,7 +188,7 @@ const CreateProject: React.FC = () => {
                                         justifyContent: 'center',
                                         border: currentStep >= 2 ? '2px solid #1890ff' : '2px solid #d9d9d9'
                                     }}>
-                                        <ShoppingCartOutlined style={{ 
+                                        <ShoppingCartOutlined style={{
                                             color: currentStep >= 2 ? '#fff' : '#666',
                                             fontSize: '16px'
                                         }} />
@@ -218,31 +219,36 @@ const CreateProject: React.FC = () => {
                                 quotations={quotations}
                                 selectedClient={selectedClient}
                                 services={services}
+                                onServicesChange={setSelectedServices}
                             />
                         )}
                         {currentStep === 2 && (
-                            <OrderTab />
+                            <OrderTab
+                                selectedClient={selectedClient}
+                                selectedServices={selectedServices}
+                                projectData={form.getFieldsValue()}
+                            />
                         )}
                     </div>
 
                     {/* 步骤导航按钮 */}
-                    <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
                         marginTop: 24,
                         paddingTop: 24,
                         borderTop: '1px solid #f0f0f0'
                     }}>
-                        <Button 
-                            onClick={handlePrev} 
+                        <Button
+                            onClick={handlePrev}
                             disabled={currentStep === 0}
                         >
                             上一步
                         </Button>
                         <div>
                             {currentStep < 2 ? (
-                                <Button 
-                                    type="primary" 
+                                <Button
+                                    type="primary"
                                     onClick={handleNext}
                                     disabled={currentStep === 0 && !selectedClient}
                                 >

@@ -1,65 +1,191 @@
 import React from 'react';
-import { Form, Input, Select, Row, Col, Card, DatePicker } from 'antd';
+import { Form, Input, Select, Row, Col, Card, Table, Tag, Typography, Space } from 'antd';
+import { UserOutlined, TeamOutlined, FileTextOutlined, EditOutlined } from '@ant-design/icons';
 
 const { Option } = Select;
 const { TextArea } = Input;
+const { Title, Text } = Typography;
 
-const OrderTab: React.FC = () => {
+interface OrderTabProps {
+    selectedClient: any;
+    selectedServices: any[];
+    projectData: any;
+}
+
+const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, projectData }) => {
+    // 表格列定义
+    const columns = [
+        {
+            title: '服务项目',
+            dataIndex: 'serviceName',
+            key: 'serviceName',
+            render: (text: string, record: any) => (
+                <div>
+                    <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{text}</div>
+                    {record.alias && (
+                        <Text type="secondary" style={{ fontSize: '12px' }}>{record.alias}</Text>
+                    )}
+                </div>
+            )
+        },
+        {
+            title: '分类',
+            dataIndex: 'categoryName',
+            key: 'categoryName',
+            render: (text: string) => (
+                <Tag color="blue">{text || '未分类'}</Tag>
+            )
+        },
+        {
+            title: '单价',
+            dataIndex: 'unitPrice',
+            key: 'unitPrice',
+            render: (price: number, record: any) => (
+                <div style={{ textAlign: 'right' }}>
+                    <Text type="danger" strong>¥{price}</Text>
+                    <div style={{ fontSize: '12px', color: '#999' }}>/{record.unit}</div>
+                </div>
+            )
+        },
+        {
+            title: '数量',
+            dataIndex: 'quantity',
+            key: 'quantity',
+            render: (quantity: number) => (
+                <Text strong>{quantity}</Text>
+            )
+        },
+        {
+            title: '小计',
+            key: 'subtotal',
+            render: (record: any) => (
+                <div style={{ textAlign: 'right' }}>
+                    <Text type="danger" strong>¥{record.unitPrice * record.quantity}</Text>
+                </div>
+            )
+        },
+        {
+            title: '定价政策',
+            dataIndex: 'pricingPolicyNames',
+            key: 'pricingPolicyNames',
+            render: (policies: string[]) => (
+                <div>
+                    {policies && policies.length > 0 ? (
+                        policies.map((policy, index) => (
+                            <Tag key={index} color="green" style={{ fontSize: '12px', marginBottom: '4px' }}>
+                                {policy}
+                            </Tag>
+                        ))
+                    ) : (
+                        <Text type="secondary" style={{ fontSize: '12px' }}>无政策</Text>
+                    )}
+                </div>
+            )
+        }
+    ];
+
+    // 计算总金额
+    const totalAmount = selectedServices.reduce((sum, service) => {
+        return sum + (service.unitPrice * service.quantity);
+    }, 0);
+
     return (
         <div>
-            {/* 订单信息 */}
+            {/* 项目信息概览 */}
             <Card
                 size="small"
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ color: '#13c2c2' }}>💰</span>
-                        <span>订单信息</span>
+                        <FileTextOutlined style={{ color: '#666' }} />
+                        <span>项目信息概览</span>
                     </div>
                 }
                 style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
             >
                 <Row gutter={24}>
                     <Col span={12}>
-                        <Form.Item name="orderNumber" label="订单编号">
-                            <Input placeholder="系统自动生成" disabled />
-                        </Form.Item>
+                        <div style={{ marginBottom: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                <TeamOutlined style={{ color: '#666' }} />
+                                <Text strong>客户信息</Text>
+                            </div>
+                            <div style={{ paddingLeft: '24px' }}>
+                                <div><Text>客户名称：{selectedClient?.name || '未选择'}</Text></div>
+                                <div><Text>项目名称：{projectData?.projectName || '未填写'}</Text></div>
+                            </div>
+                        </div>
                     </Col>
                     <Col span={12}>
-                        <Form.Item name="orderDate" label="订单日期">
-                            <DatePicker 
-                                style={{ width: '100%' }} 
-                                placeholder="请选择订单日期"
-                            />
-                        </Form.Item>
+                        <div style={{ marginBottom: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                <UserOutlined style={{ color: '#666' }} />
+                                <Text strong>团队信息</Text>
+                            </div>
+                            <div style={{ paddingLeft: '24px' }}>
+                                <div><Text>承接团队：{projectData?.undertakingTeam || '未选择'}</Text></div>
+                                <div><Text>主创设计师：{projectData?.mainDesigners?.join(', ') || '未选择'}</Text></div>
+                            </div>
+                        </div>
                     </Col>
                 </Row>
                 <Row gutter={24}>
                     <Col span={12}>
-                        <Form.Item name="paymentTerms" label="付款条件">
-                            <Select placeholder="请选择付款条件">
-                                <Option value="advance">预付款</Option>
-                                <Option value="installment">分期付款</Option>
-                                <Option value="completion">完工付款</Option>
-                                <Option value="monthly">月结</Option>
-                            </Select>
-                        </Form.Item>
+                        <div style={{ marginBottom: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                <EditOutlined style={{ color: '#666' }} />
+                                <Text strong>客户嘱托</Text>
+                            </div>
+                            <div style={{ paddingLeft: '24px' }}>
+                                <Text>{projectData?.clientRequirements || '无'}</Text>
+                            </div>
+                        </div>
                     </Col>
                     <Col span={12}>
-                        <Form.Item name="deliveryDate" label="交付日期">
-                            <DatePicker 
-                                style={{ width: '100%' }} 
-                                placeholder="请选择交付日期"
-                            />
-                        </Form.Item>
+                        <div style={{ marginBottom: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                                <EditOutlined style={{ color: '#666' }} />
+                                <Text strong>备注信息</Text>
+                            </div>
+                            <div style={{ paddingLeft: '24px' }}>
+                                <Text>{projectData?.remark || '无'}</Text>
+                            </div>
+                        </div>
                     </Col>
                 </Row>
-                <Row gutter={24}>
-                    <Col span={24}>
-                        <Form.Item name="orderRemarks" label="订单备注">
-                            <TextArea rows={4} placeholder="请输入订单备注信息" />
-                        </Form.Item>
-                    </Col>
-                </Row>
+            </Card>
+
+            {/* 已选服务项目表格 */}
+            <Card
+                size="small"
+                title={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <FileTextOutlined style={{ color: '#666' }} />
+                        <span>已选服务项目</span>
+                        <Tag color="blue">{selectedServices.length} 项</Tag>
+                    </div>
+                }
+                style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
+            >
+                <Table
+                    columns={columns}
+                    dataSource={selectedServices}
+                    rowKey="_id"
+                    pagination={false}
+                    size="small"
+                    summary={() => (
+                        <Table.Summary.Row>
+                            <Table.Summary.Cell index={0} colSpan={4}>
+                                <Text strong>总计</Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell index={1}>
+                                <Text type="danger" strong style={{ fontSize: '16px' }}>
+                                    ¥{totalAmount}
+                                </Text>
+                            </Table.Summary.Cell>
+                            <Table.Summary.Cell index={2} />
+                        </Table.Summary.Row>
+                    )}
+                />
             </Card>
         </div>
     );
