@@ -584,7 +584,7 @@ const ProjectDetail: React.FC = () => {
                                                                     backgroundColor: '#1890ff',
                                                                     flexShrink: 0
                                                                 }} />
-                                                                <span style={{ fontSize: '12px' }}>
+                                                                <span>
                                                                     {record.mainDesignerNames!.join('，')}
                                                                 </span>
                                                             </div>
@@ -598,7 +598,7 @@ const ProjectDetail: React.FC = () => {
                                                                     backgroundColor: '#8c8c8c',
                                                                     flexShrink: 0
                                                                 }} />
-                                                                <span style={{ fontSize: '12px' }}>
+                                                                <span>
                                                                     {record.assistantDesignerNames!.join('，')}
                                                                 </span>
                                                             </div>
@@ -608,7 +608,6 @@ const ProjectDetail: React.FC = () => {
                                                                 type="primary"
                                                                 size="small"
                                                                 onClick={() => handleAssignDesigners(record)}
-                                                                style={{ fontSize: '12px' }}
                                                             >
                                                                 指定
                                                             </Button>
