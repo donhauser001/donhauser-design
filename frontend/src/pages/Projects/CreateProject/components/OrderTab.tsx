@@ -66,7 +66,8 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             // 统一折扣
             const discountRatio = selectedPolicy.discountRatio || 100;
             discountedPrice = (originalPrice * discountRatio) / 100;
-            calculationDetails = `${service.priceDescription || `按${service.unit}计费`} | 应用政策: ${selectedPolicy.name} (${discountRatio}%)`;
+            const discountAmount = originalPrice - discountedPrice;
+            calculationDetails = `${service.priceDescription || `按${service.unit}计费`} | 应用政策: ${selectedPolicy.name} (${discountRatio}%)\n优惠：￥${discountAmount.toFixed(2)}`;
         } else if (selectedPolicy.type === 'tiered_discount' && selectedPolicy.tierSettings) {
             // 阶梯折扣
             const unitPrice = service.unitPrice;
@@ -133,7 +134,7 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                 }
             }
 
-            calculationDetails = `${service.priceDescription || `按${service.unit}计费`} | 应用政策: ${selectedPolicy.name}<br/>优惠说明: ${discountDescription}<br/><br/>${tierDetails.join('<br/>')}<br/><br/>小计：${tierDetails.map(detail => detail.split(' = ')[1]).join('+')}=￥${totalDiscountedPrice.toFixed(2)}<br/>优惠：￥${(originalPrice - totalDiscountedPrice).toFixed(2)}`;
+            calculationDetails = `${service.priceDescription || `按${service.unit}计费`} | 应用政策: ${selectedPolicy.name}\n优惠说明: ${discountDescription}\n\n${tierDetails.join('\n')}\n\n小计：${tierDetails.map(detail => detail.split(' = ')[1]).join('+')}=￥${totalDiscountedPrice.toFixed(2)}\n优惠：￥${(originalPrice - totalDiscountedPrice).toFixed(2)}`;
         }
 
         const discountAmount = originalPrice - discountedPrice;
@@ -241,10 +242,13 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             render: (priceDescription: string, record: any) => {
                 const priceResult = calculatePrice(record);
                 return (
-                    <div>
-                        <Text type="secondary" style={{ fontSize: '12px' }}>
-                            {priceResult.calculationDetails}
-                        </Text>
+                    <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
+                        <div 
+                            dangerouslySetInnerHTML={{ 
+                                __html: priceResult.calculationDetails.replace(/\n/g, '<br/>') 
+                            }}
+                            style={{ color: '#666' }}
+                        />
                     </div>
                 );
             }
