@@ -163,6 +163,31 @@ export const useOrderModal = (clients: Client[], fetchServiceDetails: (serviceId
             }
 
             // 准备订单数据
+            const filteredServiceDetails = serviceDetails.filter(service => selectedServices.includes(service._id || service.id || ''))
+
+            // 构建价格政策数据 - 只包含用户选择的政策
+            const selectedPolicies: any[] = []
+
+            filteredServiceDetails.forEach(service => {
+                if (service.selectedPolicies && service.selectedPolicies.length > 0) {
+                    // 为这个服务添加其选择的政策
+                    service.selectedPolicies.forEach(policyId => {
+                        const policy = policies.find(p => p._id === policyId)
+                        if (policy) {
+                            selectedPolicies.push({
+                                policyId: policy._id,
+                                _id: policy._id, // Ensure _id is present for backend calculation
+                                name: policy.name,
+                                type: policy.type,
+                                discountRatio: policy.discountRatio,
+                                tierSettings: policy.tierSettings,
+                                serviceId: service._id || service.id // 关联到具体的服务
+                            })
+                        }
+                    })
+                }
+            })
+
             const orderData = {
                 clientId: selectedClientId,
                 clientName: selectedClient.companyName || selectedClient.name || '',
@@ -178,12 +203,19 @@ export const useOrderModal = (clients: Client[], fetchServiceDetails: (serviceId
                 projectName: projectName.trim(),
                 quotationId: selectedQuotation?._id || undefined,
                 selectedServices: selectedServices,
-                serviceDetails: serviceDetails.filter(service => selectedServices.includes(service._id || service.id || '')),
-                policies: policies,
+                serviceDetails: filteredServiceDetails,
+                policies: selectedPolicies, // 传递用户选择的政策
                 updatedBy: 'system' // 这里应该使用当前登录用户
             }
 
 
+
+            console.log('🔍 即将创建订单，数据:', orderData)
+            console.log('🔍 构建的政策数据:', selectedPolicies)
+            console.log('🔍 服务详情:', filteredServiceDetails.map(s => ({
+                serviceName: s.serviceName,
+                selectedPolicies: s.selectedPolicies
+            })))
 
             // 调用API创建订单
             const response = await createOrder(orderData)
@@ -233,6 +265,31 @@ export const useOrderModal = (clients: Client[], fetchServiceDetails: (serviceId
             }
 
             // 准备更新数据
+            const filteredServiceDetails = serviceDetails.filter(service => selectedServices.includes(service._id || service.id || ''))
+
+            // 构建价格政策数据 - 只包含用户选择的政策
+            const selectedPolicies: any[] = []
+
+            filteredServiceDetails.forEach(service => {
+                if (service.selectedPolicies && service.selectedPolicies.length > 0) {
+                    // 为这个服务添加其选择的政策
+                    service.selectedPolicies.forEach(policyId => {
+                        const policy = policies.find(p => p._id === policyId)
+                        if (policy) {
+                            selectedPolicies.push({
+                                policyId: policy._id,
+                                _id: policy._id, // Ensure _id is present for backend calculation
+                                name: policy.name,
+                                type: policy.type,
+                                discountRatio: policy.discountRatio,
+                                tierSettings: policy.tierSettings,
+                                serviceId: service._id || service.id // 关联到具体的服务
+                            })
+                        }
+                    })
+                }
+            })
+
             const updateData = {
                 clientId: selectedClientId,
                 clientName: selectedClient.companyName || selectedClient.name || '',
@@ -248,8 +305,8 @@ export const useOrderModal = (clients: Client[], fetchServiceDetails: (serviceId
                 projectName: projectName.trim(),
                 quotationId: selectedQuotation?._id || undefined,
                 selectedServices: selectedServices,
-                serviceDetails: serviceDetails.filter(service => selectedServices.includes(service._id || service.id || '')),
-                policies: policies,
+                serviceDetails: filteredServiceDetails,
+                policies: selectedPolicies, // 传递用户选择的政策
                 updatedBy: 'system' // 这里应该使用当前登录用户
             }
 

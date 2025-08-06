@@ -97,6 +97,30 @@ textarea::-webkit-scrollbar-thumb:hover,
   background: #a8a8a8 !important;
 }
 
+/* 文件上传组件文件名换行样式 */
+.ant-upload-list-item-name,
+.ant-upload-list-item-name *,
+[class*="ant-upload"] .ant-typography {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  word-break: break-word !important;
+}
+
+/* 自定义文件上传组件文件名换行样式 */
+.ant-card .ant-typography {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: unset !important;
+  word-break: break-word !important;
+  line-height: 1.4 !important;
+}
+
+/* 覆盖Ant Design上传组件的默认边距 */
+:where(.css-dev-only-do-not-override-1vjf2v5).ant-upload-wrapper .ant-upload-drag .ant-upload {
+  padding: 6px 16px !important;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

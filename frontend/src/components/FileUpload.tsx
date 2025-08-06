@@ -14,7 +14,8 @@ import {
   Row,
   Col,
   Card,
-  Spin
+  Spin,
+  Pagination
 } from 'antd'
 import {
   UploadOutlined,
@@ -182,17 +183,21 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   const prevValueRef = useRef<(UploadFile | string | { path: string; originalName: string; size: number })[]>([])
 
-  const [fileList, setFileList] = useState<UploadFile[]>([])
+  const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
+  const [previewVisible, setPreviewVisible] = useState(false)
+  const [previewImage, setPreviewImage] = useState('')
+  const [previewTitle, setPreviewTitle] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 6
 
-  // 监听value变化，更新文件列表
-  useEffect(() => {
+  // 处理value，转换为标准格式
+  const fileList = useMemo(() => {
     if (!value || value.length === 0) {
-      setFileList([])
-      return
+      return []
     }
 
-    // 处理不同格式的文件数据
-    const processedFiles = value.map((file: any, index: number) => {
+    return value.map((file: any, index: number) => {
       if (typeof file === 'string') {
         // 处理字符串格式
         return {
@@ -226,15 +231,15 @@ const FileUpload: React.FC<FileUploadProps> = ({
         }
       }
     })
-
-    setFileList(processedFiles)
   }, [value])
 
-  const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({})
-  const [previewVisible, setPreviewVisible] = useState(false)
-  const [previewImage, setPreviewImage] = useState('')
-  const [previewTitle, setPreviewTitle] = useState('')
+  // 监听文件列表变化，处理分页重置
+  useEffect(() => {
+    const newTotalPages = Math.ceil(fileList.length / pageSize)
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+      setCurrentPage(1)
+    }
+  }, [fileList.length, pageSize])
 
   // 文件类型图标映射
   const getFileIcon = (file: UploadFile) => {
@@ -244,33 +249,38 @@ const FileUpload: React.FC<FileUploadProps> = ({
     // 图片类型
     const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']
     if (imageExtensions.includes(extension || '') || file.type?.startsWith('image/')) {
-      return <FileOutlined style={{ color: '#8c8c8c' }} />
+      return <FileOutlined style={{ color: '#52c41a' }} />
     }
 
     // 视频类型
     const videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv']
     if (videoExtensions.includes(extension || '') || file.type?.startsWith('video/')) {
-      return <FileOutlined style={{ color: '#8c8c8c' }} />
+      return <FileOutlined style={{ color: '#ff4d4f' }} />
     }
 
     // 音频类型
     const audioExtensions = ['mp3', 'wav', 'ogg', 'aac']
     if (audioExtensions.includes(extension || '') || file.type?.startsWith('audio/')) {
-      return <FileOutlined style={{ color: '#8c8c8c' }} />
+      return <FileOutlined style={{ color: '#fa8c16' }} />
     }
 
     // 文档类型
     if (extension === 'pdf' || file.type?.includes('pdf')) {
-      return <FileOutlined style={{ color: '#8c8c8c' }} />
+      return <FileOutlined style={{ color: '#fa541c' }} />
     }
     if (['doc', 'docx'].includes(extension || '') || file.type?.includes('word')) {
-      return <FileOutlined style={{ color: '#8c8c8c' }} />
+      return <FileOutlined style={{ color: '#1890ff' }} />
     }
     if (['xls', 'xlsx'].includes(extension || '') || file.type?.includes('excel')) {
-      return <FileOutlined style={{ color: '#8c8c8c' }} />
+      return <FileOutlined style={{ color: '#52c41a' }} />
     }
     if (['ppt', 'pptx'].includes(extension || '') || file.type?.includes('powerpoint')) {
-      return <FileOutlined style={{ color: '#8c8c8c' }} />
+      return <FileOutlined style={{ color: '#fa8c16' }} />
+    }
+
+    // 压缩文件
+    if (['zip', 'rar', '7z'].includes(extension || '')) {
+      return <FileOutlined style={{ color: '#722ed1' }} />
     }
 
     // 默认图标
@@ -288,6 +298,47 @@ const FileUpload: React.FC<FileUploadProps> = ({
 
   // 文件类型标签颜色
   const getFileTypeColor = (file: UploadFile) => {
+    const fileName = file.name || ''
+    const extension = fileName.split('.').pop()?.toLowerCase()
+
+    // 图片类型
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']
+    if (imageExtensions.includes(extension || '') || file.type?.startsWith('image/')) {
+      return 'green'
+    }
+
+    // 视频类型
+    const videoExtensions = ['mp4', 'avi', 'mov', 'wmv', 'flv']
+    if (videoExtensions.includes(extension || '') || file.type?.startsWith('video/')) {
+      return 'red'
+    }
+
+    // 音频类型
+    const audioExtensions = ['mp3', 'wav', 'ogg', 'aac']
+    if (audioExtensions.includes(extension || '') || file.type?.startsWith('audio/')) {
+      return 'orange'
+    }
+
+    // 文档类型
+    if (extension === 'pdf' || file.type?.includes('pdf')) {
+      return 'volcano'
+    }
+    if (['doc', 'docx'].includes(extension || '') || file.type?.includes('word')) {
+      return 'blue'
+    }
+    if (['xls', 'xlsx'].includes(extension || '') || file.type?.includes('excel')) {
+      return 'green'
+    }
+    if (['ppt', 'pptx'].includes(extension || '') || file.type?.includes('powerpoint')) {
+      return 'orange'
+    }
+
+    // 压缩文件
+    if (['zip', 'rar', '7z'].includes(extension || '')) {
+      return 'purple'
+    }
+
+    // 默认颜色
     return 'default'
   }
 
@@ -299,6 +350,17 @@ const FileUpload: React.FC<FileUploadProps> = ({
     const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'))
 
     return `${nameWithoutExt}_${timestamp}_${random}.${extension}`
+  }
+
+  // 分页逻辑
+  const totalPages = Math.ceil(fileList.length / pageSize)
+  const startIndex = (currentPage - 1) * pageSize
+  const endIndex = startIndex + pageSize
+  const currentPageFiles = fileList.slice(startIndex, endIndex)
+
+  // 处理页码变化
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
   }
 
   // 处理文件上传
@@ -447,7 +509,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
     })
 
     console.log('文件列表更新:', newFileList)
-    setFileList(newFileList)
     onChange?.(newFileList)
   }, [maxCount, onChange])
 
@@ -473,7 +534,6 @@ const FileUpload: React.FC<FileUploadProps> = ({
     }
 
     const newFileList = fileList.filter(item => item.uid !== file.uid)
-    setFileList(newFileList)
     onChange?.(newFileList)
     return true
   }, [fileList, onChange, onRemove])
@@ -609,13 +669,36 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const renderUploadArea = () => {
     if (dragUpload) {
       return (
-        <Dragger {...uploadProps}>
-          <p className="ant-upload-drag-icon">
-            <InboxOutlined />
+        <Dragger
+          {...uploadProps}
+          style={{
+            padding: '8px 16px',
+            border: '1px dashed #d9d9d9',
+            borderRadius: '6px',
+            background: '#fafafa',
+            textAlign: 'center',
+            cursor: 'pointer',
+            transition: 'border-color 0.3s'
+          }}
+        >
+          <p className="ant-upload-drag-icon" style={{ marginBottom: 8 }}>
+            <InboxOutlined style={{ fontSize: 24, color: '#1890ff' }} />
           </p>
-          <p className="ant-upload-text">{finalPlaceholder}</p>
+          <p className="ant-upload-text" style={{
+            fontSize: 14,
+            color: '#262626',
+            marginBottom: 4,
+            fontWeight: 500
+          }}>
+            {finalPlaceholder}
+          </p>
           {finalHelpText && (
-            <Paragraph type="secondary" style={{ fontSize: 12, marginTop: 8 }}>
+            <Paragraph type="secondary" style={{
+              fontSize: 12,
+              marginTop: 4,
+              marginBottom: 0,
+              color: '#8c8c8c'
+            }}>
               {finalHelpText}
             </Paragraph>
           )}
@@ -636,52 +719,20 @@ const FileUpload: React.FC<FileUploadProps> = ({
     <div style={style} className={className}>
       {renderUploadArea()}
 
-      {/* 空状态显示 */}
-      {fileList.length === 0 && (
-        <div style={{
-          marginTop: 20,
-          padding: '40px 20px',
-          textAlign: 'center',
-          background: '#fafafa',
-          borderRadius: '12px',
-          border: '2px dashed #d9d9d9'
-        }}>
-          <FileOutlined style={{
-            fontSize: 48,
-            color: '#d9d9d9',
-            marginBottom: 16
-          }} />
-          <div style={{ color: '#8c8c8c', fontSize: 14 }}>
-            暂无文件，请上传文件
-          </div>
-        </div>
-      )}
+
 
       {/* 自定义文件列表显示 */}
       {fileList.length > 0 && (
         <div style={{ marginTop: 20 }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: 16,
-            padding: '12px 16px',
-            background: '#f5f5f5',
-            borderRadius: '6px',
-            color: '#333',
-            border: '1px solid #e8e8e8'
-          }}>
-            <FileOutlined style={{ marginRight: 8, fontSize: 16, color: '#666' }} />
-            <Text style={{ color: '#333', fontWeight: 500, fontSize: 14 }}>
-              已上传文件 ({fileList.length})
-            </Text>
-          </div>
 
           <div style={{
             display: 'grid',
             gap: 12,
-            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            maxWidth: '100%',
+            overflow: 'hidden'
           }}>
-            {fileList.map((file) => (
+            {currentPageFiles.map((file) => (
               <Card
                 key={file.uid}
                 size="small"
@@ -692,11 +743,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
                   transition: 'all 0.2s ease',
                   cursor: 'pointer',
                   position: 'relative',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  minHeight: '80px'
                 }}
                 styles={{
                   body: {
-                    padding: 16,
+                    padding: 12,
                     position: 'relative'
                   }
                 }}
@@ -704,76 +756,66 @@ const FileUpload: React.FC<FileUploadProps> = ({
               >
 
 
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
                   {/* 文件图标 */}
                   <div style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    width: 48,
-                    height: 48,
+                    width: 44,
+                    height: 44,
                     borderRadius: '6px',
-                    background: '#f5f5f5',
+                    background: '#ffffff',
                     border: '1px solid #e8e8e8',
                     flexShrink: 0
                   }}>
-                    <div style={{ fontSize: 24, color: '#666' }}>
+                    <div style={{ fontSize: 20, color: '#666' }}>
                       {getFileIcon(file)}
                     </div>
                   </div>
 
                   {/* 文件信息 */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ flex: 1, minWidth: 0, maxWidth: '100%', overflow: 'hidden' }}>
                     <div style={{
                       marginBottom: 6
                     }}>
-                      <Text
-                        strong
+                      <div
                         style={{
                           fontSize: 12,
                           color: '#262626',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
+                          fontWeight: 600,
+                          wordBreak: 'break-word',
+                          lineHeight: '1.4',
                           display: 'block',
-                          marginBottom: 6
+                          marginBottom: 6,
+                          whiteSpace: 'normal',
+                          overflow: 'visible',
+                          textOverflow: 'unset'
                         }}
                       >
                         {file.name}
-                      </Text>
+                      </div>
                       <div style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 8
+                        gap: 6,
+                        flexWrap: 'wrap',
+                        maxWidth: '100%'
                       }}>
                         <Tag
                           color={getFileTypeColor(file)}
                           style={{
-                            borderRadius: '12px',
-                            fontSize: '11px',
+                            borderRadius: '10px',
+                            fontSize: '10px',
                             fontWeight: 500,
-                            border: 'none'
+                            border: 'none',
+                            padding: '2px 6px',
+                            lineHeight: '1.2'
                           }}
                         >
                           {formatFileSize(file.size || 0)}
                         </Tag>
-                        {showPreviewIcon && (file.type?.startsWith('image/') || file.url) && (
-                          <Tooltip title="预览">
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<EyeOutlined />}
-                              onClick={() => handlePreview(file)}
-                              style={{
-                                width: 24,
-                                height: 24,
-                                borderRadius: '4px',
-                                color: '#666',
-                                padding: 0
-                              }}
-                            />
-                          </Tooltip>
-                        )}
+
                         {showDownloadIcon && file.url && (
                           <Tooltip title="下载">
                             <Button
@@ -782,11 +824,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
                               icon={<DownloadOutlined />}
                               onClick={() => window.open(file.url, '_blank')}
                               style={{
-                                width: 24,
-                                height: 24,
+                                width: 22,
+                                height: 22,
                                 borderRadius: '4px',
                                 color: '#666',
-                                padding: 0
+                                padding: 0,
+                                minWidth: 22
                               }}
                             />
                           </Tooltip>
@@ -800,11 +843,12 @@ const FileUpload: React.FC<FileUploadProps> = ({
                               icon={<DeleteOutlined />}
                               onClick={() => handleRemove(file)}
                               style={{
-                                width: 24,
-                                height: 24,
+                                width: 22,
+                                height: 22,
                                 borderRadius: '4px',
                                 color: '#666',
-                                padding: 0
+                                padding: 0,
+                                minWidth: 22
                               }}
                             />
                           </Tooltip>
@@ -827,6 +871,27 @@ const FileUpload: React.FC<FileUploadProps> = ({
               </Card>
             ))}
           </div>
+
+          {/* 分页组件 */}
+          {fileList.length > pageSize && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: 16,
+              padding: '12px 0'
+            }}>
+              <Pagination
+                current={currentPage}
+                total={fileList.length}
+                pageSize={pageSize}
+                onChange={handlePageChange}
+                showSizeChanger={false}
+                showQuickJumper={false}
+                showTotal={(total, range) => `第 ${range[0]}-${range[1]} 项，共 ${total} 项`}
+                size="small"
+              />
+            </div>
+          )}
         </div>
       )}
 

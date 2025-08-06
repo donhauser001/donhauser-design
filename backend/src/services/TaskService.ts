@@ -3,8 +3,40 @@ import Task, { ITask } from '../models/Task';
 export class TaskService {
     // 创建任务
     async createTask(taskData: Partial<ITask>): Promise<ITask> {
-        const task = new Task(taskData);
-        return await task.save();
+        try {
+            // 验证必填字段
+            const requiredFields = ['taskName', 'serviceId', 'projectId', 'quantity', 'unit', 'subtotal'];
+            const missingFields = requiredFields.filter(field => !taskData[field as keyof ITask]);
+            
+            if (missingFields.length > 0) {
+                throw new Error(`缺少必填字段: ${missingFields.join(', ')}`);
+            }
+            
+            // 验证数值字段
+            if (typeof taskData.quantity !== 'number' || taskData.quantity <= 0) {
+                throw new Error('数量必须是大于0的数字');
+            }
+            
+            if (typeof taskData.subtotal !== 'number' || taskData.subtotal < 0) {
+                throw new Error('小计金额不能为负数');
+            }
+            
+            // 验证字符串字段
+            if (typeof taskData.taskName !== 'string' || taskData.taskName.trim().length === 0) {
+                throw new Error('任务名称不能为空');
+            }
+            
+            if (typeof taskData.unit !== 'string' || taskData.unit.trim().length === 0) {
+                throw new Error('单位不能为空');
+            }
+            
+            // 创建任务
+            const task = new Task(taskData);
+            return await task.save();
+        } catch (error) {
+            console.error('任务服务创建任务失败:', error);
+            throw error;
+        }
     }
 
     // 批量创建任务

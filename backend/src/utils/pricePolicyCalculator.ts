@@ -52,10 +52,19 @@ export const calculatePriceWithPolicies = (
         let currentResult: PriceCalculationResult
 
         if (policy.type === 'uniform_discount') {
-            // 统一折扣 - discountRatio 是计费比例（如80表示收取80%）
-            const discountRatio = policy.discountRatio || 0
+            // 统一折扣 - discountRatio 是计费比例
+            let discountRatio = policy.discountRatio || 0
+
+            // 如果 discountRatio 是小数形式（如 0.85），转换为百分比形式（如 85）
+            if (discountRatio <= 1 && discountRatio > 0) {
+                discountRatio = discountRatio * 100
+            }
+
             const discountedPrice = (originalPrice * discountRatio) / 100
             const discountAmount = originalPrice - discountedPrice
+
+            // 构建完整的计算详情
+            const fullCalculationDetails = `计费方式:\n按${discountRatio}%计费\n\n原价: ¥${originalPrice.toLocaleString()}\n优惠金额: ¥${discountAmount.toLocaleString()}\n最终价格: ¥${discountedPrice.toLocaleString()}`
 
             currentResult = {
                 originalPrice,
@@ -63,7 +72,7 @@ export const calculatePriceWithPolicies = (
                 discountAmount,
                 discountRatio,
                 appliedPolicy: policy,
-                calculationDetails: `按${discountRatio}%计费`
+                calculationDetails: fullCalculationDetails
             }
         } else if (policy.type === 'tiered_discount' && policy.tierSettings) {
             // 阶梯折扣 - 分段计算
@@ -159,7 +168,7 @@ const calculateTieredDiscount = (
             } else {
                 tierRange = `第${startQuantity}-${endQuantity}${unit}`
             }
-            calculationDetails += `${tierRange}按${discountRatio}%计费: ¥${tierDiscountedPrice.toLocaleString()}<br/>`
+            calculationDetails += `${tierRange}按${discountRatio}%计费: ¥${tierDiscountedPrice.toLocaleString()}\n`
             remainingQuantity -= tierQuantityApplicable // 更新剩余数量
         }
     }
@@ -167,12 +176,15 @@ const calculateTieredDiscount = (
     const discountAmount = originalPrice - totalDiscountedPrice
     totalDiscountRatio = ((originalPrice - totalDiscountedPrice) / originalPrice) * 100
 
+    // 构建完整的计算详情，包含汇总信息
+    const fullCalculationDetails = `计费方式:\n${calculationDetails.trim()}\n\n原价: ¥${originalPrice.toLocaleString()}\n优惠金额: ¥${discountAmount.toLocaleString()}\n最终价格: ¥${totalDiscountedPrice.toLocaleString()}`
+
     return {
         originalPrice,
         discountedPrice: totalDiscountedPrice,
         discountAmount,
         discountRatio: 100 - totalDiscountRatio, // 计费比例
         appliedPolicy: policy,
-        calculationDetails: calculationDetails.trim()
+        calculationDetails: fullCalculationDetails
     }
 }

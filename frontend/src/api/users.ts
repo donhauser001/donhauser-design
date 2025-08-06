@@ -57,15 +57,15 @@ export const getUsers = async (params: UserQueryParams = {}): Promise<UserListRe
  */
 export const getEmployees = async (): Promise<{ success: boolean; data: User[] }> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/users`, { 
-      params: { 
+    const response = await axios.get(`${API_BASE_URL}/users`, {
+      params: {
         status: 'active',
         limit: 100
-      } 
+      }
     })
-    // 过滤出员工和系统管理员
-    const employees = response.data.data.filter((user: User) => 
-      user.role === '员工' || user.role === '超级管理员'
+    // 过滤出员工、系统管理员和设计师
+    const employees = response.data.data.filter((user: User) =>
+      user.role === '员工' || user.role === '超级管理员' || user.role === '设计师'
     )
     return {
       success: true,

@@ -1,5 +1,6 @@
 import { OrderVersion, IOrderVersion } from '../models/OrderVersion'
 import { convertToRMB } from '../utils/rmbConverter'
+import { calculatePriceWithPolicies } from '../utils/pricePolicyCalculator'
 
 export class OrderVersionService {
     /**
@@ -19,6 +20,8 @@ export class OrderVersionService {
         policies: any[]
         createdBy: string
     }): Promise<IOrderVersion> {
+        console.log('开始创建订单版本，输入数据:', versionData)
+
         const {
             orderId,
             clientId,
@@ -37,6 +40,7 @@ export class OrderVersionService {
         // 获取当前订单的最新版本号
         const latestVersion = await this.getLatestVersionNumber(orderId)
         const newVersionNumber = latestVersion + 1
+        console.log(`订单 ${orderId} 当前最新版本: ${latestVersion}, 新版本号: ${newVersionNumber}`)
 
         // 生成版本数据
         const versionSnapshot = this.generateVersionSnapshot({
@@ -52,6 +56,31 @@ export class OrderVersionService {
             policies
         })
 
+        console.log('生成的版本快照:', versionSnapshot)
+
+        // 详细输出价格政策信息用于调试
+        if (versionSnapshot.items) {
+            versionSnapshot.items.forEach((item, index) => {
+                console.log(`🔍 项目 ${index + 1} - ${item.serviceName}:`)
+                console.log(`  数量: ${item.quantity}${item.unit}`)
+                console.log(`  单价: ¥${item.unitPrice}`)
+                console.log(`  原价: ¥${item.originalPrice}`)
+                console.log(`  折后价: ¥${item.discountedPrice}`)
+                console.log(`  优惠: ¥${item.discountAmount}`)
+                console.log(`  价格政策数量:`, item.pricingPolicies?.length || 0)
+                if (item.pricingPolicies && item.pricingPolicies.length > 0) {
+                    item.pricingPolicies.forEach((policy, pIndex) => {
+                        console.log(`    政策 ${pIndex + 1}: ${policy.policyName}`)
+                        console.log(`    政策类型: ${policy.policyType}`)
+                        console.log(`    计算详情: ${policy.calculationDetails}`)
+                    })
+                } else {
+                    console.log(`    ❌ 无价格政策应用`)
+                }
+                console.log('---')
+            })
+        }
+
         // 创建版本记录
         const orderVersion = new OrderVersion({
             orderId,
@@ -61,7 +90,10 @@ export class OrderVersionService {
             createdBy
         })
 
-        return await orderVersion.save()
+        const savedVersion = await orderVersion.save()
+        console.log('订单版本保存成功:', savedVersion)
+
+        return savedVersion
     }
 
     /**
@@ -69,7 +101,7 @@ export class OrderVersionService {
      */
     async getOrderVersions(orderId: string): Promise<IOrderVersion[]> {
         return await OrderVersion.find({ orderId })
-            .sort({ versionNumber: -1 })
+            .sort({ updatedAt: -1 })
             .exec()
     }
 
@@ -146,31 +178,62 @@ export class OrderVersionService {
             const serviceId = service._id || service.id
             const unitPrice = service.unitPrice || 0
             const quantity = service.quantity || 1
+            const unit = service.unit || '项'
 
-            // 查找应用的价格政策
-            const appliedPolicies = (policies || []).filter(policy =>
-                policy.serviceId === serviceId
-            )
+            // 查找应用的价格政策 - 改进匹配逻辑
+            const appliedPolicies = (policies || []).filter(policy => {
+                // 支持多种数据结构
+                if (policy.serviceId) {
+                    // 如果政策有serviceId字段，直接匹配
+                    return policy.serviceId === serviceId ||
+                        (Array.isArray(policy.serviceId) && policy.serviceId.includes(serviceId))
+                } else if (policy.selectedPolicies) {
+                    // 如果政策有selectedPolicies字段，检查是否包含当前服务
+                    return policy.selectedPolicies.includes(serviceId)
+                }
+                return false
+            })
 
-            // 计算价格
+            // 计算价格 - 使用专业的价格计算工具
             let originalPrice = unitPrice * quantity
             let discountedPrice = originalPrice
             let discountAmount = 0
             let pricingPolicies: any[] = []
 
             if (appliedPolicies.length > 0) {
-                const policy = appliedPolicies[0]
-                const discountRatio = policy.discountRatio || 1
-                discountedPrice = originalPrice * discountRatio
-                discountAmount = originalPrice - discountedPrice
+                // 确保政策有正确的_id字段供价格计算器使用
+                const normalizedPolicies = appliedPolicies.map(policy => ({
+                    ...policy,
+                    _id: policy.policyId || policy._id,
+                    status: 'active' // 确保通过状态检查
+                }))
 
-                pricingPolicies = [{
+                // 使用价格计算工具获取详细的计算结果
+                const selectedPolicyIds = normalizedPolicies.map(p => p._id)
+
+                const calculationResult = calculatePriceWithPolicies(
+                    originalPrice,
+                    quantity,
+                    normalizedPolicies,
+                    selectedPolicyIds,
+                    unit
+                )
+
+                discountedPrice = calculationResult.discountedPrice
+                discountAmount = calculationResult.discountAmount
+
+                // 为每个应用的政策生成详细信息，并进行去重
+                const uniqueAppliedPolicies = appliedPolicies.filter((policy, index, self) =>
+                    index === self.findIndex(p => (p.policyId || p._id) === (policy.policyId || policy._id))
+                )
+
+                pricingPolicies = uniqueAppliedPolicies.map(policy => ({
                     policyId: policy.policyId || policy._id,
                     policyName: policy.name || policy.policyName,
-                    policyType: policy.type || 'uniform_discount',
-                    discountRatio: discountRatio,
-                    calculationDetails: `应用政策: ${policy.name || policy.policyName}`
-                }]
+                    policyType: policy.type || policy.policyType || 'uniform_discount',
+                    discountRatio: policy.discountRatio || 0,
+                    calculationDetails: calculationResult.calculationDetails || `应用政策: ${policy.name || policy.policyName}`
+                }))
             }
 
             return {
@@ -178,20 +241,20 @@ export class OrderVersionService {
                 serviceName: service.serviceName || service.name,
                 categoryName: service.categoryName || '',
                 unitPrice,
-                unit: service.unit || '项',
+                unit,
                 quantity,
                 originalPrice,
                 discountedPrice,
                 discountAmount,
                 subtotal: discountedPrice,
-                priceDescription: service.priceDescription || '',
+                priceDescription: (service.priceDescription || '').replace(/<br\s*\/?>/gi, '\n'),
                 pricingPolicies
             }
         })
 
         // 计算总金额
         const totalAmount = items.reduce((sum, item) => sum + item.subtotal, 0)
-        const totalAmountRMB = convertToRMB(totalAmount)
+        const totalAmountRMB = convertToRMB(totalAmount, true)
 
         // 计算摘要
         const totalItems = items.length

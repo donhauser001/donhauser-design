@@ -82,7 +82,9 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   const [pageSize] = useState(5)
   const [searchKeyword, setSearchKeyword] = useState('')
   const [selectedOrderVersion, setSelectedOrderVersion] = useState<{ orderId: string; version: number } | null>(null)
+  const [selectedVersionData, setSelectedVersionData] = useState<any>(null)
   const [taskSpecifications, setTaskSpecifications] = useState<Record<string, Specification>>({})
+  const [orderVersionsMap, setOrderVersionsMap] = useState<Record<string, any[]>>({})
   const [employees, setEmployees] = useState<User[]>([])
   const [employeesLoading, setEmployeesLoading] = useState(false)
   const [enterprises, setEnterprises] = useState<Enterprise[]>([])
@@ -144,6 +146,64 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     }
   }
 
+  // 获取订单版本数据
+  const fetchOrderVersionData = async (orderId: string, version: number) => {
+    try {
+      console.log('🔄 开始获取订单版本数据:', orderId, '版本:', version)
+
+      // 直接从OrderVersion API获取
+      const response = await fetch(`/api/order-versions/${orderId}`)
+      if (response.ok) {
+        const data = await response.json()
+        console.log('📦 API返回数据:', data)
+
+        if (data.success && data.data.length > 0) {
+          // 找到对应版本的数据
+          const versionData = data.data.find((v: any) => v.versionNumber === version)
+          if (versionData) {
+            console.log('✅ 找到版本数据:', versionData)
+            setSelectedVersionData(versionData)
+            console.log('🔄 已设置 selectedVersionData')
+            return
+          } else {
+            console.log('❌ 未找到指定版本:', version, '可用版本:', data.data.map((v: any) => v.versionNumber))
+          }
+        } else {
+          console.log('❌ API返回数据为空或失败')
+        }
+      } else {
+        console.log('❌ API请求失败:', response.status)
+      }
+
+      // 如果都找不到，使用当前版本作为默认
+      console.log('⚠️ 使用当前版本作为默认')
+      setSelectedVersionData({
+        items: [],
+        contactNames: selectedOrder?.contactNames || []
+      })
+    } catch (error) {
+      console.error('❌ 获取订单版本数据失败:', error)
+      message.error('获取订单版本数据失败')
+    }
+  }
+
+  // 获取订单的所有版本
+  const fetchOrderVersions = async (orderId: string) => {
+    try {
+      const response = await fetch(`/api/order-versions/${orderId}`)
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.data.length > 0) {
+          return data.data.sort((a: any, b: any) => b.versionNumber - a.versionNumber)
+        }
+      }
+      return []
+    } catch (error) {
+      console.error('获取订单版本失败:', error)
+      return []
+    }
+  }
+
   useEffect(() => {
     if (visible && currentStep === 0) {
       fetchOrders()
@@ -157,12 +217,23 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     }
   }, [visible, currentStep])
 
+  // 当进入第二步且没有版本数据时，自动获取
+  useEffect(() => {
+    console.log('🔄 useEffect 触发，当前步骤:', currentStep, 'selectedOrder:', !!selectedOrder, 'selectedOrderVersion:', !!selectedOrderVersion, 'selectedVersionData:', !!selectedVersionData)
+
+    if (currentStep === 1 && selectedOrder && selectedOrderVersion && !selectedVersionData) {
+      console.log('🔄 进入第二步，自动获取版本数据')
+      fetchOrderVersionData(selectedOrder._id, selectedOrderVersion.version)
+    }
+  }, [currentStep, selectedOrder, selectedOrderVersion, selectedVersionData])
+
   // 当模态窗打开时重置表单
   useEffect(() => {
     if (visible) {
       setCurrentStep(0)
       setSelectedOrder(null)
       setSelectedOrderVersion(null)
+      setSelectedVersionData(null)
       setTaskSpecifications({})
       form.resetFields()
     }
@@ -245,18 +316,43 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         const isSelected = selectedOrder?._id === record._id
         const isCancelled = record.status === 'cancelled'
 
-        // 生成版本菜单项（新版本在前）
-        const versionMenuItems = record.snapshots
-          .sort((a, b) => b.version - a.version) // 按版本号降序排列
-          .map((snapshot, index) => ({
-            key: `${record._id}-${snapshot.version}`,
-            label: `v${snapshot.version}.0 (${new Date(snapshot.createdAt).toLocaleDateString()})`,
-            onClick: () => {
-              setSelectedOrder(record)
-              setSelectedOrderVersion({ orderId: record._id, version: snapshot.version })
-              message.success(`已选择 ${record.projectName} v${snapshot.version}.0`)
+        // 生成版本菜单项
+        const handleVersionSelect = async (versionNumber: number) => {
+          setSelectedOrder(record)
+          setSelectedOrderVersion({ orderId: record._id, version: versionNumber })
+          fetchOrderVersionData(record._id, versionNumber)
+          message.success(`已选择 ${record.projectName} v${versionNumber}.0`)
+        }
+
+        // 获取该订单的版本列表
+        const orderVersions = orderVersionsMap[record._id] || []
+
+        // 如果还没有获取过版本，自动获取
+        if (orderVersions.length === 0) {
+          fetchOrderVersions(record._id).then(versions => {
+            if (versions.length > 0) {
+              setOrderVersionsMap(prev => ({
+                ...prev,
+                [record._id]: versions
+              }))
             }
+          })
+        }
+
+        // 生成版本菜单项
+        const versionMenuItems = orderVersions.length > 0
+          ? orderVersions.map((version: any) => ({
+            key: `${record._id}-${version.versionNumber}`,
+            label: `v${version.versionNumber}.0 (${new Date(version.createdAt).toLocaleDateString()})`,
+            onClick: () => handleVersionSelect(version.versionNumber)
           }))
+          : [
+            {
+              key: 'loading',
+              label: '加载中...',
+              disabled: true
+            }
+          ]
 
         const menu = {
           items: versionMenuItems
@@ -320,12 +416,14 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       }
 
       // 规格验证（非必填）
-      const selectedSnapshot = selectedOrder.snapshots.find(s => s.version === selectedOrderVersion.version)
-      if (selectedSnapshot) {
-        const missingSpecs = selectedSnapshot.items.filter(item => !taskSpecifications[item.serviceId])
+      if (selectedVersionData && selectedVersionData.items) {
+        const missingSpecs = selectedVersionData.items.filter((item: any) => !taskSpecifications[item.serviceId])
         if (missingSpecs.length > 0) {
+          console.log('⚠️ 以下任务未选择规格:', missingSpecs.map((item: any) => item.serviceName))
           // 不再阻止提交，只是记录日志
         }
+      } else {
+        console.log('⚠️ 没有版本数据或任务数据')
       }
 
       // 验证必填字段
@@ -340,7 +438,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       }
 
       // 构建任务数据，包含完整的任务信息和规格
-      const relatedTasks = selectedSnapshot ? selectedSnapshot.items.map(item => ({
+      const relatedTasks = selectedVersionData && selectedVersionData.items ? selectedVersionData.items.map((item: any) => ({
         serviceId: item.serviceId,
         serviceName: item.serviceName,
         quantity: item.quantity,
@@ -348,6 +446,9 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         subtotal: item.subtotal,
         specification: taskSpecifications[item.serviceId] || null // 如果没有规格则为null
       })) : []
+
+      console.log('🔄 构建项目数据，任务数量:', relatedTasks.length)
+      console.log('🔄 任务数据:', relatedTasks)
 
       const projectData = {
         projectName: selectedOrder.projectName,
@@ -376,6 +477,8 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   }
 
   const renderStepContent = () => {
+    console.log('🔄 renderStepContent 被调用，当前步骤:', currentStep)
+
     switch (currentStep) {
       case 0:
         return (
@@ -423,7 +526,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                     </div>
                     <div>
                       <Text strong>联系人：</Text>
-                      <Text>{selectedOrder.contactNames?.join(', ') || '无'}</Text>
+                      <Text>{(selectedVersionData?.contactNames || selectedOrder.contactNames)?.join(', ') || '无'}</Text>
                     </div>
                     <div>
                       <Text strong>订单版本：</Text>
@@ -436,10 +539,17 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   </div>
                 </Card>
 
-                <Card>
+                <Card title="任务规格确认">
                   {(() => {
-                    const selectedSnapshot = selectedOrder.snapshots.find(s => s.version === selectedOrderVersion.version)
-                    if (!selectedSnapshot) return <Text type="secondary">未找到对应版本信息</Text>
+                    console.log('🔍 渲染任务规格确认，当前步骤:', currentStep, 'selectedVersionData:', selectedVersionData)
+
+                    if (!selectedVersionData) {
+                      return <Text type="secondary">正在加载版本信息...</Text>
+                    }
+
+                    if (!selectedVersionData.items || selectedVersionData.items.length === 0) {
+                      return <Text type="secondary">该版本没有任务信息</Text>
+                    }
 
                     return (
                       <Table
@@ -504,7 +614,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                             render: (subtotal: number) => `¥${subtotal.toLocaleString()}`
                           }
                         ]}
-                        dataSource={selectedSnapshot.items}
+                        dataSource={selectedVersionData.items}
                         rowKey={(record) => `${record.serviceId}`}
                         pagination={false}
                         size="small"
@@ -540,9 +650,8 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                 </Descriptions.Item>
                 <Descriptions.Item label="联系人">
                   {(() => {
-                    // 优先使用快照中的联系人信息
-                    const selectedSnapshot = selectedOrder?.snapshots.find(s => s.version === selectedOrderVersion?.version)
-                    const contactNames = selectedSnapshot?.clientInfo?.contactNames || selectedOrder?.contactNames
+                    // 优先使用版本数据中的联系人信息
+                    const contactNames = selectedVersionData?.contactNames || selectedOrder?.contactNames
                     return contactNames?.join(', ') || '无'
                   })()}
                 </Descriptions.Item>
@@ -582,8 +691,15 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
             <Card title="任务规格确认">
               {(() => {
-                const selectedSnapshot = selectedOrder?.snapshots.find(s => s.version === selectedOrderVersion?.version)
-                if (!selectedSnapshot) return <Text type="secondary">未找到对应版本信息</Text>
+                console.log('🔍 渲染任务规格确认，当前步骤:', currentStep, 'selectedVersionData:', selectedVersionData)
+
+                if (!selectedVersionData) {
+                  return <Text type="secondary">正在加载版本信息...</Text>
+                }
+
+                if (!selectedVersionData.items || selectedVersionData.items.length === 0) {
+                  return <Text type="secondary">该版本没有任务信息</Text>
+                }
 
                 return (
                   <Table
@@ -629,7 +745,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                         render: (subtotal: number) => `¥${subtotal.toLocaleString()}`
                       }
                     ]}
-                    dataSource={selectedSnapshot.items}
+                    dataSource={selectedVersionData.items}
                     rowKey={(record) => `${record.serviceId}`}
                     pagination={false}
                     size="small"
@@ -756,7 +872,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               >
                 {employees.map((employee, index) => (
                   <Option key={employee._id || `employee-${index}`} value={employee._id}>
-                    {employee.realName} ({employee.department}) - {employee.role}
+                    {employee.realName} ({employee.department})
                   </Option>
                 ))}
               </Select>
@@ -778,7 +894,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               >
                 {employees.map((employee, index) => (
                   <Option key={employee._id || `employee-${index}`} value={employee._id}>
-                    {employee.realName} ({employee.department}) - {employee.role}
+                    {employee.realName} ({employee.department})
                   </Option>
                 ))}
               </Select>

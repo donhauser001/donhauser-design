@@ -84,11 +84,16 @@ const StepThree: React.FC<StepThreeProps> = ({
       key: 'pricingPolicies',
       width: 200,
       render: (_: any, record: ServiceDetail) => {
-        // 获取该服务关联的价格政策，如果没有关联政策则显示所有政策
+        // 获取该服务关联的价格政策
         const servicePolicyIds = record.pricingPolicyIds || []
-        const availablePolicies = servicePolicyIds.length > 0
-          ? policies.filter(policy => servicePolicyIds.includes(policy._id))
-          : policies
+
+        // 如果服务项目没有关联的价格政策，显示"无政策"
+        if (servicePolicyIds.length === 0) {
+          return <span style={{ color: '#999' }}>无政策</span>
+        }
+
+        // 获取该服务关联的价格政策
+        const availablePolicies = policies.filter(policy => servicePolicyIds.includes(policy._id))
 
         if (availablePolicies.length === 0) {
           return <span style={{ color: '#999' }}>无可用政策</span>
@@ -197,10 +202,10 @@ const StepThree: React.FC<StepThreeProps> = ({
           <Tooltip title={description.replace(/<br\/?>/g, '\n')}>
             <div style={{
               maxWidth: 180,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              fontSize: '12px'
+              fontSize: '12px',
+              lineHeight: '1.4',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word'
             }}
               dangerouslySetInnerHTML={{ __html: description || '无描述' }}
             />

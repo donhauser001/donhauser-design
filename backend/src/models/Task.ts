@@ -4,7 +4,7 @@ export interface ITask extends Document {
     taskName: string;
     serviceId: string;
     projectId: string;
-    orderId: string;
+    orderId?: string; // 改为可选
     assignedDesigners: string[]; // 分配的设计师ID数组
     specification?: {
         id: string;
@@ -34,7 +34,7 @@ const TaskSchema = new Schema<ITask>({
     taskName: { type: String, required: true },
     serviceId: { type: String, required: true },
     projectId: { type: String, required: true },
-    orderId: { type: String, required: true },
+    orderId: { type: String, required: false }, // 改为可选，因为有些任务可能不直接关联订单
     assignedDesigners: [{ type: String }],
     specification: {
         type: {

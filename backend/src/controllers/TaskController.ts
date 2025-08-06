@@ -17,11 +17,34 @@ export class TaskController {
                 data: task,
                 message: '任务创建成功'
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error('创建任务失败:', error);
-            res.status(500).json({
+            
+            // 提供更详细的错误信息
+            let errorMessage = '创建任务失败';
+            let statusCode = 500;
+            
+            if (error.name === 'ValidationError') {
+                // Mongoose 验证错误
+                statusCode = 400;
+                const validationErrors = Object.values(error.errors).map((err: any) => err.message);
+                errorMessage = `数据验证失败: ${validationErrors.join(', ')}`;
+            } else if (error.name === 'CastError') {
+                // Mongoose 类型转换错误
+                statusCode = 400;
+                errorMessage = `数据类型错误: ${error.message}`;
+            } else if (error.code === 11000) {
+                // MongoDB 重复键错误
+                statusCode = 409;
+                errorMessage = '任务已存在，请检查任务名称';
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            res.status(statusCode).json({
                 success: false,
-                message: '创建任务失败'
+                message: errorMessage,
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
             });
         }
     };

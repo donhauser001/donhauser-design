@@ -1,3 +1,34 @@
+import mongoose, { Document } from 'mongoose';
+export interface IUser extends Document {
+    username: string;
+    password?: string;
+    email: string;
+    phone: string;
+    realName: string;
+    role: '超级管理员' | '项目经理' | '设计师' | '客户' | '员工';
+    department: string;
+    status: 'active' | 'inactive';
+    createTime: string;
+    lastLogin?: string;
+    enterpriseId?: string;
+    enterpriseName?: string;
+    departmentId?: string;
+    departmentName?: string;
+    position?: string;
+    company?: string;
+    contactPerson?: string;
+    address?: string;
+    shippingMethod?: string;
+    description?: string;
+    permissions?: string[];
+    permissionGroups?: string[];
+}
+declare const _default: mongoose.Model<IUser, {}, {}, {}, mongoose.Document<unknown, {}, IUser, {}, {}> & IUser & Required<{
+    _id: unknown;
+}> & {
+    __v: number;
+}, any>;
+export default _default;
 export interface User {
     id: string;
     username: string;

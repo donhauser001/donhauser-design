@@ -37,7 +37,7 @@ export interface CreateTaskRequest {
     taskName: string
     serviceId: string
     projectId: string
-    orderId: string
+    orderId?: string // 改为可选
     assignedDesigners: string[]
     specification?: {
         id: string
@@ -114,9 +114,30 @@ export const createTask = async (data: CreateTaskRequest) => {
     try {
         const response = await axios.post(`${API_BASE_URL}/tasks`, data)
         return response.data
-    } catch (error) {
+    } catch (error: any) {
         console.error('创建任务失败:', error)
-        throw error
+        
+        // 提取更详细的错误信息
+        let errorMessage = '创建任务失败'
+        
+        if (error.response) {
+            // 服务器返回了错误响应
+            const status = error.response.status
+            const serverMessage = error.response.data?.message || error.response.data?.error || '服务器错误'
+            errorMessage = `创建任务失败 (${status}): ${serverMessage}`
+        } else if (error.request) {
+            // 请求已发出但没有收到响应
+            errorMessage = '创建任务失败: 无法连接到服务器'
+        } else {
+            // 其他错误
+            errorMessage = `创建任务失败: ${error.message || '未知错误'}`
+        }
+        
+        // 创建一个新的错误对象，包含详细信息
+        const detailedError = new Error(errorMessage)
+        detailedError.name = 'TaskCreationError'
+        
+        throw detailedError
     }
 }
 

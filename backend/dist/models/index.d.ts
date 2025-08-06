@@ -3,6 +3,14 @@ export * from './Enterprise';
 export * from './Department';
 export * from './Permission';
 export * from './Role';
+export * from './ServiceProcess';
+export * from './AdditionalConfig';
+export * from './PricingPolicy';
+export * from './ServicePricing';
+export * from './Quotation';
+export * from './OrderVersion';
+export * from './Specification';
+export * from './Project';
 export interface Project {
     id: string;
     name: string;

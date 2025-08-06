@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Modal, Descriptions, Table, Typography, Card, Space, Dropdown, Button } from 'antd'
+import { Modal, Descriptions, Table, Typography, Card, Space, Dropdown, Button, Spin } from 'antd'
 import { DownOutlined } from '@ant-design/icons'
 import { Order } from '../../../api/orders'
-import { calculatePriceWithPolicies, formatCalculationDetails } from '../../../components/PricePolicyCalculator'
+import { getOrderVersions, OrderVersion } from '../../../api/orderVersions'
 
 const { Title, Text } = Typography
 
@@ -28,69 +28,91 @@ interface OrderItem {
 }
 
 const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose }) => {
-    if (!order) return null
-
-    // 版本选择状态：默认选择最后一个版本（索引-1表示使用最后一个）
     const [selectedVersionIndex, setSelectedVersionIndex] = useState<number>(-1)
+    const [orderVersions, setOrderVersions] = useState<OrderVersion[]>([])
+    const [loading, setLoading] = useState(false)
 
-    // 获取所有快照数据
-    const snapshots = order.snapshots || []
-
-    // 重置版本选择当订单改变时
     useEffect(() => {
-        setSelectedVersionIndex(-1) // 默认选择最后一个版本
-    }, [order._id])
-
-    // 根据选中的版本获取数据
-    const getSelectedSnapshot = () => {
-        if (snapshots.length === 0) return null
-        if (selectedVersionIndex === -1) {
-            // 选择最后一个版本
-            return snapshots[snapshots.length - 1]
+        setSelectedVersionIndex(-1)
+        if (visible && order?._id) {
+            fetchOrderVersions()
         }
-        return snapshots[selectedVersionIndex] || null
+    }, [visible, order?._id])
+
+    const fetchOrderVersions = async () => {
+        if (!order?._id) return
+
+        setLoading(true)
+        try {
+            const response = await getOrderVersions(order._id)
+            if (response.success) {
+                setOrderVersions(response.data)
+            }
+        } catch (error) {
+            console.error('获取订单版本失败:', error)
+        } finally {
+            setLoading(false)
+        }
     }
 
-    const selectedSnapshot = getSelectedSnapshot()
+    const getSelectedVersion = () => {
+        if (orderVersions.length === 0) return null
+        if (selectedVersionIndex === -1) {
+            // 返回版本号最大的版本作为最新版本
+            return orderVersions.reduce((latest, current) =>
+                current.versionNumber > latest.versionNumber ? current : latest
+            )
+        }
+        return orderVersions[selectedVersionIndex] || null
+    }
 
-    // 使用选中版本的数据，如果没有快照则使用订单基本数据
-    const displayData = selectedSnapshot ? {
-        clientName: selectedSnapshot.clientInfo.clientName,
-        contactNames: selectedSnapshot.clientInfo.contactNames,
-        contactPhones: selectedSnapshot.clientInfo.contactPhones,
-        projectName: selectedSnapshot.projectInfo.projectName,
-        totalAmount: selectedSnapshot.totalAmount,
-        totalAmountRMB: selectedSnapshot.totalAmountRMB,
-        items: selectedSnapshot.items,
-        version: selectedSnapshot.version,
-        createdAt: selectedSnapshot.createdAt
+    const selectedVersion = getSelectedVersion()
+
+    const displayData = selectedVersion ? {
+        clientName: selectedVersion.clientName,
+        contactNames: selectedVersion.contactNames,
+        contactPhones: selectedVersion.contactPhones,
+        projectName: selectedVersion.projectName,
+        totalAmount: selectedVersion.totalAmount,
+        totalAmountRMB: selectedVersion.totalAmountRMB,
+        items: selectedVersion.items,
+        version: selectedVersion.versionNumber,
+        createdAt: selectedVersion.createdAt
     } : {
-        clientName: order.clientName,
-        contactNames: order.contactNames,
-        contactPhones: order.contactPhones,
-        projectName: order.projectName,
-        totalAmount: order.currentAmount,
-        totalAmountRMB: order.currentAmountRMB,
+        clientName: order?.clientName || '',
+        contactNames: order?.contactNames || [],
+        contactPhones: order?.contactPhones || [],
+        projectName: order?.projectName || '',
+        totalAmount: order?.currentAmount || 0,
+        totalAmountRMB: order?.currentAmountRMB || '',
         items: [],
-        version: order.currentVersion,
-        createdAt: order.createTime
+        version: order?.currentVersion || 0,
+        createdAt: order?.createTime || ''
     }
 
-    // 创建版本菜单项（按时间倒序：最新在前）
-    const versionMenuItems = snapshots
-        .map((snapshot, index) => ({
-            key: index.toString(),
-            label: index === snapshots.length - 1
-                ? `v${snapshot.version} (最新)`
-                : `v${snapshot.version}`,
-            onClick: () => setSelectedVersionIndex(index === snapshots.length - 1 ? -1 : index)
-        }))
-        .reverse() // 倒序，最新版本在顶部
+    const versionMenuItems = orderVersions
+        .map((version, index) => {
+            // 找到版本号最大的作为最新版本
+            const maxVersionNumber = Math.max(...orderVersions.map(v => v.versionNumber))
+            const isLatest = version.versionNumber === maxVersionNumber
 
-    // 判断是否只有一个版本
-    const hasMultipleVersions = snapshots.length > 1
+            return {
+                key: index.toString(),
+                label: isLatest
+                    ? `v${version.versionNumber} (最新)`
+                    : `v${version.versionNumber}`,
+                onClick: () => setSelectedVersionIndex(isLatest ? -1 : index)
+            }
+        })
+        .sort((a, b) => {
+            // 按版本号降序排序，最新版本在最前面
+            const versionA = parseInt(a.label.match(/v(\d+)/)?.[1] || '0')
+            const versionB = parseInt(b.label.match(/v(\d+)/)?.[1] || '0')
+            return versionB - versionA
+        })
 
-    // 格式化时间显示
+    const hasMultipleVersions = orderVersions.length > 1
+
     const formatTime = (time: string | Date) => {
         if (!time) return '-'
         const date = new Date(time)
@@ -106,7 +128,6 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
         })
     }
 
-    // 服务项目表格列定义
     const itemColumns = [
         {
             title: '服务名称',
@@ -137,7 +158,9 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 if (!policies || policies.length === 0) {
                     return <Text type="secondary">无政策</Text>
                 }
-                return policies.map(policy => policy.policyName).join('、')
+                // 去重政策名称，避免重复显示
+                const uniquePolicyNames = [...new Set(policies.map(policy => policy.policyName))]
+                return uniquePolicyNames.join('、')
             }
         },
         {
@@ -159,86 +182,33 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                 let description = desc || ''
                 let calculationDetails = ''
 
-                // 如果有价格政策，生成详细的计算信息
                 if (record.pricingPolicies && record.pricingPolicies.length > 0) {
                     const originalPrice = (record.unitPrice || 0) * (record.quantity || 1)
 
-                    // 对于查看订单详情，优先使用快照中保存的详细计算结果
-                    // 因为快照中包含了当时完整的计算过程和结果
-                    const policyDetailsArray = record.pricingPolicies.map(policy => {
+                    // 去重政策，避免重复显示
+                    const uniquePolicies = record.pricingPolicies.filter((policy, index, self) => 
+                        index === self.findIndex(p => p.policyName === policy.policyName)
+                    )
+
+                    const policyDetailsArray = uniquePolicies.map(policy => {
                         if (policy.calculationDetails) {
-                            // 如果有预保存的计算详情，直接使用
                             return policy.calculationDetails
                         } else {
-                            // 否则尝试重新计算（主要用于统一折扣政策）
-                            try {
-                                const mockPolicy = {
-                                    _id: policy.policyName,
-                                    name: policy.policyName,
-                                    type: (policy.policyType === 'tiered_discount' || policy.policyType === 'uniform_discount')
-                                        ? policy.policyType as 'tiered_discount' | 'uniform_discount'
-                                        : 'uniform_discount' as 'uniform_discount',
-                                    discountRatio: policy.discountRatio,
-                                    status: 'active' as 'active',
-                                    alias: '',
-                                    summary: '',
-                                    validUntil: new Date().toISOString(),
-                                    createTime: new Date().toISOString(),
-                                    updateTime: new Date().toISOString()
-                                }
-
-                                const calculationResult = calculatePriceWithPolicies(
-                                    originalPrice,
-                                    record.quantity || 1,
-                                    [mockPolicy],
-                                    [policy.policyName],
-                                    record.unit || '件'
-                                )
-
-                                if (calculationResult.appliedPolicy) {
-                                    return formatCalculationDetails(calculationResult)
-                                }
-                            } catch (error) {
-                                console.warn('重新计算失败:', error)
-                            }
-                            // 最后的备用方案
-                            return `${policy.policyName}: 按${policy.discountRatio}%计费`
+                            const discountAmount = originalPrice * (1 - policy.discountRatio)
+                            return `${policy.policyName}: 原价¥${originalPrice.toLocaleString()}，折扣${(policy.discountRatio * 100).toFixed(0)}%，优惠¥${discountAmount.toLocaleString()}`
                         }
                     })
 
-                    calculationDetails = policyDetailsArray.join('<br/><br/>')
+                    calculationDetails = policyDetailsArray.join('\n')
                 }
 
                 return (
-                    <div>
-                        {description && (
-                            <div style={{
-                                marginBottom: 8,
-                                fontSize: '14px',
-                                lineHeight: 1.4,
-                                color: '#000'
-                            }}>
-                                {description}
-                            </div>
-                        )}
+                    <div style={{ fontSize: '12px', lineHeight: '1.4' }}>
+                        {description && <div style={{ marginBottom: '4px' }}>{description.replace(/<br\s*\/?>/gi, '\n')}</div>}
                         {calculationDetails && (
-                            <div
-                                style={{
-                                    fontSize: '14px',
-                                    lineHeight: 1.4,
-                                    color: '#000'
-                                }}
-                                dangerouslySetInnerHTML={{ __html: calculationDetails }}
-                            />
-                        )}
-                        {!description && !calculationDetails && (
-                            <span style={{
-                                fontSize: '14px',
-                                lineHeight: 1.4,
-                                color: '#000'
-                            }}>
-                                -
-                            </span>
+                            <div style={{ color: '#666', whiteSpace: 'pre-line' }}>
+                                {calculationDetails.replace(/<br\s*\/?>/gi, '\n')}
+                            </div>
                         )}
                     </div>
                 )
@@ -246,87 +216,90 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
         }
     ]
 
+    const renderVersionSelector = () => {
+        if (hasMultipleVersions) {
+            return (
+                <Dropdown menu={{ items: versionMenuItems }} placement="bottomRight">
+                    <Button
+                        type="text"
+                        size="small"
+                        style={{
+                            padding: '4px 8px',
+                            border: '1px solid #d9d9d9',
+                            borderRadius: '6px',
+                            backgroundColor: '#fafafa',
+                            color: '#1890ff',
+                            fontSize: '12px',
+                            fontWeight: 500,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            lineHeight: 1.2
+                        }}
+                    >
+                        切换版本
+                        <DownOutlined style={{
+                            marginLeft: 4,
+                            fontSize: 10,
+                            color: '#1890ff'
+                        }} />
+                    </Button>
+                </Dropdown>
+            )
+        }
+
+        return (
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+                (仅有1个版本)
+            </Text>
+        )
+    }
+
+    if (!order) {
+        return (
+            <Modal
+                title="订单详情"
+                open={visible}
+                onCancel={onClose}
+                width={1000}
+                footer={null}
+                destroyOnHidden
+            >
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                    <Text type="secondary">订单数据不存在</Text>
+                </div>
+            </Modal>
+        )
+    }
+
     return (
         <Modal
-            title={`订单详情 - v${displayData.version}${selectedVersionIndex === -1 ? ' (最新)' : ''}${order.status === 'cancelled' ? ' (已取消)' : ''}`}
+            title={`订单详情 - v${displayData.version}${selectedVersionIndex === -1 ? ' (最新)' : ''}${order?.status === 'cancelled' ? ' (已取消)' : ''}`}
             open={visible}
             onCancel={onClose}
+            width={1000}
             footer={null}
-            width={1200}
-            styles={{
-                body: { maxHeight: '70vh', overflowY: 'auto' }
-            }}
+            destroyOnHidden
         >
             <Space direction="vertical" size="large" style={{ width: '100%' }}>
-                {/* 订单信息 */}
                 <Card>
-                    <Title level={5}>订单信息</Title>
+                    <Title level={5} style={{ marginBottom: 16 }}>基本信息</Title>
                     <Descriptions
-                        column={3}
+                        column={2}
                         size="small"
-                        labelStyle={{ textAlign: 'left', width: '100px' }}
-                        contentStyle={{ textAlign: 'left' }}
+                        styles={{
+                            label: { fontWeight: 'bold', color: '#666' },
+                            content: { textAlign: 'left' }
+                        }}
                     >
-                        <Descriptions.Item label="订单号">{order.orderNo}</Descriptions.Item>
+                        <Descriptions.Item label="订单号">{order?.orderNo}</Descriptions.Item>
                         <Descriptions.Item label="状态">
-                            {order.status === 'normal' ? '正常' : '已取消'}
+                            {order?.status === 'normal' ? '正常' : '已取消'}
                         </Descriptions.Item>
                         <Descriptions.Item label="当前版本">
-                            {hasMultipleVersions ? (
-                                <Dropdown
-                                    menu={{ items: versionMenuItems }}
-                                    trigger={['click']}
-                                    placement="bottomLeft"
-                                >
-                                    <Button
-                                        size="small"
-                                        style={{
-                                            padding: '4px 8px',
-                                            height: 'auto',
-                                            border: '1px solid #d9d9d9',
-                                            borderRadius: '6px',
-                                            backgroundColor: '#fafafa',
-                                            color: '#262626',
-                                            fontSize: '13px',
-                                            fontWeight: 500,
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s',
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            lineHeight: 1.2
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor = '#f0f0f0'
-                                            e.currentTarget.style.borderColor = '#40a9ff'
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor = '#fafafa'
-                                            e.currentTarget.style.borderColor = '#d9d9d9'
-                                        }}
-                                    >
-                                        v{displayData.version}
-                                        <DownOutlined style={{
-                                            marginLeft: 6,
-                                            fontSize: 10,
-                                            color: '#8c8c8c'
-                                        }} />
-                                    </Button>
-                                </Dropdown>
-                            ) : (
-                                <span style={{
-                                    padding: '4px 8px',
-                                    border: '1px solid #e8e8e8',
-                                    borderRadius: '6px',
-                                    backgroundColor: '#f8f8f8',
-                                    color: '#8c8c8c',
-                                    fontSize: '13px',
-                                    fontWeight: 500,
-                                    display: 'inline-block',
-                                    lineHeight: 1.2
-                                }}>
-                                    v{displayData.version}
-                                </span>
-                            )}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Text>v{displayData.version}</Text>
+                                {renderVersionSelector()}
+                            </div>
                         </Descriptions.Item>
                         <Descriptions.Item label="客户名称">{displayData.clientName}</Descriptions.Item>
                         <Descriptions.Item label="联系人">
@@ -344,7 +317,7 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                             ) : '无'}
                         </Descriptions.Item>
                         <Descriptions.Item label="项目名称">{displayData.projectName}</Descriptions.Item>
-                        <Descriptions.Item label="创建时间">{formatTime(order.createTime)}</Descriptions.Item>
+                        <Descriptions.Item label="创建时间">{formatTime(order?.createTime || '')}</Descriptions.Item>
                         <Descriptions.Item label="更新时间">{formatTime(displayData.createdAt)}</Descriptions.Item>
                         <Descriptions.Item label="总金额">
                             <Text strong>
@@ -354,24 +327,36 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
                     </Descriptions>
                 </Card>
 
-                {/* 服务项目明细 */}
                 <Card>
                     <Title level={5}>服务项目明细</Title>
-                    {displayData.items && displayData.items.length > 0 ? (
+                    {loading ? (
+                        <div style={{ textAlign: 'center', padding: '40px' }}>
+                            <Spin size="large" />
+                            <div style={{ marginTop: 16 }}>
+                                <Text type="secondary">正在加载订单版本数据...</Text>
+                            </div>
+                        </div>
+                    ) : displayData.items && displayData.items.length > 0 ? (
                         <Table
                             columns={itemColumns}
                             dataSource={displayData.items}
-                            rowKey={(record) => `${record.serviceName}-${record.serviceId || Math.random()}`}
+                            rowKey={(record, index) => `${record.serviceName}-${index}`}
                             pagination={false}
                             size="small"
                             scroll={{ x: 800 }}
                         />
                     ) : (
-                        <Text type="secondary">暂无服务项目数据</Text>
+                        <div>
+                            <Text type="secondary">暂无服务项目数据</Text>
+                            <div style={{ marginTop: 8, fontSize: '12px', color: '#999' }}>
+                                调试信息: orderVersions.length={orderVersions.length},
+                                selectedVersion={selectedVersion ? '存在' : '不存在'},
+                                items.length={displayData.items?.length || 0}
+                            </div>
+                        </div>
                     )}
                 </Card>
 
-                {/* 金额汇总 */}
                 <Card>
                     <div style={{ textAlign: 'center' }}>
                         <Space size="large">
@@ -390,4 +375,4 @@ const ViewOrderModal: React.FC<ViewOrderModalProps> = ({ visible, order, onClose
     )
 }
 
-export default ViewOrderModal
+export default ViewOrderModal 

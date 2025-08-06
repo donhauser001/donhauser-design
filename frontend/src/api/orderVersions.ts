@@ -1,5 +1,7 @@
 import axios from 'axios'
 
+const API_BASE_URL = 'http://localhost:3000/api'
+
 // 价格政策快照接口
 export interface PricingPolicySnapshot {
     policyId: string
@@ -94,30 +96,30 @@ export interface OrderVersionDetailResponse {
 
 // 创建订单版本
 export const createOrderVersion = async (versionData: CreateOrderVersionRequest): Promise<OrderVersionDetailResponse> => {
-    const response = await axios.post('/api/order-versions', versionData)
+    const response = await axios.post(`${API_BASE_URL}/order-versions`, versionData)
     return response.data
 }
 
 // 获取订单的所有版本
 export const getOrderVersions = async (orderId: string): Promise<OrderVersionListResponse> => {
-    const response = await axios.get(`/api/order-versions/${orderId}`)
+    const response = await axios.get(`${API_BASE_URL}/order-versions/${orderId}`)
     return response.data
 }
 
 // 获取订单的特定版本
 export const getOrderVersion = async (orderId: string, versionNumber: number): Promise<OrderVersionDetailResponse> => {
-    const response = await axios.get(`/api/order-versions/${orderId}/${versionNumber}`)
+    const response = await axios.get(`${API_BASE_URL}/order-versions/${orderId}/${versionNumber}`)
     return response.data
 }
 
 // 获取订单的最新版本
 export const getLatestOrderVersion = async (orderId: string): Promise<OrderVersionDetailResponse> => {
-    const response = await axios.get(`/api/order-versions/${orderId}/latest`)
+    const response = await axios.get(`${API_BASE_URL}/order-versions/${orderId}/latest`)
     return response.data
 }
 
 // 删除订单的所有版本
 export const deleteOrderVersions = async (orderId: string): Promise<{ success: boolean; message: string }> => {
-    const response = await axios.delete(`/api/order-versions/${orderId}`)
+    const response = await axios.delete(`${API_BASE_URL}/order-versions/${orderId}`)
     return response.data
 } 

@@ -40,35 +40,16 @@ export const getColumns = ({
             key: 'clientName',
             width: 200,
             render: (clientName: string, record: Order) => {
-                // 获取最后一个版本的快照数据
-                const snapshots = record.snapshots || []
-                const lastSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null
-
-                if (lastSnapshot) {
-                    // 显示最后一个版本的客户和联系人信息
-                    return (
-                        <div>
-                            <div>{lastSnapshot.clientInfo.clientName}</div>
-                            <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                                {lastSnapshot.clientInfo.contactNames && lastSnapshot.clientInfo.contactNames.length > 0
-                                    ? lastSnapshot.clientInfo.contactNames.join('、')
-                                    : '-'}
-                            </div>
+                return (
+                    <div>
+                        <div>{clientName}</div>
+                        <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                            {record.contactNames && record.contactNames.length > 0
+                                ? record.contactNames.join('、')
+                                : '-'}
                         </div>
-                    )
-                } else {
-                    // 如果没有快照，显示当前版本数据
-                    return (
-                        <div>
-                            <div>{clientName}</div>
-                            <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                                {record.contactNames && record.contactNames.length > 0
-                                    ? record.contactNames.join('、')
-                                    : '-'}
-                            </div>
-                        </div>
-                    )
-                }
+                    </div>
+                )
             }
         },
         {
@@ -77,17 +58,7 @@ export const getColumns = ({
             key: 'projectName',
             width: 180,
             render: (projectName: string, record: Order) => {
-                // 获取最后一个版本的快照数据
-                const snapshots = record.snapshots || []
-                const lastSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null
-
-                if (lastSnapshot) {
-                    // 显示最后一个版本的项目名称
-                    return lastSnapshot.projectInfo.projectName
-                } else {
-                    // 如果没有快照，显示当前版本数据
-                    return projectName
-                }
+                return projectName
             }
         },
         {
@@ -96,20 +67,10 @@ export const getColumns = ({
             key: 'currentAmount',
             width: 120,
             render: (amount: number, record: Order) => {
-                // 获取最后一个版本的快照数据
-                const snapshots = record.snapshots || []
-                const lastSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null
-
-                if (lastSnapshot) {
-                    // 显示最后一个版本的金额和项目数量
-                    const itemCount = lastSnapshot.items?.length || 0
-                    return `¥${lastSnapshot.totalAmount.toLocaleString()} (${itemCount}项)`
-                } else {
-                    // 如果没有快照，显示当前版本数据
-                    const currentSnapshot = record.snapshots?.find(s => s.version === record.currentVersion)
-                    const itemCount = currentSnapshot?.items?.length || 0
-                    return `¥${amount.toLocaleString()} (${itemCount}项)`
-                }
+                // 使用最新的版本信息
+                const itemCount = record.latestVersionInfo?.totalItems || 0
+                const displayAmount = record.currentAmount || amount || 0
+                return `¥${displayAmount.toLocaleString()} (${itemCount}项)`
             }
         },
         {
@@ -117,14 +78,7 @@ export const getColumns = ({
             key: 'version',
             width: 80,
             render: (_: any, record: Order) => {
-                const snapshots = record.snapshots || []
-                const lastSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null
-
-                if (lastSnapshot) {
-                    return `v${lastSnapshot.version}`
-                } else {
-                    return `v${record.currentVersion}`
-                }
+                return `v${record.currentVersion || 1}`
             }
         },
         {
@@ -132,21 +86,17 @@ export const getColumns = ({
             key: 'updateTime',
             width: 150,
             render: (_: any, record: Order) => {
-                const snapshots = record.snapshots || []
-                const lastSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null
-                
-                // 优先使用最后一个快照的创建时间
-                const timeToDisplay = lastSnapshot ? lastSnapshot.createdAt : record.createTime
-                
+                const timeToDisplay = record.updateTime || record.createTime
+
                 if (!timeToDisplay) return '-'
-                
+
                 const date = new Date(timeToDisplay)
                 // 检查是否是有效日期
                 if (isNaN(date.getTime())) {
                     // 如果是字符串格式（如 "2025-01-18"），直接返回
                     return timeToDisplay.toString().split(' ')[0]
                 }
-                
+
                 // 格式化为中文日期时间格式
                 return date.toLocaleString('zh-CN', {
                     year: 'numeric',

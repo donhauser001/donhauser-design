@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Card, Table, Button, Space, Input, Select, Modal, Form, message } from 'antd'
-import { PlusOutlined } from '@ant-design/icons'
+import { PlusOutlined, ReloadOutlined } from '@ant-design/icons'
 import axios from 'axios'
 import dayjs from 'dayjs'
 
@@ -388,68 +388,85 @@ const Orders: React.FC = () => {
 
     // 处理订单更新
     const handleUpdateOrderClick = async (order: Order) => {
-        // 设置正在更新的订单ID
-        setUpdatingOrderId(order._id)
+        try {
+            // 设置正在更新的订单ID
+            setUpdatingOrderId(order._id)
 
-        // 获取订单的最后一个版本信息
-        const snapshots = order.snapshots || []
-        const lastSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : null
+            // 获取订单的版本历史
+            const versionsResponse = await axios.get(`/api/order-versions/${order._id}`)
+            if (!versionsResponse.data.success || !versionsResponse.data.data.length) {
+                message.error('获取订单版本信息失败')
+                return
+            }
 
-        if (lastSnapshot) {
-            // 填充表单数据 - 使用最后一个版本的数据
-            setSelectedClientId(lastSnapshot.clientInfo.clientId)
-            setSelectedContactIds(lastSnapshot.clientInfo.contactIds || [])
-            setProjectName(lastSnapshot.projectInfo.projectName)
+            // 获取最新版本的数据
+            const versions = versionsResponse.data.data
+            const latestVersion = versions[0] // 后端已按更新时间降序排列
 
-            // 先获取客户信息，然后获取联系人列表和报价单信息
+            console.log('🔄 更新订单 - 最新版本数据:', latestVersion)
+
+            // 填充表单数据 - 使用最新版本的数据
+            setSelectedClientId(latestVersion.clientId)
+            setSelectedContactIds(latestVersion.contactIds || [])
+            setProjectName(latestVersion.projectName)
+
+            // 设置表单字段值
+            form.setFieldsValue({
+                clientId: latestVersion.clientId,
+                contactId: latestVersion.contactIds || [],
+                projectName: latestVersion.projectName
+            })
+
+            // 获取客户信息和联系人列表
             try {
-                // 获取客户详情 - 使用最后一个版本的客户ID
-                const clientResponse = await axios.get(`/api/clients/${lastSnapshot.clientInfo.clientId}`)
+                const clientResponse = await axios.get(`/api/clients/${latestVersion.clientId}`)
                 if (clientResponse.data.success) {
                     const client = clientResponse.data.data
 
                     // 获取该客户的联系人列表
                     const contactsResponse = await axios.get('/api/users', {
                         params: {
-                            role: '客户'
+                            role: '客户',
+                            page: 1,
+                            limit: 1000
                         }
                     })
 
                     if (contactsResponse.data.success) {
                         // 过滤出属于该公司的联系人
                         const clientContacts = contactsResponse.data.data.filter((contact: Contact) => {
-                            return contact.company === (client.companyName || client.name)
+                            const clientName = client.name || client.companyName || ''
+                            const contactCompany = contact.company || ''
+                            return contactCompany === clientName
                         })
                         setContacts(clientContacts)
+                        console.log('🔄 更新模式 - 加载联系人列表:', clientContacts.length, '个')
                     }
-
-
                 }
             } catch (error) {
                 console.error('获取客户和联系人信息失败:', error)
+                message.error('获取客户信息失败')
             }
 
-            // 注意：不要覆盖全局的价格政策数据，保持使用系统中的完整政策信息
-            // 价格政策应该已经在组件初始化时正确加载了
-
             // 获取报价单信息并加载服务项目
-            if (lastSnapshot.projectInfo.quotationId) {
+            if (latestVersion.quotationId) {
                 try {
-                    const quotationResponse = await axios.get(`/api/quotations/${lastSnapshot.projectInfo.quotationId}`)
+                    const quotationResponse = await axios.get(`/api/quotations/${latestVersion.quotationId}`)
                     if (quotationResponse.data.success) {
                         const quotation = quotationResponse.data.data
                         setSelectedQuotation(quotation)
-                        console.log('获取到报价单:', quotation.name)
+                        console.log('🔄 更新模式 - 获取到报价单:', quotation.name)
 
                         // 获取报价单中的所有服务项目
                         if (quotation.selectedServices && quotation.selectedServices.length > 0) {
                             await fetchServiceDetails(quotation.selectedServices, {
-                                items: lastSnapshot.items
+                                items: latestVersion.items
                             })
 
                             // 在服务项目加载完成后，设置已选择的服务项目
-                            const serviceIds = lastSnapshot.items.map((item: any) => item.serviceId)
+                            const serviceIds = latestVersion.items.map((item: any) => item.serviceId)
                             setSelectedServices(serviceIds)
+                            console.log('🔄 更新模式 - 设置已选择的服务:', serviceIds.length, '个')
                         }
                     }
                 } catch (error) {
@@ -460,15 +477,22 @@ const Orders: React.FC = () => {
                 setSelectedQuotation(null)
             }
 
-            // 设置数量
-            lastSnapshot.items.forEach((item: any) => {
+            // 设置数量和价格政策
+            latestVersion.items.forEach((item: any) => {
                 handleQuantityChange(item.serviceId, item.quantity)
             })
-        }
 
-        // 打开模态窗
-        setCurrentStep(1)
-        setIsModalVisible(true)
+            // 打开模态窗
+            setCurrentStep(1)
+            setIsModalVisible(true)
+
+            console.log('🔄 更新模式 - 数据预填充完成')
+
+        } catch (error) {
+            console.error('更新订单初始化失败:', error)
+            message.error('获取订单信息失败')
+            setUpdatingOrderId(null)
+        }
     }
 
     // 当步骤切换时，确保表单状态保持一致
@@ -507,9 +531,14 @@ const Orders: React.FC = () => {
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
                 <h1>订单管理</h1>
-                <Button type="primary" icon={<PlusOutlined />} onClick={showAddModal}>
-                    新建订单
-                </Button>
+                <Space>
+                    <Button icon={<ReloadOutlined />} onClick={fetchOrders}>
+                        刷新
+                    </Button>
+                    <Button type="primary" icon={<PlusOutlined />} onClick={showAddModal}>
+                        新建订单
+                    </Button>
+                </Space>
             </div>
 
             <Card>
@@ -597,6 +626,7 @@ const Orders: React.FC = () => {
                                 onCancel={handleCustomModalCancel}
                                 onClientSearch={fetchClients}
                                 clientLoading={clientLoading}
+                                isUpdateMode={!!updatingOrderId}
                             />
                         )}
 

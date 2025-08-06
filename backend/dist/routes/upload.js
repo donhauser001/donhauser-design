@@ -25,7 +25,22 @@ const createStorage = (subDir) => {
     });
 };
 const fileFilter = (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
+    const allowedTypes = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'application/pdf',
+        'text/plain',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'text/csv',
+        'application/zip',
+        'application/x-rar-compressed'
+    ];
     if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     }
@@ -57,7 +72,7 @@ router.post('/single', createUpload('general').single('file'), (req, res) => {
                 filename: req.file.filename,
                 originalname: req.file.originalname,
                 size: req.file.size,
-                url: `/uploads/general/${req.file.filename}`
+                url: `/uploads/general/${req.file.filename}?originalname=${encodeURIComponent(req.file.originalname)}`
             }
         });
     }
@@ -123,6 +138,84 @@ router.post('/avatar', createUpload('avatars').single('avatar'), (req, res) => {
         });
     }
 });
+router.post('/:businessType', (req, res) => {
+    const { businessType } = req.params;
+    const upload = createUpload(businessType);
+    return upload.single('file')(req, res, (err) => {
+        if (err) {
+            return res.status(400).json({
+                success: false,
+                message: '文件上传失败',
+                error: err.message
+            });
+        }
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: '没有上传文件'
+            });
+        }
+        return res.json({
+            success: true,
+            message: '文件上传成功',
+            data: {
+                filename: req.file.filename,
+                originalname: req.file.originalname,
+                size: req.file.size,
+                url: `/uploads/${businessType}/${req.file.filename}`
+            }
+        });
+    });
+});
+router.post('/:businessType/:subDirectory', (req, res) => {
+    const { businessType, subDirectory } = req.params;
+    const storage = multer_1.default.diskStorage({
+        destination: (req, file, cb) => {
+            const uploadDir = path_1.default.join(__dirname, '../../uploads', businessType, subDirectory);
+            if (!fs_1.default.existsSync(uploadDir)) {
+                fs_1.default.mkdirSync(uploadDir, { recursive: true });
+            }
+            cb(null, uploadDir);
+        },
+        filename: (req, file, cb) => {
+            const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+            const ext = path_1.default.extname(file.originalname);
+            cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+        }
+    });
+    const upload = (0, multer_1.default)({
+        storage: storage,
+        fileFilter: fileFilter,
+        limits: {
+            fileSize: 50 * 1024 * 1024
+        }
+    });
+    return upload.single('file')(req, res, (err) => {
+        if (err) {
+            return res.status(400).json({
+                success: false,
+                message: '文件上传失败',
+                error: err.message
+            });
+        }
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: '没有上传文件'
+            });
+        }
+        return res.json({
+            success: true,
+            message: '文件上传成功',
+            data: {
+                filename: req.file.filename,
+                originalname: req.file.originalname,
+                size: req.file.size,
+                url: `/uploads/${businessType}/${subDirectory}/${req.file.filename}`
+            }
+        });
+    });
+});
 router.post('/project', createUpload('projects').single('projectFile'), (req, res) => {
     try {
         if (!req.file) {
@@ -150,6 +243,51 @@ router.post('/project', createUpload('projects').single('projectFile'), (req, re
         });
     }
 });
+router.post('/projects/:projectId', createUpload('projects').single('file'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: '没有上传文件'
+            });
+        }
+        const { projectId } = req.params;
+        const projectDir = path_1.default.join(__dirname, '../../uploads/projects', projectId);
+        if (!fs_1.default.existsSync(projectDir)) {
+            fs_1.default.mkdirSync(projectDir, { recursive: true });
+        }
+        const newPath = path_1.default.join(projectDir, req.file.filename);
+        if (fs_1.default.existsSync(newPath)) {
+            fs_1.default.unlinkSync(newPath);
+        }
+        const oldPath = req.file.path;
+        try {
+            fs_1.default.renameSync(oldPath, newPath);
+        }
+        catch (moveError) {
+            fs_1.default.copyFileSync(oldPath, newPath);
+            fs_1.default.unlinkSync(oldPath);
+        }
+        return res.json({
+            success: true,
+            message: '项目文件上传成功',
+            data: {
+                filename: req.file.filename,
+                originalname: req.file.originalname,
+                size: req.file.size,
+                url: `/uploads/projects/${projectId}/${req.file.filename}`
+            }
+        });
+    }
+    catch (error) {
+        console.error('项目文件上传错误:', error);
+        return res.status(500).json({
+            success: false,
+            message: '项目文件上传失败',
+            error: error instanceof Error ? error.message : '未知错误'
+        });
+    }
+});
 router.post('/client', createUpload('clients').single('clientFile'), (req, res) => {
     try {
         if (!req.file) {
@@ -170,6 +308,51 @@ router.post('/client', createUpload('clients').single('clientFile'), (req, res) 
         });
     }
     catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: '客户文件上传失败',
+            error: error instanceof Error ? error.message : '未知错误'
+        });
+    }
+});
+router.post('/clients/:clientId', createUpload('clients').single('file'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: '没有上传文件'
+            });
+        }
+        const { clientId } = req.params;
+        const clientDir = path_1.default.join(__dirname, '../../uploads/clients', clientId);
+        if (!fs_1.default.existsSync(clientDir)) {
+            fs_1.default.mkdirSync(clientDir, { recursive: true });
+        }
+        const newPath = path_1.default.join(clientDir, req.file.filename);
+        if (fs_1.default.existsSync(newPath)) {
+            fs_1.default.unlinkSync(newPath);
+        }
+        const oldPath = req.file.path;
+        try {
+            fs_1.default.renameSync(oldPath, newPath);
+        }
+        catch (moveError) {
+            fs_1.default.copyFileSync(oldPath, newPath);
+            fs_1.default.unlinkSync(oldPath);
+        }
+        return res.json({
+            success: true,
+            message: '客户文件上传成功',
+            data: {
+                filename: req.file.filename,
+                originalname: req.file.originalname,
+                size: req.file.size,
+                url: `/uploads/clients/${clientId}/${req.file.filename}`
+            }
+        });
+    }
+    catch (error) {
+        console.error('客户文件上传错误:', error);
         return res.status(500).json({
             success: false,
             message: '客户文件上传失败',

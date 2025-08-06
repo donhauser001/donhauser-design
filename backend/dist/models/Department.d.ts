@@ -1,3 +1,19 @@
+import mongoose, { Document } from 'mongoose';
+export interface IDepartment extends Document {
+    name: string;
+    parentId?: string;
+    enterpriseId: string;
+    enterpriseName: string;
+    level: number;
+    employeeCount: number;
+    status: 'active' | 'inactive';
+    createTime: string;
+}
+export declare const Department: mongoose.Model<IDepartment, {}, {}, {}, mongoose.Document<unknown, {}, IDepartment, {}, {}> & IDepartment & Required<{
+    _id: unknown;
+}> & {
+    __v: number;
+}, any>;
 export interface Department {
     id: string;
     name: string;

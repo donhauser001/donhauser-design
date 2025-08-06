@@ -12,7 +12,7 @@ import './App.css'
 // 项目管理相关页面
 import TaskBoard from './pages/Projects/TaskBoard'
 import ProposalCenter from './pages/Projects/ProposalCenter'
-import ProjectDetail from './pages/Projects/ProjectDetail'
+import ProjectDetail from './pages/Projects/ProjectDetail/index'
 
 // 客户管理相关页面
 import Contacts from './pages/Clients/Contacts'

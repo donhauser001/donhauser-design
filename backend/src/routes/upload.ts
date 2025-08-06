@@ -28,7 +28,22 @@ const createStorage = (subDir: string) => {
 // 文件过滤器
 const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   // 允许的文件类型
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain'];
+  const allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'application/pdf',
+    'text/plain',
+    'application/msword', // .doc
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    'application/vnd.ms-excel', // .xls
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+    'application/vnd.ms-powerpoint', // .ppt
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+    'text/csv',
+    'application/zip',
+    'application/x-rar-compressed'
+  ];
 
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
@@ -249,6 +264,61 @@ router.post('/project', createUpload('projects').single('projectFile'), (req: Re
       }
     });
   } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: '项目文件上传失败',
+      error: error instanceof Error ? error.message : '未知错误'
+    });
+  }
+});
+
+// 上传项目文件到子目录
+router.post('/projects/:projectId', createUpload('projects').single('file'), (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: '没有上传文件'
+      });
+    }
+
+    const { projectId } = req.params;
+
+    // 创建项目子目录
+    const projectDir = path.join(__dirname, '../../uploads/projects', projectId);
+    if (!fs.existsSync(projectDir)) {
+      fs.mkdirSync(projectDir, { recursive: true });
+    }
+
+    // 检查文件是否已经存在
+    const newPath = path.join(projectDir, req.file.filename);
+    if (fs.existsSync(newPath)) {
+      // 如果文件已存在，删除旧文件
+      fs.unlinkSync(newPath);
+    }
+
+    // 移动文件到项目子目录
+    const oldPath = req.file.path;
+    try {
+      fs.renameSync(oldPath, newPath);
+    } catch (moveError) {
+      // 如果移动失败，尝试复制然后删除
+      fs.copyFileSync(oldPath, newPath);
+      fs.unlinkSync(oldPath);
+    }
+
+    return res.json({
+      success: true,
+      message: '项目文件上传成功',
+      data: {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        size: req.file.size,
+        url: `/uploads/projects/${projectId}/${req.file.filename}`
+      }
+    });
+  } catch (error) {
+    console.error('项目文件上传错误:', error);
     return res.status(500).json({
       success: false,
       message: '项目文件上传失败',

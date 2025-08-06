@@ -1,9 +1,9 @@
-import { ClientCategory, CreateClientCategoryRequest, UpdateClientCategoryRequest } from '../models/ClientCategory';
+import { IClientCategory, CreateClientCategoryRequest, UpdateClientCategoryRequest } from '../models/ClientCategory';
 export declare class ClientCategoryService {
-    getCategories(): ClientCategory[];
-    getCategoryById(id: string): ClientCategory | undefined;
-    createCategory(data: CreateClientCategoryRequest): ClientCategory;
-    updateCategory(id: string, data: UpdateClientCategoryRequest): ClientCategory | null;
-    deleteCategory(id: string): boolean;
+    static getCategories(): Promise<IClientCategory[]>;
+    static getCategoryById(id: string): Promise<IClientCategory | null>;
+    static createCategory(data: CreateClientCategoryRequest): Promise<IClientCategory>;
+    static updateCategory(id: string, data: UpdateClientCategoryRequest): Promise<IClientCategory | null>;
+    static deleteCategory(id: string): Promise<boolean>;
 }
 //# sourceMappingURL=ClientCategoryService.d.ts.map

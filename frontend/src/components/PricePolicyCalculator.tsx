@@ -164,7 +164,7 @@ const calculateTieredDiscount = (
       if (startQuantity === endQuantity) {
         tierRange = `第${startQuantity}${unit}`
       } else if (endQuantity === Infinity) {
-        tierRange = `${startQuantity}${unit}以上`
+        tierRange = `${startQuantity}${unit}及以上`
       } else {
         tierRange = `第${startQuantity}-${endQuantity}${unit}`
       }

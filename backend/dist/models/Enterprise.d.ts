@@ -1,3 +1,26 @@
+import mongoose, { Document } from 'mongoose';
+export interface IEnterprise extends Document {
+    enterpriseName: string;
+    creditCode: string;
+    businessLicense: string;
+    legalRepresentative: string;
+    legalRepresentativeId: string;
+    companyAddress: string;
+    shippingAddress: string;
+    contactPerson: string;
+    contactPhone: string;
+    invoiceInfo: string;
+    bankName: string;
+    accountName: string;
+    accountNumber: string;
+    status: 'active' | 'inactive';
+    createTime: string;
+}
+export declare const Enterprise: mongoose.Model<IEnterprise, {}, {}, {}, mongoose.Document<unknown, {}, IEnterprise, {}, {}> & IEnterprise & Required<{
+    _id: unknown;
+}> & {
+    __v: number;
+}, any>;
 export interface Enterprise {
     id: string;
     enterpriseName: string;

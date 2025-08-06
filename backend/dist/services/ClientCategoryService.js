@@ -1,79 +1,74 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ClientCategoryService = void 0;
-const uuid_1 = require("uuid");
-let categories = [
-    {
-        id: (0, uuid_1.v4)(),
-        name: 'VIP客户',
-        description: '高价值客户，享受优先服务',
-        status: 'active',
-        clientCount: 12,
-        createTime: '2024-01-01'
-    },
-    {
-        id: (0, uuid_1.v4)(),
-        name: '普通客户',
-        description: '常规客户，标准服务流程',
-        status: 'active',
-        clientCount: 45,
-        createTime: '2024-01-01'
-    },
-    {
-        id: (0, uuid_1.v4)(),
-        name: '潜在客户',
-        description: '有合作意向的潜在客户',
-        status: 'active',
-        clientCount: 23,
-        createTime: '2024-01-01'
-    },
-    {
-        id: (0, uuid_1.v4)(),
-        name: '流失客户',
-        description: '已停止合作的客户',
-        status: 'inactive',
-        clientCount: 8,
-        createTime: '2024-01-01'
-    }
-];
+const ClientCategory_1 = __importDefault(require("../models/ClientCategory"));
 class ClientCategoryService {
-    getCategories() {
-        return categories;
-    }
-    getCategoryById(id) {
-        return categories.find(c => c.id === id);
-    }
-    createCategory(data) {
-        if (categories.some(c => c.name === data.name)) {
-            throw new Error('分类名称已存在');
+    static async getCategories() {
+        try {
+            return await ClientCategory_1.default.find().sort({ createTime: -1 });
         }
-        const newCategory = {
-            id: (0, uuid_1.v4)(),
-            name: data.name,
-            description: data.description || '',
-            status: data.status || 'active',
-            clientCount: 0,
-            createTime: new Date().toISOString().slice(0, 10)
-        };
-        categories.unshift(newCategory);
-        return newCategory;
-    }
-    updateCategory(id, data) {
-        const idx = categories.findIndex(c => c.id === id);
-        if (idx === -1)
-            return null;
-        if (data.name && categories.some(c => c.name === data.name && c.id !== id)) {
-            throw new Error('分类名称已存在');
+        catch (error) {
+            console.error('获取客户分类失败:', error);
+            throw error;
         }
-        categories[idx] = { ...categories[idx], ...data };
-        return categories[idx];
     }
-    deleteCategory(id) {
-        const idx = categories.findIndex(c => c.id === id);
-        if (idx === -1)
-            return false;
-        categories.splice(idx, 1);
-        return true;
+    static async getCategoryById(id) {
+        try {
+            return await ClientCategory_1.default.findById(id);
+        }
+        catch (error) {
+            console.error('获取客户分类失败:', error);
+            throw error;
+        }
+    }
+    static async createCategory(data) {
+        try {
+            const existingCategory = await ClientCategory_1.default.findOne({ name: data.name });
+            if (existingCategory) {
+                throw new Error('分类名称已存在');
+            }
+            const newCategory = new ClientCategory_1.default({
+                ...data,
+                createTime: new Date().toISOString().slice(0, 10)
+            });
+            return await newCategory.save();
+        }
+        catch (error) {
+            console.error('创建客户分类失败:', error);
+            throw error;
+        }
+    }
+    static async updateCategory(id, data) {
+        try {
+            if (data.name) {
+                const existingCategory = await ClientCategory_1.default.findOne({
+                    name: data.name,
+                    _id: { $ne: id }
+                });
+                if (existingCategory) {
+                    throw new Error('分类名称已存在');
+                }
+            }
+            const updatedCategory = await ClientCategory_1.default.findByIdAndUpdate(id, data, { new: true });
+            return updatedCategory;
+        }
+        catch (error) {
+            console.error('更新客户分类失败:', error);
+            throw error;
+        }
+    }
+    static async deleteCategory(id) {
+        try {
+            const result = await ClientCategory_1.default.findByIdAndDelete(id);
+            return !!result;
+        }
+        catch (error) {
+            console.error('删除客户分类失败:', error);
+            throw error;
+        }
     }
 }
 exports.ClientCategoryService = ClientCategoryService;

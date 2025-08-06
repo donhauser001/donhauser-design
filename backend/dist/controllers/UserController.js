@@ -62,10 +62,10 @@ class UserController {
     async createUser(req, res) {
         try {
             const userData = req.body;
-            if (!userData.username || !userData.password || !userData.email || !userData.realName) {
+            if (!userData.username || !userData.password || !userData.realName) {
                 res.status(400).json({
                     success: false,
-                    message: '用户名、密码、邮箱和真实姓名为必填字段'
+                    message: '用户名、密码和真实姓名为必填字段'
                 });
                 return;
             }
@@ -255,11 +255,14 @@ class UserController {
     async checkEmailExists(req, res) {
         try {
             const { email } = req.params;
-            const exists = await this.userService.isEmailExists(email);
+            const user = await this.userService.getUserByEmail(email);
             res.json({
                 success: true,
                 message: '检查邮箱成功',
-                data: { exists }
+                data: {
+                    exists: !!user,
+                    userId: user?._id?.toString() || null
+                }
             });
         }
         catch (error) {

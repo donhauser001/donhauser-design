@@ -18,7 +18,7 @@ import {
 } from 'antd'
 
 // Antd 图标导入
-import { ArrowLeftOutlined } from '@ant-design/icons'
+import { ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons'
 
 // 类型导入
 import type { UploadFile } from 'antd/es/upload/interface'
@@ -38,6 +38,7 @@ import { createTableColumns } from './tableColumns'
 import { createMainTabsItems, createFileTabsItems } from './tabConfigs'
 
 import { ProgressModal } from './ProgressModal'
+import AddTaskModal, { CreateTaskData } from './AddTaskModal'
 
 const { Title, Text } = Typography
 
@@ -54,6 +55,7 @@ const ProjectDetail: React.FC = () => {
     const [loading, setLoading] = useState(true)
     const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null)
     const [progressModalVisible, setProgressModalVisible] = useState(false)
+    const [addTaskModalVisible, setAddTaskModalVisible] = useState(false)
 
     // 编辑状态
     const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -259,6 +261,77 @@ const ProjectDetail: React.FC = () => {
         }
     }
 
+    // 处理追加任务
+    const handleAddTask = async (taskDataList: CreateTaskData[]) => {
+        if (!id) return
+
+        try {
+            setLoading(true)
+            console.log('开始添加任务，任务数量:', taskDataList.length)
+            console.log('项目ID:', id)
+            console.log('项目信息:', project)
+            console.log('任务数据列表:', taskDataList)
+
+            // 单个创建任务（避免批量API问题）
+            const { createTask } = await import('../../../api/tasks')
+
+            // 逐个创建任务
+            const createdTasks = []
+            for (let i = 0; i < taskDataList.length; i++) {
+                const taskData = taskDataList[i]
+                console.log(`正在创建第 ${i + 1} 个任务:`, taskData.taskName)
+                console.log('任务详细数据:', taskData)
+
+                const createTaskData = {
+                    taskName: taskData.taskName,
+                    serviceId: taskData.serviceId,
+                    projectId: id,
+                    ...(project?.relatedOrders?.[0] && { orderId: project.relatedOrders[0] }), // 只在有订单时才发送orderId
+                    assignedDesigners: taskData.contactIds || [], // 使用选择的联系人作为分配的设计师
+                    specification: undefined,
+                    quantity: taskData.quantity,
+                    unit: taskData.unit,
+                    subtotal: taskData.subtotal,
+                    status: 'pending' as const,
+                    priority: taskData.priority,
+                    progress: 0,
+                    dueDate: taskData.dueDate,
+                    remarks: taskData.remarks
+                }
+
+                console.log('发送到API的任务数据:', createTaskData)
+
+                try {
+                    const result = await createTask(createTaskData)
+                    console.log(`任务 ${taskData.taskName} 创建成功:`, result)
+                    createdTasks.push(result)
+                } catch (taskError) {
+                    console.error(`任务 ${taskData.taskName} 创建失败:`, taskError)
+                    // 如果某个任务创建失败，继续创建其他任务，但记录错误
+                    throw new Error(`任务 "${taskData.taskName}" 创建失败: ${taskError instanceof Error ? taskError.message : '未知错误'}`)
+                }
+            }
+
+            console.log(`成功创建 ${createdTasks.length} 个任务`)
+
+            // 刷新任务列表
+            const tasksResponse = await getTasksByProject(id)
+            setTasks(tasksResponse.data)
+
+            // 刷新项目数据（包括订单信息）
+            await fetchProjectData()
+
+            message.success(`成功添加 ${createdTasks.length} 个任务`)
+            setAddTaskModalVisible(false)
+        } catch (error) {
+            console.error('添加任务失败:', error)
+            const errorMessage = error instanceof Error ? error.message : '添加任务失败'
+            message.error(errorMessage)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     // ==================== 表格列定义 ====================
 
     const tableColumns = createTableColumns({
@@ -358,7 +431,22 @@ const ProjectDetail: React.FC = () => {
                     </Card>
 
                     {/* 任务列表 */}
-                    <Card title="任务列表" style={{ marginBottom: 16 }}>
+                    <Card
+                        title={
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span>任务列表</span>
+                                <Button
+                                    type="primary"
+                                    icon={<PlusOutlined />}
+                                    size="small"
+                                    onClick={() => setAddTaskModalVisible(true)}
+                                >
+                                    追加任务
+                                </Button>
+                            </div>
+                        }
+                        style={{ marginBottom: 16 }}
+                    >
                         <Table
                             columns={tableColumns}
                             dataSource={tasks}
@@ -407,6 +495,17 @@ const ProjectDetail: React.FC = () => {
                 }}
                 onProgressChange={setEditingProgress}
                 onPriorityChange={setEditingPriority}
+            />
+
+            {/* 追加任务模态框 */}
+            <AddTaskModal
+                visible={addTaskModalVisible}
+                projectId={id}
+                projectClient={project?.client}
+                projectContacts={[]}
+                onOk={handleAddTask}
+                onCancel={() => setAddTaskModalVisible(false)}
+                loading={loading}
             />
         </div>
     )

@@ -19,6 +19,7 @@ interface StepOneProps {
     onCancel: () => void
     onClientSearch?: (search: string) => void
     clientLoading?: boolean
+    isUpdateMode?: boolean
 }
 
 const StepOne: React.FC<StepOneProps> = ({
@@ -34,7 +35,8 @@ const StepOne: React.FC<StepOneProps> = ({
     onNext,
     onCancel,
     onClientSearch,
-    clientLoading = false
+    clientLoading = false,
+    isUpdateMode = false
 }) => {
     // 监听状态变化，确保表单字段同步
     React.useEffect(() => {
@@ -52,7 +54,7 @@ const StepOne: React.FC<StepOneProps> = ({
         <div>
             <Form.Item
                 name="clientId"
-                label="选择客户"
+                label={isUpdateMode ? "当前客户" : "选择客户"}
                 rules={[{ required: true, message: '请选择客户' }]}
             >
                 <Select
@@ -60,6 +62,7 @@ const StepOne: React.FC<StepOneProps> = ({
                     showSearch
                     value={selectedClientId}
                     loading={clientLoading}
+                    disabled={isUpdateMode}
                     onChange={(value: string | undefined) => {
                         onClientSelect(value || '')
                         form.setFieldsValue({ clientId: value })
@@ -83,7 +86,8 @@ const StepOne: React.FC<StepOneProps> = ({
                     ))}
                 </Select>
             </Form.Item>
-            {clients.some(client => client.status === 'inactive') && (
+
+            {!isUpdateMode && clients.some(client => client.status === 'inactive') && (
                 <div style={{ fontSize: 12, color: '#666', marginTop: 4, marginBottom: 16 }}>
                     如果你选择的客户显示为（已禁用）请先取消禁用后再来操作
                 </div>
@@ -109,7 +113,7 @@ const StepOne: React.FC<StepOneProps> = ({
                     mode="multiple"
                     value={selectedContactIds || []}
                     onChange={(values: string[]) => {
-                        
+
                         onContactSelect(values)
                         form.setFieldsValue({ contactId: values }) // 直接使用数组
                     }}
@@ -134,7 +138,8 @@ const StepOne: React.FC<StepOneProps> = ({
                     ))}
                 </Select>
             </Form.Item>
-            {contacts.length > 0 && contacts.some(contact => contact.status === 'inactive') && (
+
+            {!isUpdateMode && contacts.length > 0 && contacts.some(contact => contact.status === 'inactive') && (
                 <div style={{ fontSize: 12, color: '#666', marginTop: 2, marginBottom: 16 }}>
                     如果你选择的用户显示为（已禁用）请先取消禁用后再来操作
                 </div>

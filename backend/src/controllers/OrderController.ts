@@ -1,5 +1,7 @@
 import { Request, Response } from 'express'
-import OrderService from '../services/OrderService'
+import { OrderService } from '../services/OrderService'
+
+const orderService = new OrderService()
 
 export class OrderController {
   /**
@@ -22,7 +24,7 @@ export class OrderController {
 
       const createdBy = req.user?.id || 'system'
 
-      const order = await OrderService.createOrder({
+      const order = await orderService.createOrder({
         clientId,
         clientName,
         contactIds,
@@ -66,7 +68,7 @@ export class OrderController {
         updatedBy
       })
 
-      const order = await OrderService.updateOrder(orderId, {
+      const order = await orderService.updateOrder(orderId, {
         ...updateData,
         updatedBy
       })
@@ -94,7 +96,7 @@ export class OrderController {
     try {
       const { page = 1, limit = 10, search, status, clientId } = req.query
 
-      const result = await OrderService.getOrders({
+      const result = await orderService.getOrders({
         page: Number(page),
         limit: Number(limit),
         search: search as string,
@@ -129,7 +131,7 @@ export class OrderController {
     try {
       const { orderId } = req.params
 
-      const order = await OrderService.getOrderById(orderId)
+      const order = await orderService.getOrderById(orderId)
       if (!order) {
         return res.status(404).json({
           success: false,
@@ -158,7 +160,7 @@ export class OrderController {
     try {
       const { orderId } = req.params
 
-      const history = await OrderService.getOrderVersionHistory(orderId)
+      const history = await orderService.getOrderVersionHistory(orderId)
 
       res.json({
         success: true,
@@ -181,7 +183,7 @@ export class OrderController {
     try {
       const { orderId, version } = req.params
 
-      const snapshot = await OrderService.getOrderSnapshot(orderId, Number(version))
+      const snapshot = await orderService.getOrderSnapshot(orderId, Number(version))
       if (!snapshot) {
         return res.status(404).json({
           success: false,
@@ -220,7 +222,7 @@ export class OrderController {
         })
       }
 
-      const updatedOrder = await OrderService.updateOrderStatus(orderId, status, updatedBy)
+      const updatedOrder = await orderService.updateOrderStatus(orderId, status, updatedBy)
 
       res.json({
         success: true,
@@ -244,7 +246,7 @@ export class OrderController {
     try {
       const { orderId } = req.params
 
-      await OrderService.deleteOrder(orderId)
+      await orderService.deleteOrder(orderId)
 
       res.json({
         success: true,

@@ -20,6 +20,12 @@ __exportStar(require("./DepartmentController"), exports);
 __exportStar(require("./RoleController"), exports);
 __exportStar(require("./PermissionController"), exports);
 __exportStar(require("./UserController"), exports);
+__exportStar(require("./AdditionalConfigController"), exports);
+__exportStar(require("./PricingPolicyController"), exports);
+__exportStar(require("./ServicePricingController"), exports);
+__exportStar(require("./QuotationController"), exports);
+__exportStar(require("./SpecificationController"), exports);
+__exportStar(require("./ProjectController"), exports);
 exports.projectController = {};
 exports.clientController = {};
 //# sourceMappingURL=index.js.map
