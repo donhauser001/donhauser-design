@@ -233,21 +233,31 @@ const ProjectDetail: React.FC = () => {
                     <Col span={16}>
                         {/* 基本信息 */}
                         <Card title="基本信息" style={{ marginBottom: 16 }}>
+                            {/* 临时调试信息 */}
+                            {process.env.NODE_ENV === 'development' && (
+                                <div style={{ marginBottom: 16, padding: 8, backgroundColor: '#f5f5f5', fontSize: '12px' }}>
+                                    <div>Debug - contactNames: {JSON.stringify(project.contactNames)}</div>
+                                    <div>Debug - contactPhones: {JSON.stringify(project.contactPhones)}</div>
+                                </div>
+                            )}
                             <Descriptions column={2}>
                                 <Descriptions.Item label="项目名称">{project.projectName}</Descriptions.Item>
                                 <Descriptions.Item label="客户名称">
                                     {project.clientName}
                                     {project.contactNames && project.contactNames.length > 0 && (
                                         <span style={{ color: '#666', marginLeft: '8px' }}>
-                                            - {project.contactNames.map((name, index) => (
-                                                <span key={index}>
-                                                    {name}
-                                                    {project.contactPhones[index] && (
-                                                        <span style={{ color: '#999' }}> {project.contactPhones[index]}</span>
-                                                    )}
-                                                    {index < project.contactNames.length - 1 && '，'}
-                                                </span>
-                                            ))}
+                                            - {project.contactNames.map((name, index) => {
+                                                const phone = project.contactPhones && project.contactPhones[index];
+                                                return (
+                                                    <span key={index}>
+                                                        {name}
+                                                        {phone && (
+                                                            <span style={{ color: '#999' }}> {phone}</span>
+                                                        )}
+                                                        {index < project.contactNames.length - 1 && '，'}
+                                                    </span>
+                                                );
+                                            })}
                                         </span>
                                     )}
                                 </Descriptions.Item>
