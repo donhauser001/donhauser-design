@@ -454,7 +454,7 @@ const CreateProject: React.FC = () => {
                         style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
                     >
                         <Row gutter={24}>
-                            <Col span={24}>
+                            <Col span={8}>
                                 <Form.Item
                                     name="undertakingTeam"
                                     label="承接团队"
@@ -476,9 +476,7 @@ const CreateProject: React.FC = () => {
                                     </Select>
                                 </Form.Item>
                             </Col>
-                        </Row>
-                        <Row gutter={24}>
-                            <Col span={12}>
+                            <Col span={8}>
                                 <Form.Item
                                     name="mainDesigners"
                                     label="主创设计师"
@@ -501,7 +499,7 @@ const CreateProject: React.FC = () => {
                                     </Select>
                                 </Form.Item>
                             </Col>
-                            <Col span={12}>
+                            <Col span={8}>
                                 <Form.Item
                                     name="assistantDesigners"
                                     label="助理设计师"
