@@ -59,15 +59,34 @@ interface Project {
 interface Task {
     _id: string;
     taskName: string;
-    status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold';
-    priority: 'low' | 'medium' | 'high' | 'urgent';
-    progress: number;
+    projectId: string;
+    serviceId: string;
+    assignedDesigners: string[];
+    specificationId?: string;
     quantity: number;
     unit: string;
     subtotal: number;
-    dueDate?: string;
-    assignedDesigners: string[];
+    pricingPolicies: Array<{
+        policyId: string;
+        policyName: string;
+        policyType: 'uniform_discount' | 'tiered_discount';
+        discountRatio: number;
+        calculationDetails: string;
+    }>;
     billingDescription: string;
+    status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold';
+    priority: 'low' | 'medium' | 'high' | 'urgent';
+    progress: number;
+    startDate?: string;
+    dueDate?: string;
+    completedDate?: string;
+    settlementStatus: 'unpaid' | 'prepaid' | 'draft-paid' | 'fully-paid' | 'cancelled';
+    settlementTime?: string;
+    remarks?: string;
+    attachmentIds: string[];
+    proposalId?: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
 const ProjectDetail: React.FC = () => {
@@ -161,10 +180,57 @@ const ProjectDetail: React.FC = () => {
         const texts: Record<string, string> = {
             'unpaid': '未付款',
             'prepaid': '预付款',
-            'partial-paid': '部分付款',
-            'fully-paid': '已付清'
+            'draft-paid': '草稿付款',
+            'fully-paid': '已付清',
+            'cancelled': '已取消'
         };
         return texts[status] || status;
+    };
+
+    // 任务状态文本映射
+    const getTaskStatusText = (status: string) => {
+        const texts: Record<string, string> = {
+            'pending': '待处理',
+            'in-progress': '进行中',
+            'completed': '已完成',
+            'cancelled': '已取消',
+            'on-hold': '暂停'
+        };
+        return texts[status] || status;
+    };
+
+    // 任务状态颜色映射
+    const getTaskStatusColor = (status: string) => {
+        const colors: Record<string, string> = {
+            'pending': 'default',
+            'in-progress': 'processing',
+            'completed': 'success',
+            'cancelled': 'error',
+            'on-hold': 'warning'
+        };
+        return colors[status] || 'default';
+    };
+
+    // 优先级文本映射
+    const getPriorityText = (priority: string) => {
+        const texts: Record<string, string> = {
+            'low': '低',
+            'medium': '中',
+            'high': '高',
+            'urgent': '紧急'
+        };
+        return texts[priority] || priority;
+    };
+
+    // 优先级颜色映射
+    const getPriorityColor = (priority: string) => {
+        const colors: Record<string, string> = {
+            'low': 'default',
+            'medium': 'blue',
+            'high': 'orange',
+            'urgent': 'red'
+        };
+        return colors[priority] || 'default';
     };
 
     if (loading) {
@@ -340,19 +406,49 @@ const ProjectDetail: React.FC = () => {
 
 
 
-                        {/* 任务概览 */}
-                        <Card title="任务概览" style={{ marginBottom: 16 }}>
+                        {/* 任务列表 */}
+                        <Card title="任务列表" style={{ marginBottom: 16 }}>
                             <List
                                 size="small"
                                 dataSource={tasks.slice(0, 5)}
                                 renderItem={(task) => (
                                     <List.Item>
                                         <List.Item.Meta
-                                            title={task.taskName}
+                                            title={
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span>{task.taskName}</span>
+                                                    <Tag color={getPriorityColor(task.priority)} size="small">
+                                                        {getPriorityText(task.priority)}
+                                                    </Tag>
+                                                </div>
+                                            }
                                             description={
-                                                <Space direction="vertical" size="small">
-                                                    <div>状态: <Tag size="small">{task.status}</Tag></div>
-                                                    <div>金额: ¥{task.subtotal}</div>
+                                                <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <span>状态:</span>
+                                                        <Tag color={getTaskStatusColor(task.status)} size="small">
+                                                            {getTaskStatusText(task.status)}
+                                                        </Tag>
+                                                        <span>结算:</span>
+                                                        <Tag color={getSettlementStatusColor(task.settlementStatus)} size="small">
+                                                            {getSettlementStatusText(task.settlementStatus)}
+                                                        </Tag>
+                                                    </div>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                                        <span>数量: {task.quantity}{task.unit}</span>
+                                                        <span>金额: ¥{task.subtotal.toFixed(2)}</span>
+                                                        <span>进度: {task.progress}%</span>
+                                                    </div>
+                                                    {task.dueDate && (
+                                                        <div style={{ color: '#666', fontSize: '12px' }}>
+                                                            截止日期: {dayjs(task.dueDate).format('YYYY-MM-DD')}
+                                                        </div>
+                                                    )}
+                                                    {task.assignedDesigners && task.assignedDesigners.length > 0 && (
+                                                        <div style={{ color: '#666', fontSize: '12px' }}>
+                                                            设计师: {task.assignedDesigners.join('，')}
+                                                        </div>
+                                                    )}
                                                 </Space>
                                             }
                                         />
