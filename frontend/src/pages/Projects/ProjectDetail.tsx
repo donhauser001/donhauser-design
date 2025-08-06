@@ -695,7 +695,7 @@ const ProjectDetail: React.FC = () => {
                     >
                         {availableUsers.map(user => (
                             <Select.Option key={user._id} value={user._id}>
-                                {user.realName || user.username} ({user.role})
+                                {user.realName || user.username}
                             </Select.Option>
                         ))}
                     </Select>
@@ -713,7 +713,7 @@ const ProjectDetail: React.FC = () => {
                     >
                         {availableUsers.map(user => (
                             <Select.Option key={user._id} value={user._id}>
-                                {user.realName || user.username} ({user.role})
+                                {user.realName || user.username}
                             </Select.Option>
                         ))}
                     </Select>
