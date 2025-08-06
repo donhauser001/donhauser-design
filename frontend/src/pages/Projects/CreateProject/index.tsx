@@ -227,6 +227,9 @@ const CreateProject: React.FC = () => {
                                 selectedClient={selectedClient}
                                 selectedServices={selectedServices}
                                 projectData={form.getFieldsValue()}
+                                selectedContacts={filteredContacts.filter(c => 
+                                    form.getFieldValue('contactIds')?.includes(c._id)
+                                )}
                             />
                         )}
                     </div>

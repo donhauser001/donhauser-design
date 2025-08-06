@@ -10,9 +10,10 @@ interface OrderTabProps {
     selectedClient: any;
     selectedServices: any[];
     projectData: any;
+    selectedContacts?: any[];
 }
 
-const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, projectData }) => {
+const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, projectData, selectedContacts }) => {
     // 表格列定义
     const columns = [
         {
@@ -112,6 +113,8 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
                             <div style={{ paddingLeft: '24px' }}>
                                 <div><Text>客户名称：{selectedClient?.name || '未选择'}</Text></div>
                                 <div><Text>项目名称：{projectData?.projectName || '未填写'}</Text></div>
+                                <div><Text>联系人：{selectedContacts?.map(c => c.realName).join(', ') || '未选择'}</Text></div>
+                                <div><Text>联系电话：{selectedContacts?.map(c => c.phone).join(', ') || '未填写'}</Text></div>
                             </div>
                         </div>
                     </Col>
