@@ -20,7 +20,15 @@ import {
     UserOutlined,
     TeamOutlined,
     FileTextOutlined,
-    DollarOutlined
+    DollarOutlined,
+    SettingOutlined,
+    PauseCircleOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    CreditCardOutlined,
+    WalletOutlined,
+    CheckOutlined
 } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -186,9 +194,39 @@ const ProjectDetail: React.FC = () => {
                             <Space style={{ marginLeft: 8 }}>
                                 <Tag color={getProgressStatusColor(project.progressStatus)}>
                                     {getProgressStatusText(project.progressStatus)}
+                                    {project.progressStatus === 'consulting' && (
+                                        <FileTextOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.progressStatus === 'in-progress' && (
+                                        <SettingOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.progressStatus === 'partial-delivery' && (
+                                        <ClockCircleOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.progressStatus === 'completed' && (
+                                        <CheckCircleOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.progressStatus === 'on-hold' && (
+                                        <PauseCircleOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.progressStatus === 'cancelled' && (
+                                        <CloseCircleOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
                                 </Tag>
                                 <Tag color={getSettlementStatusColor(project.settlementStatus)}>
                                     {getSettlementStatusText(project.settlementStatus)}
+                                    {project.settlementStatus === 'unpaid' && (
+                                        <DollarOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.settlementStatus === 'prepaid' && (
+                                        <CreditCardOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.settlementStatus === 'partial-paid' && (
+                                        <WalletOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.settlementStatus === 'fully-paid' && (
+                                        <CheckOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
                                 </Tag>
                             </Space>
                         </span>
