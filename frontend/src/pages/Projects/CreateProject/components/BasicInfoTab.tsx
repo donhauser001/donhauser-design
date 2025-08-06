@@ -34,7 +34,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                 size="small"
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FileTextOutlined style={{ color: '#1890ff' }} />
+                        <FileTextOutlined style={{ color: '#666' }} />
                         <span>基本信息</span>
                     </div>
                 }
@@ -58,7 +58,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                 size="small"
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <TeamOutlined style={{ color: '#52c41a' }} />
+                        <TeamOutlined style={{ color: '#666' }} />
                         <span>客户信息</span>
                     </div>
                 }
@@ -124,7 +124,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                 size="small"
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <UserOutlined style={{ color: '#fa8c16' }} />
+                        <UserOutlined style={{ color: '#666' }} />
                         <span>团队信息</span>
                     </div>
                 }
@@ -206,7 +206,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = ({
                 size="small"
                 title={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <EditOutlined style={{ color: '#722ed1' }} />
+                        <EditOutlined style={{ color: '#666' }} />
                         <span>备注信息</span>
                     </div>
                 }

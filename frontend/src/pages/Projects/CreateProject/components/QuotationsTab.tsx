@@ -95,7 +95,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                     size="small"
                     title={
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <FileTextOutlined style={{ color: '#1890ff' }} />
+                            <FileTextOutlined style={{ color: '#666' }} />
                             <span>报价单信息</span>
                             <Tag color="blue">包含服务项目 0 项</Tag>
                         </div>
@@ -118,7 +118,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                     size="small"
                     title={
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <FileTextOutlined style={{ color: '#1890ff' }} />
+                            <FileTextOutlined style={{ color: '#666' }} />
                             <span>报价单信息</span>
                             <Tag color="blue">包含服务项目 0 项</Tag>
                         </div>
@@ -138,13 +138,13 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
         <div>
             <Card
                 size="small"
-                title={
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <FileTextOutlined style={{ color: '#1890ff' }} />
-                        <span>报价单信息</span>
-                        <Tag color="blue">包含服务项目 {quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项</Tag>
-                    </div>
-                }
+                                    title={
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <FileTextOutlined style={{ color: '#666' }} />
+                            <span>报价单信息</span>
+                            <Tag color="blue">包含服务项目 {quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项</Tag>
+                        </div>
+                    }
                 style={{ marginBottom: '24px', border: '1px solid #e8e8e8' }}
             >
                 {quotations.map((quotation, index) => (
@@ -161,7 +161,7 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({ quotations, selectedClien
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                             <div>
                                 <Title level={5} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <FileTextOutlined style={{ color: '#1890ff' }} />
+                                    <FileTextOutlined style={{ color: '#666' }} />
                                     {quotation.name}
                                     <Text type="secondary" style={{ fontSize: '14px', fontWeight: 'normal' }}>
                                         创建时间: {dayjs(quotation.createTime).format('YYYY-MM-DD')} | 有效期至: {quotation.validUntil ? dayjs(quotation.validUntil).format('YYYY-MM-DD') : '长期有效'}

@@ -131,20 +131,20 @@ const CreateProject: React.FC = () => {
                             {
                                 title: '基本信息',
                                 description: '填写项目基本信息',
-                                icon: <FileTextOutlined style={{ color: '#1890ff' }} />,
+                                icon: <FileTextOutlined style={{ color: '#666' }} />,
                                 status: currentStep >= 0 ? 'process' : 'wait'
                             },
                             {
                                 title: '任务列表',
                                 description: `选择服务项目 ${quotations.length > 0 ? quotations[0].selectedServices.length : 0} 项`,
-                                icon: <FileTextOutlined style={{ color: '#1890ff' }} />,
+                                icon: <FileTextOutlined style={{ color: '#666' }} />,
                                 status: currentStep >= 1 ? 'process' : 'wait',
                                 disabled: !selectedClient
                             },
                             {
                                 title: '订单信息',
                                 description: '确认订单详情',
-                                icon: <ShoppingCartOutlined style={{ color: '#13c2c2' }} />,
+                                icon: <ShoppingCartOutlined style={{ color: '#666' }} />,
                                 status: currentStep >= 2 ? 'process' : 'wait',
                                 disabled: !selectedClient
                             }
