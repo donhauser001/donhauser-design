@@ -39,6 +39,7 @@ interface Contact {
     email?: string;
     username?: string;
     company?: string;
+    position?: string;
 }
 
 interface Service {
@@ -334,7 +335,6 @@ const CreateProject: React.FC = () => {
                                 name="contactIds"
                                 label="联系人"
                                 rules={[{ required: true, message: '请选择联系人' }]}
-                                help={selectedClient ? `显示 ${selectedClient.name} 的联系人` : '请先选择客户'}
                             >
                                 <Select
                                     mode="multiple"
@@ -349,7 +349,7 @@ const CreateProject: React.FC = () => {
                                 >
                                     {filteredContacts.map(contact => (
                                         <Option key={contact._id} value={contact._id}>
-                                            {contact.realName} ({contact.phone})
+                                            {contact.realName} {contact.position ? `(${contact.position})` : ''}
                                         </Option>
                                     ))}
                                 </Select>
