@@ -82,6 +82,7 @@ class TaskService {
                     description: string;
                     order: number;
                     progressRatio: number;
+                    cycle: number;
                 }> = [];
                 let currentProcessStep: {
                     id: string;
@@ -89,6 +90,7 @@ class TaskService {
                     description: string;
                     order: number;
                     progressRatio: number;
+                    cycle: number;
                 } | null = null;
 
                 // 获取主创设计师名字
@@ -152,7 +154,8 @@ class TaskService {
                                 name: step.name,
                                 description: step.description,
                                 order: step.order,
-                                progressRatio: step.progressRatio
+                                progressRatio: step.progressRatio,
+                                cycle: step.cycle
                             }));
 
                             // 如果任务没有设置流程节点，默认选择第一个

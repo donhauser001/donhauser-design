@@ -109,6 +109,7 @@ interface Task {
         description: string;
         order: number;
         progressRatio: number;
+        cycle: number;
     }>;
     currentProcessStep?: {
         id: string;
@@ -116,6 +117,7 @@ interface Task {
         description: string;
         order: number;
         progressRatio: number;
+        cycle: number;
     };
     progress: number;
     startDate?: string;
@@ -291,11 +293,22 @@ const ProjectDetail: React.FC = () => {
     // 处理流程状态变更
     const handleProcessStepChange = async (task: Task, stepId: string) => {
         try {
+            // 找到选中的流程节点
+            const selectedStep = task.processSteps?.find(step => step.id === stepId);
+
+            // 计算截止日期：当前时间 + 周期天数
+            let dueDate = null;
+            if (selectedStep && selectedStep.cycle) {
+                const currentDate = new Date();
+                dueDate = new Date(currentDate.getTime() + selectedStep.cycle * 24 * 60 * 60 * 1000);
+            }
+
             const response = await fetch(`/api/tasks/${task._id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    processStepId: stepId
+                    processStepId: stepId,
+                    dueDate: dueDate ? dueDate.toISOString() : null
                 })
             });
 
@@ -303,6 +316,9 @@ const ProjectDetail: React.FC = () => {
 
             if (data.success) {
                 message.success('流程状态修改成功');
+                if (dueDate) {
+                    message.info(`截止日期已设置为: ${dayjs(dueDate).format('YYYY-MM-DD')}`);
+                }
                 fetchTasks(); // 重新获取任务列表
             } else {
                 message.error(data.message || '流程状态修改失败');
@@ -844,8 +860,24 @@ const ProjectDetail: React.FC = () => {
                                         title: '截止日期',
                                         key: 'dueDate',
                                         width: '12%',
-                                        render: (_, record: Task) =>
-                                            record.dueDate ? dayjs(record.dueDate).format('MM-DD') : '-'
+                                        render: (_, record: Task) => {
+                                            if (record.dueDate) {
+                                                const dueDate = dayjs(record.dueDate);
+                                                const now = dayjs();
+                                                const isOverdue = dueDate.isBefore(now);
+
+                                                return (
+                                                    <span style={{
+                                                        color: isOverdue ? '#ff4d4f' : '#52c41a',
+                                                        fontWeight: isOverdue ? 'bold' : 'normal'
+                                                    }}>
+                                                        {dueDate.format('MM-DD')}
+                                                        {isOverdue && ' (已逾期)'}
+                                                    </span>
+                                                );
+                                            }
+                                            return '-';
+                                        }
                                     },
                                     {
                                         title: '设计师',
