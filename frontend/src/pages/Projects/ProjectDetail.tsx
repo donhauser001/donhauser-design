@@ -632,28 +632,33 @@ const ProjectDetail: React.FC = () => {
                                         key: 'status',
                                         width: 120,
                                         render: (_, record: Task) => {
+                                            console.log('Task process info:', {
+                                                taskId: record._id,
+                                                processSteps: record.processSteps,
+                                                currentProcessStep: record.currentProcessStep,
+                                                serviceId: record.serviceId
+                                            });
+                                            
                                             if (record.processSteps && record.processSteps.length > 0) {
-                                                const menu = (
-                                                    <Menu
-                                                        onClick={({ key }) => handleProcessStepChange(record, key)}
-                                                        items={record.processSteps.map(step => ({
-                                                            key: step.id,
-                                                            label: (
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span>{step.name}</span>
-                                                                    {step.progressRatio > 0 && (
-                                                                        <span style={{ fontSize: '10px', color: '#8c8c8c' }}>
-                                                                            ({step.progressRatio}%)
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            )
-                                                        }))}
-                                                    />
-                                                );
+                                                const menu = {
+                                                    items: record.processSteps.map(step => ({
+                                                        key: step.id,
+                                                        label: (
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                <span>{step.name}</span>
+                                                                {step.progressRatio > 0 && (
+                                                                    <span style={{ fontSize: '10px', color: '#8c8c8c' }}>
+                                                                        ({step.progressRatio}%)
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )
+                                                    })),
+                                                    onClick: ({ key }: { key: string }) => handleProcessStepChange(record, key)
+                                                };
 
                                                 return (
-                                                    <Dropdown overlay={menu} trigger={['click']}>
+                                                    <Dropdown menu={menu} trigger={['click']}>
                                                         <Tag
                                                             color={record.currentProcessStep ? 'blue' : 'default'}
                                                             style={{ cursor: 'pointer' }}
