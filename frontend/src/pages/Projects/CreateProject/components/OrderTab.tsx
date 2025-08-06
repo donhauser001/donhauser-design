@@ -122,6 +122,18 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
             )
         },
         {
+            title: '价格说明',
+            dataIndex: 'unit',
+            key: 'priceDescription',
+            render: (unit: string, record: any) => (
+                <div>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                        按{unit}计费
+                    </Text>
+                </div>
+            )
+        },
+        {
             title: '小计',
             key: 'subtotal',
             render: (record: any) => (
