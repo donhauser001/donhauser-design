@@ -42,43 +42,51 @@ const QuotationsTab: React.FC<QuotationsTabProps> = ({
         const fetchServiceDetails = async () => {
             if (quotations.length > 0 && quotations[0].selectedServices.length > 0) {
                 try {
-                    // 检查是否已经获取过这些服务详情
                     const serviceIds = quotations[0].selectedServices;
-                    const existingIds = serviceDetails.map(s => s._id);
-                    const newServiceIds = serviceIds.filter(id => !existingIds.includes(id));
 
-                    if (newServiceIds.length === 0) {
-                        return; // 如果所有服务详情都已获取，则不需要重复获取
-                    }
-
+                    // 完全重新获取，避免重复
                     const details = await Promise.all(
-                        newServiceIds.map(async (serviceId) => {
+                        serviceIds.map(async (serviceId) => {
                             const response = await fetch(`/api/service-pricing/${serviceId}`);
                             const data = await response.json();
                             return data.success ? data.data : null;
                         })
                     );
 
-                    const newDetails = details.filter(Boolean);
-                    setServiceDetails(prev => [...prev, ...newDetails]);
+                    const validDetails = details.filter(Boolean);
+                    // 去重，确保每个服务只出现一次
+                    const uniqueDetails = validDetails.filter((service, index, self) =>
+                        index === self.findIndex(s => s._id === service._id)
+                    );
+                    setServiceDetails(uniqueDetails);
                 } catch (error) {
                     console.error('获取服务详情失败:', error);
                 }
+            } else {
+                // 如果没有报价单或服务，清空服务详情
+                setServiceDetails([]);
             }
         };
 
         fetchServiceDetails();
-    }, [quotations.length, quotations[0]?._id]);
+    }, [quotations.length, quotations[0]?.selectedServices?.join(',')]);
 
-    // 按分类分组服务
-    const groupedServices = serviceDetails.reduce((acc, service) => {
-        const category = service.categoryName || '未分类';
-        if (!acc[category]) {
-            acc[category] = [];
-        }
-        acc[category].push(service);
-        return acc;
-    }, {} as Record<string, ServiceWithDetails[]>);
+    // 按分类分组服务，确保去重
+    const groupedServices = useMemo(() => {
+        // 先对服务详情进行去重
+        const uniqueServices = serviceDetails.filter((service, index, self) =>
+            index === self.findIndex(s => s._id === service._id)
+        );
+
+        return uniqueServices.reduce((acc, service) => {
+            const category = service.categoryName || '未分类';
+            if (!acc[category]) {
+                acc[category] = [];
+            }
+            acc[category].push(service);
+            return acc;
+        }, {} as Record<string, ServiceWithDetails[]>);
+    }, [serviceDetails]);
 
     const handleServiceToggle = (serviceId: string, checked: boolean) => {
         if (checked) {
