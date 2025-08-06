@@ -149,6 +149,7 @@ const CreateProject: React.FC = () => {
                                     <QuotationsTab
                                         quotations={quotations}
                                         selectedClient={selectedClient}
+                                        services={services}
                                     />
                                 )
                             },
