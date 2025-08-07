@@ -25,6 +25,9 @@ import contractElementRoutes from './routes/contractElements';
 import specificationRoutes from './routes/specifications';
 import projectRoutes from './routes/projects';
 import taskRoutes from './routes/tasks';
+import articleRoutes from './routes/articles';
+import articleCategoryRoutes from './routes/articleCategories';
+import articleTagRoutes from './routes/articleTags';
 
 // 加载环境变量
 dotenv.config();
@@ -87,7 +90,10 @@ app.get('/', (req, res) => {
       contractElements: '/api/contract-elements',
       specifications: '/api/specifications',
       projects: '/api/projects',
-      tasks: '/api/tasks'
+      tasks: '/api/tasks',
+      articles: '/api/articles',
+      articleCategories: '/api/article-categories',
+      articleTags: '/api/article-tags'
     }
   });
 });
@@ -116,6 +122,9 @@ app.use('/api/contract-elements', contractElementRoutes);
 app.use('/api/specifications', specificationRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/articles', articleRoutes);
+app.use('/api/article-categories', articleCategoryRoutes);
+app.use('/api/article-tags', articleTagRoutes);
 
 // 错误处理中间件
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

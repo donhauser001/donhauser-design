@@ -39,6 +39,10 @@ import FormSettings from './pages/Forms/FormSettings'
 // 内容中心相关页面
 import Pages from './pages/Content/Pages'
 import Articles from './pages/Content/Articles'
+import ArticleEditor from './pages/Content/ArticleEditor'
+import ArticlePreview from './pages/Content/ArticlePreview'
+import ArticleCategories from './pages/Content/ArticleCategories'
+import ArticleTags from './pages/Content/ArticleTags'
 import Menus from './pages/Content/Menus'
 import WebsiteSettings from './pages/Content/WebsiteSettings'
 
@@ -61,6 +65,9 @@ import GeneralSettings from './pages/Settings/GeneralSettings'
 import AdvancedSettings from './pages/Settings/AdvancedSettings'
 import LoginSettings from './pages/Settings/LoginSettings'
 import FileUploadTest from './components/FileUploadTest'
+import RichTextEditorTest from './components/RichTextEditorTest'
+import BasicEditorTest from './components/BasicEditorTest'
+import ImageCropperTest from './components/ImageCropperTest'
 
 // 项目管理相关页面
 import Projects from './pages/Projects'
@@ -75,6 +82,11 @@ function App() {
 
           {/* 文件上传测试 */}
           <Route path="/test-upload" element={<FileUploadTest />} />
+
+          {/* 富文本编辑器测试 */}
+          <Route path="/test-editor" element={<RichTextEditorTest />} />
+          <Route path="/test-basic-editor" element={<BasicEditorTest />} />
+          <Route path="/test-cropper" element={<ImageCropperTest />} />
 
           {/* 项目管理 */}
           <Route path="/projects/*" element={<Projects />} />
@@ -111,6 +123,11 @@ function App() {
           {/* 内容中心 */}
           <Route path="/content/pages" element={<Pages />} />
           <Route path="/content/articles" element={<Articles />} />
+          <Route path="/content/articles/new" element={<ArticleEditor />} />
+          <Route path="/content/articles/edit/:id" element={<ArticleEditor />} />
+          <Route path="/content/articles/preview/:id" element={<ArticlePreview />} />
+          <Route path="/content/categories" element={<ArticleCategories />} />
+          <Route path="/content/tags" element={<ArticleTags />} />
           <Route path="/content/menus" element={<Menus />} />
           <Route path="/content/website-settings" element={<WebsiteSettings />} />
 

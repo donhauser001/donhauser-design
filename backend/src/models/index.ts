@@ -15,6 +15,9 @@ export * from './Specification';
 export * from './Project';
 export * from './Task';
 export * from './ProjectLog';
+export * from './Article';
+export * from './ArticleCategory';
+export * from './ArticleTag';
 
 export interface Client {
   id: string;

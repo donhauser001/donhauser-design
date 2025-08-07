@@ -17,6 +17,9 @@ import quotationRoutes from './quotations';
 import specificationRoutes from './specifications';
 import projectRoutes from './projects';
 import taskRoutes from './tasks';
+import articleRoutes from './articles';
+import articleCategoryRoutes from './articleCategories';
+import articleTagRoutes from './articleTags';
 
 const router = Router();
 
@@ -72,5 +75,14 @@ router.use('/projects', projectRoutes);
 
 // 任务管理路由
 router.use('/tasks', taskRoutes);
+
+// 文章管理路由
+router.use('/articles', articleRoutes);
+
+// 文章分类路由
+router.use('/article-categories', articleCategoryRoutes);
+
+// 文章标签路由
+router.use('/article-tags', articleTagRoutes);
 
 export default router; 

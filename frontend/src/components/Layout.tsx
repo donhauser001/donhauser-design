@@ -176,6 +176,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           label: '文章',
         },
         {
+          key: '/content/categories',
+          label: '文章分类',
+        },
+        {
+          key: '/content/tags',
+          label: '文章标签',
+        },
+        {
           key: '/content/menus',
           label: '菜单',
         },

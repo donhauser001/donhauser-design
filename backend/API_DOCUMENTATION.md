@@ -286,6 +286,119 @@
 - **URL**: `DELETE /api/permissions/groups/:id`
 - **参数**: `id` - 权限组ID
 
+## 文章管理 API
+
+### 1. 获取文章列表
+- **URL**: `GET /api/articles`
+- **参数**:
+  - `search` (可选): 搜索关键词（文章标题、内容）
+  - `category` (可选): 分类过滤（news、blog、case、tutorial、company）
+  - `status` (可选): 状态过滤（draft、published、archived）
+  - `authorId` (可选): 作者ID过滤
+  - `page` (可选): 页码，默认1
+  - `limit` (可选): 每页数量，默认10
+
+**响应示例**:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "_id": "1",
+      "title": "示例文章标题",
+      "content": "文章内容...",
+      "summary": "文章摘要",
+      "category": "blog",
+      "tags": ["标签1", "标签2"],
+      "author": "作者姓名",
+      "authorId": "author-id",
+      "status": "published",
+      "publishTime": "2024-01-15T10:30:00.000Z",
+      "viewCount": 100,
+      "isTop": false,
+      "isRecommend": true,
+      "createTime": "2024-01-15T10:00:00.000Z",
+      "updateTime": "2024-01-15T10:30:00.000Z"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "limit": 10
+}
+```
+
+### 2. 根据ID获取文章
+- **URL**: `GET /api/articles/:id`
+- **参数**: `id` - 文章ID
+
+### 3. 创建文章
+- **URL**: `POST /api/articles`
+- **请求体**:
+```json
+{
+  "title": "新文章标题",
+  "content": "文章内容",
+  "summary": "文章摘要",
+  "category": "blog",
+  "tags": ["标签1", "标签2"],
+  "author": "作者姓名",
+  "authorId": "author-id",
+  "seoTitle": "SEO标题",
+  "seoKeywords": "SEO关键词",
+  "seoDescription": "SEO描述"
+}
+```
+
+### 4. 更新文章
+- **URL**: `PUT /api/articles/:id`
+- **参数**: `id` - 文章ID
+- **请求体**: 同创建文章（所有字段可选）
+
+### 5. 删除文章
+- **URL**: `DELETE /api/articles/:id`
+- **参数**: `id` - 文章ID
+
+### 6. 切换文章状态
+- **URL**: `PUT /api/articles/:id/toggle-status`
+- **参数**: `id` - 文章ID
+- **说明**: 草稿 → 已发布 → 已归档 → 草稿
+
+### 7. 设置置顶状态
+- **URL**: `PUT /api/articles/:id/toggle-top`
+- **参数**: `id` - 文章ID
+
+### 8. 设置推荐状态
+- **URL**: `PUT /api/articles/:id/toggle-recommend`
+- **参数**: `id` - 文章ID
+
+### 9. 增加浏览量
+- **URL**: `PUT /api/articles/:id/increment-view`
+- **参数**: `id` - 文章ID
+
+### 10. 获取分类统计
+- **URL**: `GET /api/articles/stats/categories`
+- **响应**:
+```json
+{
+  "success": true,
+  "data": [
+    { "category": "blog", "count": 10 },
+    { "category": "news", "count": 5 },
+    { "category": "case", "count": 3 }
+  ]
+}
+```
+
+### 11. 获取热门文章
+- **URL**: `GET /api/articles/popular/list`
+- **参数**:
+  - `limit` (可选): 返回数量，默认10
+
+### 12. 获取推荐文章
+- **URL**: `GET /api/articles/recommended/list`
+- **参数**:
+  - `limit` (可选): 返回数量，默认10
+
 ## 错误码说明
 
 - `200`: 请求成功
