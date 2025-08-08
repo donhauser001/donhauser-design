@@ -162,11 +162,13 @@ const DesignCanvas: React.FC = () => {
         <Card
             title="设计画布"
             style={{ height: '100%', overflow: 'hidden' }}
-            bodyStyle={{
-                padding: '16px',
-                height: 'calc(100% - 57px)',
-                overflow: 'auto',
-                backgroundColor: '#fafafa'
+            styles={{
+                body: {
+                    padding: '16px',
+                    height: 'calc(100% - 57px)',
+                    overflow: 'auto',
+                    backgroundColor: '#fafafa'
+                }
             }}
         >
             <DndContext

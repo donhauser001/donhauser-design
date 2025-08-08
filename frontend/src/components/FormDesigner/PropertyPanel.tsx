@@ -5,7 +5,7 @@ import { FormComponent, ValidationRule } from '../../types/formDesigner';
 
 const { TextArea } = Input;
 const { Option } = Select;
-const { TabPane } = Tabs;
+// 使用 items API 替代 TabPane
 
 const PropertyPanel: React.FC = () => {
     const {
@@ -222,19 +222,17 @@ const PropertyPanel: React.FC = () => {
             title="属性配置"
             size="small"
             style={{ height: '100%', overflow: 'hidden' }}
-            bodyStyle={{ padding: '12px', height: 'calc(100% - 57px)', overflow: 'auto' }}
+            styles={{ body: { padding: '12px', height: 'calc(100% - 57px)', overflow: 'auto' } }}
         >
-            <Tabs defaultActiveKey="component" size="small">
-                <TabPane tab="组件属性" key="component">
-                    {renderComponentProperties()}
-                </TabPane>
-                <TabPane tab="布局设置" key="layout">
-                    {renderLayoutProperties()}
-                </TabPane>
-                <TabPane tab="主题设置" key="theme">
-                    {renderThemeProperties()}
-                </TabPane>
-            </Tabs>
+            <Tabs
+                defaultActiveKey="component"
+                size="small"
+                items={[
+                    { key: 'component', label: '组件属性', children: renderComponentProperties() },
+                    { key: 'layout', label: '布局设置', children: renderLayoutProperties() },
+                    { key: 'theme', label: '主题设置', children: renderThemeProperties() }
+                ]}
+            />
         </Card>
     );
 };

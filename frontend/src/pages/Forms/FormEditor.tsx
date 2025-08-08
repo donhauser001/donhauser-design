@@ -71,17 +71,20 @@ const FormEditor: React.FC = () => {
 
     return (
         <div style={{ padding: '24px' }}>
-            {/* 面包屑导航 */}
-            <Breadcrumb style={{ marginBottom: '16px' }}>
-                <Breadcrumb.Item>
-                    <a onClick={handleBack} style={{ cursor: 'pointer' }}>
-                        <FormOutlined /> 表单管理
-                    </a>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item>
-                    {isNewForm ? '创建表单' : '表单设计器'}
-                </Breadcrumb.Item>
-            </Breadcrumb>
+            {/* 面包屑导航（使用 items API） */}
+            <Breadcrumb
+                style={{ marginBottom: '16px' }}
+                items={[
+                    {
+                        title: (
+                            <a onClick={handleBack} style={{ cursor: 'pointer' }}>
+                                <FormOutlined /> 表单管理
+                            </a>
+                        )
+                    },
+                    { title: isNewForm ? '创建表单' : '表单设计器' }
+                ]}
+            />
 
             {/* 页面标题与工具栏（将按钮上移到这里） */}
             <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

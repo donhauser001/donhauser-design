@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Card, Collapse, Button, Tooltip } from 'antd';
+import React from 'react';
+import { Card, Collapse } from 'antd';
 import {
     FormOutlined,
     FileTextOutlined,
@@ -16,7 +16,7 @@ import {
 import { useFormDesignerStore } from '../../stores/formDesignerStore';
 import ComponentRegistry from './ComponentRegistry';
 
-const { Panel } = Collapse;
+// 使用 items API，避免 Panel 直接使用
 
 // 图标映射
 const iconMap: { [key: string]: React.ReactElement } = {
@@ -110,29 +110,27 @@ const ComponentLibrary: React.FC = () => {
             title="组件库"
             size="small"
             style={{ height: '100%', overflow: 'hidden' }}
-            bodyStyle={{ padding: '12px', height: 'calc(100% - 57px)', overflow: 'auto' }}
+            styles={{ body: { padding: '12px', height: 'calc(100% - 57px)', overflow: 'auto' } }}
         >
             <Collapse
                 defaultActiveKey={['basic']}
                 ghost
                 style={{ border: 'none' }}
-            >
-                {categories.map(category => (
-                    <Panel
-                        header={category.name}
-                        key={category.key}
-                        style={{
-                            border: '1px solid #f0f0f0',
-                            marginBottom: '8px',
-                            borderRadius: '4px'
-                        }}
-                    >
+                items={categories.map(category => ({
+                    key: category.key,
+                    label: category.name,
+                    children: (
                         <div style={{ padding: '8px 0' }}>
                             {renderComponentList(category.key)}
                         </div>
-                    </Panel>
-                ))}
-            </Collapse>
+                    ),
+                    style: {
+                        border: '1px solid #f0f0f0',
+                        marginBottom: '8px',
+                        borderRadius: '4px'
+                    }
+                }))}
+            />
 
             <div style={{
                 marginTop: '16px',
