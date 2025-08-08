@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { arrayMove } from '@dnd-kit/sortable';
+// import { arrayMove } from '@dnd-kit/sortable';
 import { FormComponent, FormDesignerState, FormDesignerAction, LayoutConfig, ThemeConfig } from '../types/formDesigner';
 import ComponentRegistry from '../components/FormDesigner/ComponentRegistry';
 
@@ -77,7 +77,17 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
         };
 
         set(state => {
-            const newComponents = [...state.components, newComponent];
+            const newComponents = [...state.components];
+            // 计算同父级的兄弟集合
+            const siblings = newComponents
+                .filter(c => c.parentId === parentId)
+                .sort((a, b) => a.order - b.order);
+            const insertAt = position !== undefined ? Math.min(Math.max(position, 0), siblings.length) : siblings.length;
+            // 更新同父级后续项的顺序
+            siblings.forEach(sib => {
+                if (sib.order >= insertAt) sib.order = sib.order + 1;
+            });
+            newComponents.push(newComponent);
             return {
                 components: newComponents,
                 history: [...state.history.slice(0, state.currentStep + 1), action],
@@ -138,10 +148,25 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
             if (!component) return state;
 
             const newComponents = [...state.components];
-            const componentIndex = newComponents.findIndex(comp => comp.id === id);
+            const oldParentId = component.parentId;
 
+            // 调整旧父级兄弟顺序（移除该项）
+            newComponents
+                .filter(c => c.parentId === oldParentId && c.id !== id)
+                .forEach(sib => {
+                    if (sib.order > component.order) sib.order = sib.order - 1;
+                });
+
+            // 调整新父级兄弟顺序（为插入腾位）
+            newComponents
+                .filter(c => c.parentId === newParentId)
+                .forEach(sib => {
+                    if (sib.order >= newIndex) sib.order = sib.order + 1;
+                });
+
+            // 应用移动
+            const componentIndex = newComponents.findIndex(comp => comp.id === id);
             if (componentIndex !== -1) {
-                // 更新组件的父容器和顺序
                 newComponents[componentIndex] = {
                     ...newComponents[componentIndex],
                     parentId: newParentId,
@@ -258,7 +283,7 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
 
 
     undo: () => {
-        const { currentStep, history } = get();
+        const { currentStep } = get();
         if (currentStep <= 0) return;
 
         set(state => ({
@@ -267,7 +292,7 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
     },
 
     redo: () => {
-        const { currentStep, history } = get();
+        const { currentStep } = get();
         if (currentStep >= history.length - 1) return;
 
         set(state => ({

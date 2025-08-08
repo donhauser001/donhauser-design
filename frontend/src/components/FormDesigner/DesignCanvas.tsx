@@ -20,12 +20,9 @@ import SortableComponent from './components/SortableComponent';
 const DesignCanvas: React.FC = () => {
     const {
         components,
-        selectedComponent,
         selectComponent,
         addComponent,
         moveComponent,
-        deleteComponent,
-        duplicateComponent
     } = useFormDesignerStore();
 
     const sensors = useSensors(
@@ -46,6 +43,26 @@ const DesignCanvas: React.FC = () => {
         }
     };
 
+    // 记录插入位置的参考线索
+    const getInsertIndex = (clientY: number, siblings: typeof components) => {
+        // 找到与鼠标最近的组件，决定插入到其前或后
+        let closestIndex = siblings.length;
+        let minDistance = Number.MAX_VALUE;
+        siblings.forEach((comp, index) => {
+            const el = document.querySelector(`[data-component-id="${comp.id}"]`) as HTMLElement | null;
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            const mid = rect.top + rect.height / 2;
+            const dist = Math.abs(clientY - mid);
+            if (dist < minDistance) {
+                minDistance = dist;
+                // 若鼠标在该组件上半区，则插入到其前；否则插到其后
+                closestIndex = clientY < mid ? index : index + 1;
+            }
+        });
+        return Math.min(Math.max(closestIndex, 0), siblings.length);
+    };
+
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
 
@@ -57,7 +74,9 @@ const DesignCanvas: React.FC = () => {
 
         const componentType = e.dataTransfer.getData('componentType');
         if (componentType) {
-            addComponent(componentType);
+            const rootComponents = components.filter(comp => !comp.parentId).sort((a, b) => a.order - b.order);
+            const insertIndex = getInsertIndex(e.clientY, rootComponents);
+            addComponent(componentType, insertIndex);
         }
     };
 
@@ -92,8 +111,8 @@ const DesignCanvas: React.FC = () => {
 
             // 情况1: 分组子组件拖拽到画布外部
             if (parentGroup && !targetGroup && !isOverGroup) {
-                const overIndex = components.findIndex(comp => comp.id === over?.id);
-                const insertIndex = overIndex !== -1 ? overIndex : components.length;
+                const rootComponents = components.filter(comp => !comp.parentId).sort((a, b) => a.order - b.order);
+                const insertIndex = getInsertIndex(event.delta.y + (event.activatorEvent as any)?.clientY || 0, rootComponents);
                 moveComponent(active.id as string, insertIndex);
             }
             // 情况2: 分组子组件拖拽到另一个分组组件本身
@@ -122,12 +141,9 @@ const DesignCanvas: React.FC = () => {
             // 情况6: 画布组件排序
             else if (!parentGroup && !targetGroup) {
                 const rootComponents = components.filter(comp => !comp.parentId);
-                const oldIndex = rootComponents.findIndex(comp => comp.id === active.id);
-                const newIndex = rootComponents.findIndex(comp => comp.id === over?.id);
-
-                if (oldIndex !== -1 && newIndex !== -1) {
-                    moveComponent(active.id as string, newIndex);
-                }
+                // 使用几何中线算法确定更自然的停驻位置
+                const newIndex = getInsertIndex((event.activatorEvent as any)?.clientY || 0, rootComponents);
+                moveComponent(active.id as string, newIndex);
             }
         }
     };

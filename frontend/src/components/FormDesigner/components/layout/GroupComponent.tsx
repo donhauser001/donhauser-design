@@ -10,7 +10,7 @@ interface GroupComponentProps {
 }
 
 const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
-    const { getComponentsByParent, addComponent } = useFormDesignerStore();
+    const { getComponentsByParent, addComponent, moveComponent } = useFormDesignerStore();
     const childComponents = getComponentsByParent(component.id);
 
     return (
@@ -45,7 +45,8 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                 const componentType = e.dataTransfer.getData('componentType');
                 console.log('Group drop event:', componentType, component.id);
                 if (componentType) {
-                    addComponent(componentType, undefined, component.id);
+                    // 在组容器顶部插入
+                    addComponent(componentType, 0, component.id);
                 }
             }}
         >
@@ -91,7 +92,23 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                         const componentType = e.dataTransfer.getData('componentType');
                         console.log('Group inner drop event:', componentType, component.id);
                         if (componentType) {
-                            addComponent(componentType, undefined, component.id);
+                            // 基于鼠标位置计算插入索引
+                            const siblings = childComponents;
+                            const clientY = e.clientY;
+                            let insertIndex = siblings.length;
+                            let minDistance = Number.MAX_VALUE;
+                            siblings.forEach((comp, index) => {
+                                const el = document.querySelector(`[data-component-id="${comp.id}"]`) as HTMLElement | null;
+                                if (!el) return;
+                                const rect = el.getBoundingClientRect();
+                                const mid = rect.top + rect.height / 2;
+                                const dist = Math.abs(clientY - mid);
+                                if (dist < minDistance) {
+                                    minDistance = dist;
+                                    insertIndex = clientY < mid ? index : index + 1;
+                                }
+                            });
+                            addComponent(componentType, insertIndex, component.id);
                         }
                     }}
                 >

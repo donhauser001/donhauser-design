@@ -58,6 +58,8 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
             }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
+            data-component-id={component.id}
+            data-parent-id={component.parentId || ''}
         >
             <FormComponentRenderer component={component} />
 
