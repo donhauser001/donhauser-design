@@ -45,11 +45,6 @@ const ComponentLibrary: React.FC = () => {
         { key: 'layout', name: '布局组件' }
     ];
 
-    const handleDragStart = (e: React.DragEvent, componentType: string) => {
-        console.log('Drag start:', componentType);
-        e.dataTransfer.setData('componentType', componentType);
-    };
-
     const handleComponentClick = (componentType: string) => {
         addComponent(componentType);
     };
@@ -82,8 +77,6 @@ const ComponentLibrary: React.FC = () => {
                             e.currentTarget.style.borderColor = '#f0f0f0';
                             e.currentTarget.style.boxShadow = 'none';
                         }}
-                        draggable
-                        onDragStart={(e) => handleDragStart(e, component.type)}
                         onClick={() => handleComponentClick(component.type)}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
@@ -141,9 +134,9 @@ const ComponentLibrary: React.FC = () => {
                 color: '#666'
             }}>
                 <div style={{ marginBottom: '8px', fontWeight: 500 }}>使用说明：</div>
-                <div>• 点击组件直接添加到表单</div>
-                <div>• 或拖拽组件到设计区域</div>
-                <div>• 支持复制、粘贴、删除操作</div>
+                <div>• 点击组件直接添加到画布</div>
+                <div>• 点击画布中组件进行选择和编辑</div>
+                <div>• 支持复制、删除操作</div>
             </div>
         </Card>
     );

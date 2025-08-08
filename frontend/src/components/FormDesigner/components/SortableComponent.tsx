@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Space, Popconfirm } from 'antd';
-import { DeleteOutlined, CopyOutlined, DragOutlined } from '@ant-design/icons';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { DeleteOutlined, CopyOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../types/formDesigner';
 import { useFormDesignerStore } from '../../../stores/formDesignerStore';
 import FormComponentRenderer from '../FormComponentRenderer';
@@ -12,21 +10,12 @@ interface SortableComponentProps {
 }
 
 const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-        id: component.id,
-        transition: {
-            duration: 150,
-            easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
-        },
-    });
-    const style = { opacity: isDragging ? 0.5 : 1 };
     const [isHovered, setIsHovered] = useState(false);
 
     const { selectedComponent, selectComponent, deleteComponent, duplicateComponent } = useFormDesignerStore();
 
     return (
         <div
-            ref={setNodeRef}
             style={{
                 position: 'relative',
                 marginBottom: '16px',
@@ -43,14 +32,8 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
                         ? '#fafafa'
                         : 'transparent',
                 transition: 'all 0.2s',
-                cursor: isDragging ? 'grabbing' : 'grab',
+                cursor: 'pointer',
                 boxShadow: isHovered ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
-                transform: isDragging
-                    ? CSS.Transform.toString(transform)
-                    : isHovered
-                        ? 'translateY(-1px)'
-                        : 'translateY(0)',
-                ...style
             }}
             onClick={(e) => {
                 e.stopPropagation();
@@ -80,14 +63,6 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
                 }}
             >
                 <Space size="small">
-                    <Button
-                        size="small"
-                        icon={<DragOutlined />}
-                        style={{ cursor: 'grab' }}
-                        title="拖拽排序"
-                        {...attributes}
-                        {...listeners}
-                    />
                     {selectedComponent === component.id && (
                         <>
                             <Button
@@ -123,4 +98,4 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
     );
 };
 
-export default SortableComponent; 
+export default SortableComponent;

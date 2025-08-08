@@ -1,6 +1,5 @@
 import React from 'react';
 import { AppstoreOutlined } from '@ant-design/icons';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 import SortableComponent from '../SortableComponent';
@@ -10,7 +9,7 @@ interface GroupComponentProps {
 }
 
 const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
-    const { getComponentsByParent, addComponent, moveComponent, previewTarget, setPreviewTarget, clearPreviewTarget } = useFormDesignerStore();
+    const { getComponentsByParent } = useFormDesignerStore();
     const childComponents = getComponentsByParent(component.id);
 
     return (
@@ -23,33 +22,6 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                 backgroundColor: '#ffffff',
                 marginBottom: '16px',
                 ...component.style
-            }}
-            onDragOver={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                e.currentTarget.style.borderColor = '#1890ff';
-                e.currentTarget.style.backgroundColor = '#f0f8ff';
-            }}
-            onDragLeave={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                e.currentTarget.style.borderColor = '#d9d9d9';
-                e.currentTarget.style.backgroundColor = '#ffffff';
-                clearPreviewTarget();
-            }}
-            onDrop={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                e.currentTarget.style.borderColor = '#d9d9d9';
-                e.currentTarget.style.backgroundColor = '#ffffff';
-
-                const componentType = e.dataTransfer.getData('componentType');
-                console.log('Group drop event:', componentType, component.id);
-                if (componentType) {
-                    // 在组容器顶部插入
-                    addComponent(componentType, previewTarget?.index ?? 0, component.id);
-                    clearPreviewTarget();
-                }
             }}
         >
             <div style={{
@@ -65,93 +37,22 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
             </div>
 
             {childComponents.length > 0 ? (
-                // 有子组件时，显示子组件，同时保留拖拽接收功能
+                // 有子组件时，静态显示子组件
                 <div
                     style={{
                         minHeight: '60px',
-                        transition: 'all 0.2s',
                         position: 'relative',
                         zIndex: 1
                     }}
-                    onDragOver={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.currentTarget.style.backgroundColor = '#f0f8ff';
-                        e.currentTarget.style.border = '2px dashed #1890ff';
-                        // 计算预览插入位置
-                        const clientY = e.clientY;
-                        let insertIndex = childComponents.length;
-                        let minDistance = Number.MAX_VALUE;
-                        childComponents.forEach((comp, index) => {
-                            const el = document.querySelector(`[data-component-id="${comp.id}"]`) as HTMLElement | null;
-                            if (!el) return;
-                            const mid = el.getBoundingClientRect().top + el.offsetHeight / 2;
-                            const dist = Math.abs(clientY - mid);
-                            if (dist < minDistance) {
-                                minDistance = dist;
-                                insertIndex = clientY < mid ? index : index + 1;
-                            }
-                        });
-                        setPreviewTarget(component.id, insertIndex);
-                    }}
-                    onDragLeave={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.border = 'none';
-                        clearPreviewTarget();
-                    }}
-                    onDrop={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.border = 'none';
-
-                        const componentType = e.dataTransfer.getData('componentType');
-                        console.log('Group inner drop event:', componentType, component.id);
-                        if (componentType) {
-                            const insertIndex = previewTarget?.parentId === component.id ? previewTarget.index : childComponents.length;
-                            addComponent(componentType, insertIndex, component.id);
-                            clearPreviewTarget();
-                        }
-                    }}
                 >
-                    <SortableContext items={childComponents.map(child => child.id)} strategy={verticalListSortingStrategy}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-                            {childComponents.map((child, index) => (
-                                <React.Fragment key={child.id || index}>
-                                    {previewTarget?.parentId === component.id && previewTarget.index === index && (
-                                        <div style={{ height: 0 }}>
-                                            <div style={{
-                                                height: 2,
-                                                background: '#1890ff',
-                                                borderRadius: 1,
-                                                margin: '8px 0',
-                                                boxShadow: '0 0 0 2px rgba(24,144,255,0.12)',
-                                                transition: 'all 120ms ease'
-                                            }} />
-                                        </div>
-                                    )}
-                                    <SortableComponent component={child} />
-                                </React.Fragment>
-                            ))}
-                            {previewTarget?.parentId === component.id && previewTarget.index === childComponents.length && (
-                                <div style={{ height: 0 }}>
-                                    <div style={{
-                                        height: 2,
-                                        background: '#1890ff',
-                                        borderRadius: 1,
-                                        margin: '8px 0',
-                                        boxShadow: '0 0 0 2px rgba(24,144,255,0.12)',
-                                        transition: 'all 120ms ease'
-                                    }} />
-                                </div>
-                            )}
-                        </div>
-                    </SortableContext>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                        {childComponents.map((child) => (
+                            <SortableComponent key={child.id} component={child} />
+                        ))}
+                    </div>
                 </div>
             ) : (
-                // 没有子组件时，显示拖拽提示区域
+                // 没有子组件时，显示静态提示
                 <div
                     style={{
                         minHeight: '60px',
@@ -159,30 +60,6 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                         backgroundColor: '#fafafa',
                         borderRadius: '4px',
                         border: '2px dashed #d9d9d9',
-                        transition: 'all 0.2s'
-                    }}
-                    onDragOver={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.currentTarget.style.borderColor = '#1890ff';
-                        e.currentTarget.style.backgroundColor = '#f0f8ff';
-                    }}
-                    onDragLeave={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.currentTarget.style.borderColor = '#d9d9d9';
-                        e.currentTarget.style.backgroundColor = '#fafafa';
-                    }}
-                    onDrop={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        e.currentTarget.style.borderColor = '#d9d9d9';
-                        e.currentTarget.style.backgroundColor = '#fafafa';
-
-                        const componentType = e.dataTransfer.getData('componentType');
-                        if (componentType) {
-                            addComponent(componentType, undefined, component.id);
-                        }
                     }}
                 >
                     <div style={{
@@ -197,7 +74,7 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                         gap: '8px'
                     }}>
                         <AppstoreOutlined style={{ fontSize: '16px' }} />
-                        拖拽组件到分组中
+                        空白分组
                     </div>
                 </div>
             )}
@@ -205,4 +82,4 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
     );
 };
 
-export default GroupComponent; 
+export default GroupComponent;
