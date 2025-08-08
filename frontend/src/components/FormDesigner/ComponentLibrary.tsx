@@ -13,7 +13,7 @@ import {
     MinusOutlined,
     UploadOutlined
 } from '@ant-design/icons';
-import { useFormDesignerStore } from '../../stores/formDesignerStore';
+
 import ComponentRegistry from './ComponentRegistry';
 
 // 使用 items API，避免 Panel 直接使用
@@ -34,8 +34,6 @@ const iconMap: { [key: string]: React.ReactElement } = {
 };
 
 const ComponentLibrary: React.FC = () => {
-    const { addComponent } = useFormDesignerStore();
-
     const categories = [
         { key: 'basic', name: '基础组件' },
         { key: 'project', name: '项目组件' },
@@ -44,10 +42,6 @@ const ComponentLibrary: React.FC = () => {
         { key: 'finance', name: '财务组件' },
         { key: 'layout', name: '布局组件' }
     ];
-
-    const handleComponentClick = (componentType: string) => {
-        addComponent(componentType);
-    };
 
     const renderComponentList = (category: string) => {
         const components = ComponentRegistry.getComponentsByCategory(category);
@@ -59,25 +53,14 @@ const ComponentLibrary: React.FC = () => {
                         key={component.type}
                         style={{
                             padding: '8px 12px',
-                            cursor: 'pointer',
                             border: '1px solid #f0f0f0',
                             borderRadius: '4px',
                             backgroundColor: '#fff',
-                            transition: 'all 0.2s',
                             minHeight: '60px',
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'center'
                         }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.borderColor = '#1890ff';
-                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(24, 144, 255, 0.15)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = '#f0f0f0';
-                            e.currentTarget.style.boxShadow = 'none';
-                        }}
-                        onClick={() => handleComponentClick(component.type)}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                             <span style={{ fontSize: '16px', marginRight: '8px' }}>
@@ -134,8 +117,8 @@ const ComponentLibrary: React.FC = () => {
                 color: '#666'
             }}>
                 <div style={{ marginBottom: '8px', fontWeight: 500 }}>使用说明：</div>
-                <div>• 点击组件直接添加到画布</div>
-                <div>• 点击画布中组件进行选择和编辑</div>
+                <div>• 组件库仅供展示和参考</div>
+                <div>• 点击画布中已有组件进行选择</div>
                 <div>• 支持复制、删除操作</div>
             </div>
         </Card>
