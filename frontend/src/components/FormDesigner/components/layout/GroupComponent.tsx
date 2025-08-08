@@ -99,6 +99,7 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                         e.stopPropagation();
                         e.currentTarget.style.backgroundColor = 'transparent';
                         e.currentTarget.style.border = 'none';
+                        clearPreviewTarget();
                     }}
                     onDrop={(e) => {
                         e.preventDefault();

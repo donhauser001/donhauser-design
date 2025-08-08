@@ -104,15 +104,26 @@ const DesignCanvas: React.FC = () => {
             .filter(c => c.parentId === newParentId)
             .sort((a, b) => a.order - b.order);
 
-        const activeIndex = siblings.findIndex(s => s.id === active.id);
-        const overIndex = overComponent.type === 'group' ? siblings.length : siblings.findIndex(s => s.id === overComponent.id);
-        if (overIndex === -1 && overComponent.type !== 'group') return;
-
-        let insertIndex = overIndex;
-        if (activeIndex !== -1) {
-            // 同列表移动：向下拖动插到后面，向上拖动插到前面
-            insertIndex = activeIndex < overIndex ? overIndex + 1 : overIndex;
+        // 基于鼠标位置（与 over 元素中线比较）判断插入前/后
+        let baseIndex = siblings.findIndex(s => s.id === overComponent.id);
+        if (overComponent.type === 'group') {
+            baseIndex = siblings.length - 1; // 组内没有子项时为 -1，后面 +1 变 0
         }
+        let insertIndex = baseIndex + 1; // 默认在 over 后面
+        const overEl = document.querySelector(`[data-component-id="${overComponent.id}"]`) as HTMLElement | null;
+        const pointerY = (event?.delta?.y || 0) + (event?.activatorEvent?.clientY || 0);
+        if (overEl) {
+            const rect = overEl.getBoundingClientRect();
+            const mid = rect.top + rect.height / 2;
+            insertIndex = (event?.over?.rect?.top ? (event.over.rect.top + event.over.rect.height / 2) : mid) && ((event?.active?.rect?.current?.top ?? pointerY) < mid)
+                ? baseIndex
+                : baseIndex + 1;
+        }
+
+        // 同父级内移动时修正因移除导致的索引偏移
+        const activeIndex = siblings.findIndex(s => s.id === active.id);
+        if (activeIndex !== -1 && activeIndex < insertIndex) insertIndex -= 1;
+
         setPreviewTarget(newParentId, Math.max(0, Math.min(insertIndex, siblings.length)));
     };
 
