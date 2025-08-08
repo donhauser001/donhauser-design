@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import {
-    Card,
     Button,
     Space,
     message,
@@ -29,9 +28,9 @@ const { Title, Text } = Typography
 const FormEditor: React.FC = () => {
     const navigate = useNavigate()
     const { id } = useParams<{ id: string }>()
-    const [loading, setLoading] = useState(false)
+    const [, setLoading] = useState(false)
     const [formData, setFormData] = useState<FormType | null>(null)
-    const [isNewForm, setIsNewForm] = useState(!id)
+    const [isNewForm] = useState(!id)
     const { loadFormConfig, undo, redo, currentStep, history } = useFormDesignerStore()
 
     useEffect(() => {
@@ -84,72 +83,61 @@ const FormEditor: React.FC = () => {
                 </Breadcrumb.Item>
             </Breadcrumb>
 
-            {/* 页面标题 */}
-            <div style={{ marginBottom: '24px' }}>
-                <Title level={2} style={{ margin: 0 }}>
-                    {isNewForm ? '创建表单' : '表单设计器'}
-                </Title>
-                <Text type="secondary">
-                    {isNewForm ? '创建新的表单并设计表单内容' : '深度设计表单内容和布局'}
-                </Text>
+            {/* 页面标题与工具栏（将按钮上移到这里） */}
+            <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                    <Title level={2} style={{ margin: 0 }}>
+                        {isNewForm ? '创建表单' : '表单设计器'}
+                    </Title>
+                    <Text type="secondary">
+                        {isNewForm ? '创建新的表单并设计表单内容' : '深度设计表单内容和布局'}
+                        {formData ? ` ｜ 表单: ${formData.name}` : ''}
+                    </Text>
+                </div>
+                <Space>
+                    <Button
+                        icon={<UndoOutlined />}
+                        onClick={undo}
+                        disabled={currentStep <= 0}
+                        title="撤销"
+                    />
+                    <Button
+                        icon={<RedoOutlined />}
+                        onClick={redo}
+                        disabled={currentStep >= history.length - 1}
+                        title="重做"
+                    />
+                    <Button
+                        icon={<SaveOutlined />}
+                        onClick={() => message.info('保存功能开发中...')}
+                        title="保存"
+                    />
+                    <Button
+                        icon={<EyeOutlined />}
+                        onClick={handlePreview}
+                        title="预览"
+                    />
+                    <Button
+                        icon={<ArrowLeftOutlined />}
+                        onClick={handleBack}
+                        title="返回"
+                    />
+                </Space>
             </div>
 
-            {/* 表单设计器 */}
+            {/* 表单设计器主区域（移除卡片容器层） */}
             <div style={{ width: '100%' }}>
-                <Card
-                    title={
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span>表单设计器</span>
-                            <Space>
-                                <Button
-                                    icon={<UndoOutlined />}
-                                    onClick={undo}
-                                    disabled={currentStep <= 0}
-                                    title="撤销"
-                                />
-                                <Button
-                                    icon={<RedoOutlined />}
-                                    onClick={redo}
-                                    disabled={currentStep >= history.length - 1}
-                                    title="重做"
-                                />
-                                <Button
-                                    icon={<SaveOutlined />}
-                                    onClick={() => message.info('保存功能开发中...')}
-                                    title="保存"
-                                />
-                                <Button
-                                    icon={<EyeOutlined />}
-                                    onClick={handlePreview}
-                                    title="预览"
-                                />
-                                <Button
-                                    icon={<ArrowLeftOutlined />}
-                                    onClick={handleBack}
-                                    title="返回"
-                                />
-                            </Space>
-                        </div>
-                    }
-                    loading={loading}
-                    extra={
-                        <Text type="secondary">
-                            {formData ? `表单: ${formData.name}` : '加载中...'}
-                        </Text>
-                    }
-                >
-                    <Row gutter={16} style={{ height: 'calc(100vh - 300px)' }}>
-                        <Col span={5}>
-                            <ComponentLibrary />
-                        </Col>
-                        <Col span={13}>
-                            <DesignCanvas />
-                        </Col>
-                        <Col span={6}>
-                            <PropertyPanel />
-                        </Col>
-                    </Row>
-                </Card>
+                <Row gutter={16} style={{ height: 'calc(100vh - 300px)' }}>
+                    <Col span={5}>
+                        <ComponentLibrary />
+                    </Col>
+                    <Col span={13}>
+                        <DesignCanvas />
+                    </Col>
+                    <Col span={6}>
+                        <PropertyPanel />
+                    </Col>
+                </Row>
             </div>
         </div>
     )
