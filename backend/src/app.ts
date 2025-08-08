@@ -28,6 +28,8 @@ import taskRoutes from './routes/tasks';
 import articleRoutes from './routes/articles';
 import articleCategoryRoutes from './routes/articleCategories';
 import articleTagRoutes from './routes/articleTags';
+import formCategoryRoutes from './routes/formCategories';
+import formRoutes from './routes/forms';
 
 // 加载环境变量
 dotenv.config();
@@ -93,7 +95,9 @@ app.get('/', (req, res) => {
       tasks: '/api/tasks',
       articles: '/api/articles',
       articleCategories: '/api/article-categories',
-      articleTags: '/api/article-tags'
+      articleTags: '/api/article-tags',
+      formCategories: '/api/form-categories',
+      forms: '/api/forms'
     }
   });
 });
@@ -125,6 +129,8 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/article-categories', articleCategoryRoutes);
 app.use('/api/article-tags', articleTagRoutes);
+app.use('/api/form-categories', formCategoryRoutes);
+app.use('/api/forms', formRoutes);
 
 // 错误处理中间件
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

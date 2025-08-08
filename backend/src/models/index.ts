@@ -18,6 +18,8 @@ export * from './ProjectLog';
 export * from './Article';
 export * from './ArticleCategory';
 export * from './ArticleTag';
+export * from './FormCategory';
+export * from './Form';
 
 export interface Client {
   id: string;

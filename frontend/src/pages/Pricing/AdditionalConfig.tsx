@@ -68,14 +68,18 @@ const AdditionalConfig: React.FC = () => {
     // 显示编辑配置模态窗口
     const handleEditConfig = (record: AdditionalConfig) => {
         setEditingConfig(record)
-        configForm.setFieldsValue({
-            name: record.name,
-            description: record.description,
-            initialDraftCount: record.initialDraftCount,
-            maxDraftCount: record.maxDraftCount,
-            mainCreatorRatio: record.mainCreatorRatio,
-            assistantRatio: record.assistantRatio
-        })
+        // 先重置表单，再设置值
+        configForm.resetFields()
+        setTimeout(() => {
+            configForm.setFieldsValue({
+                name: record.name,
+                description: record.description,
+                initialDraftCount: record.initialDraftCount,
+                maxDraftCount: record.maxDraftCount,
+                mainCreatorRatio: record.mainCreatorRatio,
+                assistantRatio: record.assistantRatio
+            })
+        }, 0)
         setEditModalVisible(true)
     }
 
@@ -420,13 +424,15 @@ const AdditionalConfig: React.FC = () => {
                 onCancel={() => {
                     setEditModalVisible(false);
                     setEditingConfig(null);
+                    configForm.resetFields();
                 }}
                 onOk={handleSaveEditConfig}
                 width={800}
                 okText="保存"
                 cancelText="取消"
+                destroyOnHidden
             >
-                <Form form={configForm} layout="vertical">
+                <Form form={configForm} layout="vertical" preserve={false}>
                     <Row gutter={16}>
                         <Col span={12}>
                             <Form.Item

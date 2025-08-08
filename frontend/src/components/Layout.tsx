@@ -157,6 +157,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           label: '表单列表',
         },
         {
+          key: '/forms/categories',
+          label: '表单分类',
+        },
+        {
           key: '/forms/settings',
           label: '表单设置',
         },

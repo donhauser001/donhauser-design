@@ -20,6 +20,8 @@ import taskRoutes from './tasks';
 import articleRoutes from './articles';
 import articleCategoryRoutes from './articleCategories';
 import articleTagRoutes from './articleTags';
+import formCategoryRoutes from './formCategories';
+import formRoutes from './forms';
 
 const router = Router();
 
@@ -84,5 +86,11 @@ router.use('/article-categories', articleCategoryRoutes);
 
 // 文章标签路由
 router.use('/article-tags', articleTagRoutes);
+
+// 表单分类路由
+router.use('/form-categories', formCategoryRoutes);
+
+// 表单管理路由
+router.use('/forms', formRoutes);
 
 export default router; 

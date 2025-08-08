@@ -34,7 +34,9 @@ import ContractElements from './pages/Contracts/ContractElements'
 // 表单系统相关页面
 import Forms from './pages/Forms'
 import FormList from './pages/Forms/FormList'
+import FormEditor from './pages/Forms/FormEditor'
 import FormSettings from './pages/Forms/FormSettings'
+import FormCategories from './pages/Forms/FormCategories'
 
 // 内容中心相关页面
 import Pages from './pages/Content/Pages'
@@ -118,6 +120,9 @@ function App() {
           {/* 表单系统 */}
           <Route path="/forms" element={<Forms />} />
           <Route path="/forms/list" element={<FormList />} />
+          <Route path="/forms/new" element={<FormEditor />} />
+          <Route path="/forms/edit/:id" element={<FormEditor />} />
+          <Route path="/forms/categories" element={<FormCategories />} />
           <Route path="/forms/settings" element={<FormSettings />} />
 
           {/* 内容中心 */}
