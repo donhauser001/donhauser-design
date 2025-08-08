@@ -70,9 +70,6 @@ const ComponentLibrary: React.FC = () => {
                                 <div style={{ fontWeight: 500, fontSize: '13px' }}>
                                     {component.name}
                                 </div>
-                                <div style={{ fontSize: '11px', color: '#666', marginTop: '2px' }}>
-                                    {component.description}
-                                </div>
                             </div>
                         </div>
                     </div>
