@@ -24,4 +24,7 @@ router.delete('/:id', QuotationController.deleteQuotation)
 // 切换报价单状态
 router.patch('/:id/toggle-status', QuotationController.toggleQuotationStatus)
 
+// 根据客户ID获取关联的报价单
+router.get('/client/:clientId', QuotationController.getQuotationsByClientId)
+
 export default router 

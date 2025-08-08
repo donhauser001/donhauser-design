@@ -20,7 +20,25 @@ class ServicePricingService {
     }
     static async getServicePricingById(id) {
         try {
-            return await ServicePricing_1.default.findById(id);
+            const service = await ServicePricing_1.default.findById(id);
+            if (!service) {
+                return null;
+            }
+            if (service.pricingPolicyNames && service.pricingPolicyNames.length > 0) {
+                return service;
+            }
+            if (service.pricingPolicyIds && service.pricingPolicyIds.length > 0) {
+                const policies = await PricingPolicy_1.default.find({ _id: { $in: service.pricingPolicyIds } });
+                const pricingPolicyNames = policies.map(policy => policy.alias);
+                await ServicePricing_1.default.findByIdAndUpdate(service._id, {
+                    pricingPolicyNames: pricingPolicyNames
+                });
+                return {
+                    ...service.toObject(),
+                    pricingPolicyNames: pricingPolicyNames
+                };
+            }
+            return service;
         }
         catch (error) {
             throw new Error('获取服务定价详情失败');

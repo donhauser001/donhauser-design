@@ -6,13 +6,7 @@ import Layout from './components/Layout'
 
 // 页面导入
 import Dashboard from './pages/Dashboard'
-import Projects from './pages/Projects'
 import './App.css'
-
-// 项目管理相关页面
-import TaskBoard from './pages/Projects/TaskBoard'
-import ProposalCenter from './pages/Projects/ProposalCenter'
-import ProjectDetail from './pages/Projects/ProjectDetail/index'
 
 // 客户管理相关页面
 import Contacts from './pages/Clients/Contacts'
@@ -20,7 +14,6 @@ import ClientList from './pages/Clients/ClientList'
 import ClientCategories from './pages/Clients/ClientCategories'
 
 // 财务管理相关页面
-import Orders from './pages/Finance/Orders'
 import Settlements from './pages/Finance/Settlements'
 import Invoices from './pages/Finance/Invoices'
 import Income from './pages/Finance/Income'
@@ -41,11 +34,17 @@ import ContractElements from './pages/Contracts/ContractElements'
 // 表单系统相关页面
 import Forms from './pages/Forms'
 import FormList from './pages/Forms/FormList'
+import FormEditor from './pages/Forms/FormEditor'
 import FormSettings from './pages/Forms/FormSettings'
+import FormCategories from './pages/Forms/FormCategories'
 
 // 内容中心相关页面
 import Pages from './pages/Content/Pages'
 import Articles from './pages/Content/Articles'
+import ArticleEditor from './pages/Content/ArticleEditor'
+import ArticlePreview from './pages/Content/ArticlePreview'
+import ArticleCategories from './pages/Content/ArticleCategories'
+import ArticleTags from './pages/Content/ArticleTags'
 import Menus from './pages/Content/Menus'
 import WebsiteSettings from './pages/Content/WebsiteSettings'
 
@@ -68,6 +67,12 @@ import GeneralSettings from './pages/Settings/GeneralSettings'
 import AdvancedSettings from './pages/Settings/AdvancedSettings'
 import LoginSettings from './pages/Settings/LoginSettings'
 import FileUploadTest from './components/FileUploadTest'
+import RichTextEditorTest from './components/RichTextEditorTest'
+import BasicEditorTest from './components/BasicEditorTest'
+import ImageCropperTest from './components/ImageCropperTest'
+
+// 项目管理相关页面
+import Projects from './pages/Projects'
 
 function App() {
   return (
@@ -80,11 +85,13 @@ function App() {
           {/* 文件上传测试 */}
           <Route path="/test-upload" element={<FileUploadTest />} />
 
+          {/* 富文本编辑器测试 */}
+          <Route path="/test-editor" element={<RichTextEditorTest />} />
+          <Route path="/test-basic-editor" element={<BasicEditorTest />} />
+          <Route path="/test-cropper" element={<ImageCropperTest />} />
+
           {/* 项目管理 */}
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:id" element={<ProjectDetail />} />
-          <Route path="/projects/task-board" element={<TaskBoard />} />
-          <Route path="/projects/proposal-center" element={<ProposalCenter />} />
+          <Route path="/projects/*" element={<Projects />} />
 
           {/* 客户管理 */}
           <Route path="/clients" element={<ClientList />} />
@@ -93,7 +100,6 @@ function App() {
           <Route path="/clients/categories" element={<ClientCategories />} />
 
           {/* 财务管理 */}
-          <Route path="/finance/orders" element={<Orders />} />
           <Route path="/finance/settlements" element={<Settlements />} />
           <Route path="/finance/invoices" element={<Invoices />} />
           <Route path="/finance/income" element={<Income />} />
@@ -114,11 +120,19 @@ function App() {
           {/* 表单系统 */}
           <Route path="/forms" element={<Forms />} />
           <Route path="/forms/list" element={<FormList />} />
+          <Route path="/forms/new" element={<FormEditor />} />
+          <Route path="/forms/edit/:id" element={<FormEditor />} />
+          <Route path="/forms/categories" element={<FormCategories />} />
           <Route path="/forms/settings" element={<FormSettings />} />
 
           {/* 内容中心 */}
           <Route path="/content/pages" element={<Pages />} />
           <Route path="/content/articles" element={<Articles />} />
+          <Route path="/content/articles/new" element={<ArticleEditor />} />
+          <Route path="/content/articles/edit/:id" element={<ArticleEditor />} />
+          <Route path="/content/articles/preview/:id" element={<ArticlePreview />} />
+          <Route path="/content/categories" element={<ArticleCategories />} />
+          <Route path="/content/tags" element={<ArticleTags />} />
           <Route path="/content/menus" element={<Menus />} />
           <Route path="/content/website-settings" element={<WebsiteSettings />} />
 

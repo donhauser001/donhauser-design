@@ -265,6 +265,25 @@ export class UserController {
         }
     }
 
+    // 获取员工和超级管理员用户
+    async getEmployeesAndAdmins(req: Request, res: Response): Promise<void> {
+        try {
+            const users = await this.userService.getEmployeesAndAdmins();
+
+            res.json({
+                success: true,
+                message: '获取员工和管理员成功',
+                data: users
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: '获取员工和管理员失败',
+                error: error instanceof Error ? error.message : '未知错误'
+            });
+        }
+    }
+
     // 检查用户名是否存在
     async checkUsernameExists(req: Request, res: Response): Promise<void> {
         try {

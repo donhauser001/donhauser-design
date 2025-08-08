@@ -20,16 +20,20 @@ const calculatePriceWithPolicies = (originalPrice, quantity, policies, selectedP
         }
         let currentResult;
         if (policy.type === 'uniform_discount') {
-            const discountRatio = policy.discountRatio || 0;
+            let discountRatio = policy.discountRatio || 0;
+            if (discountRatio <= 1 && discountRatio > 0) {
+                discountRatio = discountRatio * 100;
+            }
             const discountedPrice = (originalPrice * discountRatio) / 100;
             const discountAmount = originalPrice - discountedPrice;
+            const fullCalculationDetails = `计费方式:\n按${discountRatio}%计费\n\n原价: ¥${originalPrice.toLocaleString()}\n优惠金额: ¥${discountAmount.toLocaleString()}\n最终价格: ¥${discountedPrice.toLocaleString()}`;
             currentResult = {
                 originalPrice,
                 discountedPrice,
                 discountAmount,
                 discountRatio,
                 appliedPolicy: policy,
-                calculationDetails: `按${discountRatio}%计费`
+                calculationDetails: fullCalculationDetails
             };
         }
         else if (policy.type === 'tiered_discount' && policy.tierSettings) {
@@ -105,13 +109,14 @@ const calculateTieredDiscount = (originalPrice, quantity, policy, unit = '件') 
     }
     const discountAmount = originalPrice - totalDiscountedPrice;
     totalDiscountRatio = ((originalPrice - totalDiscountedPrice) / originalPrice) * 100;
+    const fullCalculationDetails = `计费方式:\n${calculationDetails.trim()}\n\n原价: ¥${originalPrice.toLocaleString()}\n优惠金额: ¥${discountAmount.toLocaleString()}\n最终价格: ¥${totalDiscountedPrice.toLocaleString()}`;
     return {
         originalPrice,
         discountedPrice: totalDiscountedPrice,
         discountAmount,
         discountRatio: 100 - totalDiscountRatio,
         appliedPolicy: policy,
-        calculationDetails: calculationDetails.trim()
+        calculationDetails: fullCalculationDetails
     };
 };
 //# sourceMappingURL=pricePolicyCalculator.js.map

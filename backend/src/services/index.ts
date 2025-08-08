@@ -12,10 +12,11 @@ export * from './ServicePricingService';
 export * from './QuotationService';
 export * from './SpecificationService';
 export * from './ProjectService';
+export * from './TaskService';
+export * from './ArticleService';
+export * from './ArticleCategoryService';
+export * from './ArticleTagService';
 
-export const projectService = {
-  // 项目相关业务逻辑
-};
 
 export const clientService = {
   // 客户相关业务逻辑

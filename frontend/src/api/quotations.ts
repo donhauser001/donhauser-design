@@ -77,4 +77,10 @@ export const searchQuotations = async (searchText: string): Promise<Quotation[]>
         params: { q: searchText }
     })
     return response.data.data
+}
+
+// 根据客户ID获取关联的报价单
+export const getQuotationsByClientId = async (clientId: string): Promise<Quotation[]> => {
+    const response = await axios.get(`${API_BASE_URL}/quotations/client/${clientId}`)
+    return response.data.data
 } 

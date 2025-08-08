@@ -1,247 +1,333 @@
-import { Request, Response } from 'express'
-import ProjectService from '../services/ProjectService'
-import { TaskService } from '../services/TaskService'
+import { Request, Response } from 'express';
+import ProjectService from '../services/ProjectService';
+import { TaskService } from '../services/TaskService';
+
+const taskService = new TaskService();
 
 export class ProjectController {
-    /**
-     * 获取项目列表
-     */
-    async getProjects(req: Request, res: Response) {
-        try {
-            const { page = 1, limit = 50, search, status, team } = req.query
+  /**
+   * 获取项目列表
+   */
+  static async getProjects(req: Request, res: Response) {
+    try {
+      const { page, limit, search, progressStatus, settlementStatus, undertakingTeam, clientId, excludeStatus } = req.query;
 
-            const result = await ProjectService.getProjects({
-                page: Number(page),
-                limit: Number(limit),
-                search: search as string,
-                status: status as string,
-                team: team as string
-            })
+      const result = await ProjectService.getProjects({
+        page: page ? parseInt(page as string) : undefined,
+        limit: limit ? parseInt(limit as string) : undefined,
+        search: search as string,
+        progressStatus: progressStatus as string,
+        settlementStatus: settlementStatus as string,
+        undertakingTeam: undertakingTeam as string,
+        clientId: clientId as string,
+        excludeStatus: excludeStatus as string
+      });
 
-            res.json({
-                success: true,
-                data: result.projects,
-                pagination: {
-                    page: Number(page),
-                    limit: Number(limit),
-                    total: result.total,
-                    pages: Math.ceil(result.total / Number(limit))
-                }
-            })
-        } catch (error) {
-            console.error('获取项目列表失败:', error)
-            res.status(500).json({
-                success: false,
-                message: '获取项目列表失败',
-                error: error instanceof Error ? error.message : '未知错误'
-            })
-        }
+      res.json({
+        success: true,
+        data: result.projects,
+        total: result.total,
+        page: page ? parseInt(page as string) : 1,
+        limit: limit ? parseInt(limit as string) : 50
+      });
+    } catch (error) {
+      console.error('获取项目列表失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '获取项目列表失败',
+        error: error instanceof Error ? error.message : '未知错误'
+      });
     }
+  }
 
-    /**
-     * 获取项目详情
-     */
-    async getProjectById(req: Request, res: Response) {
-        try {
-            const { id } = req.params
+  /**
+   * 根据ID获取项目详情
+   */
+  static async getProjectById(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
 
-            const project = await ProjectService.getProjectById(id)
-            if (!project) {
-                return res.status(404).json({
-                    success: false,
-                    message: '项目不存在'
-                })
-            }
+      const project = await ProjectService.getProjectById(id);
 
-            res.json({
-                success: true,
-                data: project
-            })
-        } catch (error) {
-            console.error('获取项目详情失败:', error)
-            res.status(500).json({
-                success: false,
-                message: '获取项目详情失败',
-                error: error instanceof Error ? error.message : '未知错误'
-            })
+      if (!project) {
+        res.status(404).json({
+          success: false,
+          message: '项目不存在'
+        });
+        return;
+      }
+
+      // 获取项目相关的任务
+      const tasks = await taskService.getTasksByProject(id);
+
+      res.json({
+        success: true,
+        data: {
+          ...project,
+          tasks
         }
+      });
+    } catch (error) {
+      console.error('获取项目详情失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '获取项目详情失败',
+        error: error instanceof Error ? error.message : '未知错误'
+      });
     }
+  }
 
-    /**
-     * 创建项目
-     */
-    async createProject(req: Request, res: Response) {
-        try {
-            const {
-                projectName,
-                client,
-                contact,
-                team,
-                mainDesigner,
-                assistantDesigners,
-                relatedOrders,
-                relatedTasks,
-                clientRequirements,
-                startDate
-            } = req.body
+  /**
+   * 创建项目
+   */
+  static async createProject(req: Request, res: Response) {
+    try {
+      const { project: projectData, services: servicesData } = req.body;
+      const createdBy = (req as any).user?.id || 'system';
 
-            const project = await ProjectService.createProject({
-                projectName,
-                client,
-                contact,
-                team,
-                mainDesigner,
-                assistantDesigners,
-                relatedOrders,
-                relatedTasks,
-                clientRequirements,
-                startDate: new Date(startDate)
-            })
+      // 创建项目
+      const project = await ProjectService.createProject({
+        ...projectData,
+        createdBy
+      });
 
-            res.status(201).json({
-                success: true,
-                data: project,
-                message: '项目创建成功'
-            })
-        } catch (error) {
-            console.error('创建项目失败:', error)
-            res.status(500).json({
-                success: false,
-                message: '创建项目失败',
-                error: error instanceof Error ? error.message : '未知错误'
-            })
-        }
+      // 创建任务
+      if (servicesData && servicesData.length > 0) {
+        const tasks = await Promise.all(
+          servicesData.map(async (service: any) => {
+            return await taskService.createTask({
+              taskName: service.serviceName,
+              projectId: project._id?.toString() || '',
+              serviceId: service.serviceId,
+              quantity: service.quantity,
+              unit: service.unit,
+              subtotal: service.subtotal,
+              pricingPolicies: service.pricingPolicies?.map((policyId: string) => ({
+                policyId,
+                policyName: service.pricingPolicyNames || '未知政策',
+                policyType: 'uniform_discount',
+                discountRatio: 100,
+                calculationDetails: '标准定价'
+              })) || [],
+              billingDescription: `${service.serviceName} - ${service.quantity}${service.unit}`,
+              status: 'pending',
+              priority: 'medium',
+              mainDesigners: [],
+              assistantDesigners: [],
+              settlementStatus: 'unpaid',
+              progress: 0
+            });
+          })
+        );
+
+        res.status(201).json({
+          success: true,
+          message: '项目创建成功',
+          data: {
+            project,
+            tasks
+          }
+        });
+      } else {
+        res.status(201).json({
+          success: true,
+          message: '项目创建成功',
+          data: {
+            project,
+            tasks: []
+          }
+        });
+      }
+    } catch (error) {
+      console.error('创建项目失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '创建项目失败',
+        error: error instanceof Error ? error.message : '未知错误'
+      });
     }
+  }
 
-    /**
-     * 更新项目
-     */
-    async updateProject(req: Request, res: Response) {
-        try {
-            const { id } = req.params
-            const updateData = req.body
+  /**
+   * 更新项目
+   */
+  static async updateProject(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const updateData = req.body;
+      const updatedBy = (req as any).user?.id || 'system';
 
-            const project = await ProjectService.updateProject(id, updateData)
+      const project = await ProjectService.updateProject(id, {
+        ...updateData,
+        updatedBy
+      });
 
-            if (!project) {
-                return res.status(404).json({
-                    success: false,
-                    message: '项目不存在'
-                })
-            }
+      if (!project) {
+        res.status(404).json({
+          success: false,
+          message: '项目不存在'
+        });
+        return;
+      }
 
-            res.json({
-                success: true,
-                data: project,
-                message: '项目更新成功'
-            })
-        } catch (error) {
-            console.error('更新项目失败:', error)
-            res.status(500).json({
-                success: false,
-                message: '更新项目失败',
-                error: error instanceof Error ? error.message : '未知错误'
-            })
-        }
+      res.json({
+        success: true,
+        message: '项目更新成功',
+        data: project
+      });
+    } catch (error) {
+      console.error('更新项目失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '更新项目失败',
+        error: error instanceof Error ? error.message : '未知错误'
+      });
     }
+  }
 
-    /**
-     * 删除项目
-     */
-    async deleteProject(req: Request, res: Response) {
-        try {
-            const { id } = req.params
+  /**
+   * 删除项目
+   */
+  static async deleteProject(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const deletedBy = (req as any).user?.id || 'system';
 
-            await ProjectService.deleteProject(id)
+      await ProjectService.deleteProject(id, deletedBy);
 
-            res.json({
-                success: true,
-                message: '项目删除成功'
-            })
-        } catch (error) {
-            console.error('删除项目失败:', error)
-            res.status(500).json({
-                success: false,
-                message: '删除项目失败',
-                error: error instanceof Error ? error.message : '未知错误'
-            })
-        }
+      res.json({
+        success: true,
+        message: '项目删除成功'
+      });
+    } catch (error) {
+      console.error('删除项目失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '删除项目失败',
+        error: error instanceof Error ? error.message : '未知错误'
+      });
     }
+  }
 
-    /**
-     * 更新项目状态
-     */
-    async updateProjectStatus(req: Request, res: Response) {
-        try {
-            const { id } = req.params
-            const { status } = req.body
+  /**
+   * 更新项目状态
+   */
+  static async updateProjectStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const updatedBy = (req as any).user?.id || 'system';
 
-            const project = await ProjectService.updateProjectStatus(id, status)
+      const project = await ProjectService.updateProjectStatus(id, status, updatedBy);
 
-            if (!project) {
-                return res.status(404).json({
-                    success: false,
-                    message: '项目不存在'
-                })
-            }
+      if (!project) {
+        res.status(404).json({
+          success: false,
+          message: '项目不存在'
+        });
+        return;
+      }
 
-            res.json({
-                success: true,
-                data: project,
-                message: '项目状态更新成功'
-            })
-        } catch (error) {
-            console.error('更新项目状态失败:', error)
-            res.status(500).json({
-                success: false,
-                message: '更新项目状态失败',
-                error: error instanceof Error ? error.message : '未知错误'
-            })
-        }
+      res.json({
+        success: true,
+        message: '项目状态更新成功',
+        data: project
+      });
+    } catch (error) {
+      console.error('更新项目状态失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '更新项目状态失败',
+        error: error instanceof Error ? error.message : '未知错误'
+      });
     }
+  }
 
-    /**
-     * 获取项目统计信息
-     */
-    async getProjectStats(req: Request, res: Response) {
-        try {
-            const stats = await ProjectService.getProjectStats()
+  /**
+   * 更新结算状态
+   */
+  static async updateSettlementStatus(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const updatedBy = (req as any).user?.id || 'system';
 
-            res.json({
-                success: true,
-                data: stats
-            })
-        } catch (error) {
-            console.error('获取项目统计失败:', error)
-            res.status(500).json({
-                success: false,
-                message: '获取项目统计失败',
-                error: error instanceof Error ? error.message : '未知错误'
-            })
-        }
+      const project = await ProjectService.updateSettlementStatus(id, status, updatedBy);
+
+      if (!project) {
+        res.status(404).json({
+          success: false,
+          message: '项目不存在'
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: '结算状态更新成功',
+        data: project
+      });
+    } catch (error) {
+      console.error('更新结算状态失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '更新结算状态失败',
+        error: error instanceof Error ? error.message : '未知错误'
+      });
     }
+  }
 
-    /**
-     * 获取项目任务列表
-     */
-    async getProjectTasks(req: Request, res: Response) {
-        try {
-            const { id } = req.params
-            const taskService = new TaskService()
+  /**
+   * 获取项目统计信息
+   */
+  static async getProjectStats(req: Request, res: Response) {
+    try {
+      const stats = await ProjectService.getProjectStats();
 
-            const tasks = await taskService.getTasksByProject(id)
-
-            res.json({
-                success: true,
-                data: tasks
-            })
-        } catch (error) {
-            console.error('获取项目任务失败:', error)
-            res.status(500).json({
-                success: false,
-                message: '获取项目任务失败',
-                error: error instanceof Error ? error.message : '未知错误'
-            })
-        }
+      res.json({
+        success: true,
+        data: stats
+      });
+    } catch (error) {
+      console.error('获取项目统计失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '获取项目统计失败',
+        error: error instanceof Error ? error.message : '未知错误'
+      });
     }
-} 
+  }
+
+  /**
+   * 获取项目日志
+   */
+  static async getProjectLogs(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { page, limit } = req.query;
+
+      const result = await ProjectService.getProjectLogs(
+        id,
+        page ? parseInt(page as string) : 1,
+        limit ? parseInt(limit as string) : 20
+      );
+
+      res.json({
+        success: true,
+        data: result.logs,
+        total: result.total,
+        page: page ? parseInt(page as string) : 1,
+        limit: limit ? parseInt(limit as string) : 20
+      });
+    } catch (error) {
+      console.error('获取项目日志失败:', error);
+      res.status(500).json({
+        success: false,
+        message: '获取项目日志失败',
+        error: error instanceof Error ? error.message : '未知错误'
+      });
+    }
+  }
+}
+
+export default ProjectController; 

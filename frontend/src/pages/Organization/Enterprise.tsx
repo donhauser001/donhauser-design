@@ -11,6 +11,7 @@ const { Option } = Select
 interface EnterpriseData {
     id: string
     enterpriseName: string
+    enterpriseAlias?: string
     creditCode: string
     businessLicense: string
     legalRepresentative: string
@@ -91,6 +92,7 @@ const Enterprise: React.FC = () => {
 
         form.setFieldsValue({
             enterpriseName: enterprise.enterpriseName,
+            enterpriseAlias: enterprise.enterpriseAlias,
             creditCode: enterprise.creditCode,
             businessLicense: enterprise.businessLicense,
             legalRepresentative: enterprise.legalRepresentative,
@@ -256,7 +258,16 @@ const Enterprise: React.FC = () => {
             title: '企业名称',
             dataIndex: 'enterpriseName',
             key: 'enterpriseName',
-            render: (text: string) => <strong>{text}</strong>
+            render: (text: string, record: EnterpriseData) => (
+                <div>
+                    <strong>{text}</strong>
+                    {record.enterpriseAlias && (
+                        <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                            别名: {record.enterpriseAlias}
+                        </div>
+                    )}
+                </div>
+            )
         },
         {
             title: '统一社会信用代码',
@@ -369,6 +380,14 @@ const Enterprise: React.FC = () => {
                                 ]}
                             >
                                 <Input placeholder="请输入企业名称" />
+                            </Form.Item>
+
+                            <Form.Item
+                                name="enterpriseAlias"
+                                label="企业别名"
+                                extra="用于项目承接团队显示，如：设计团队A、创意工作室等"
+                            >
+                                <Input placeholder="请输入企业别名（选填）" />
                             </Form.Item>
 
                             <Form.Item

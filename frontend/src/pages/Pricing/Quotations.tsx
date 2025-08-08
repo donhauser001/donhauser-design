@@ -750,7 +750,7 @@ const Quotations: React.FC = () => {
                                                                 fontWeight: '500',
                                                                 marginLeft: 8
                                                             }}>
-                                                                ¥{service.unitPrice.toLocaleString()}/{service.unit}
+                                                                ¥{service.unitPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/{service.unit}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -989,7 +989,7 @@ const Quotations: React.FC = () => {
                                                                 fontWeight: '500',
                                                                 marginLeft: 8
                                                             }}>
-                                                                ¥{service.unitPrice.toLocaleString()}/{service.unit}
+                                                                ¥{service.unitPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/{service.unit}
                                                             </span>
                                                         </div>
                                                     </div>

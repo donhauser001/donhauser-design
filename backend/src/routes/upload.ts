@@ -32,6 +32,7 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
     'image/jpeg',
     'image/png',
     'image/gif',
+    'image/webp',
     'application/pdf',
     'text/plain',
     'application/msword', // .doc
@@ -469,6 +470,56 @@ router.post('/department', createUpload('departments').single('departmentFile'),
   }
 });
 
+// 文章图片文件过滤器
+const articleImageFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('只支持 JPG、PNG、GIF、WebP 格式的图片'));
+  }
+};
+
+// 创建文章图片上传中间件
+const createArticleImageUpload = () => {
+  return multer({
+    storage: createStorage('article-image'),
+    fileFilter: articleImageFilter,
+    limits: {
+      fileSize: 5 * 1024 * 1024 // 5MB
+    }
+  });
+};
+
+// 上传文章图片（文章板块）
+router.post('/article-image', createArticleImageUpload().single('file'), (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: '没有上传图片文件'
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: '文章图片上传成功',
+      data: {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        size: req.file.size,
+        url: `/uploads/article-image/${req.file.filename}`
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: '文章图片上传失败',
+      error: error instanceof Error ? error.message : '未知错误'
+    });
+  }
+});
+
 // Multer错误处理中间件
 router.use((error: any, req: Request, res: Response, next: any) => {
   if (error instanceof multer.MulterError) {
@@ -490,6 +541,15 @@ router.use((error: any, req: Request, res: Response, next: any) => {
       error: error.message
     });
   }
+
+  // 处理文件类型错误
+  if (error.message && error.message.includes('只支持')) {
+    return res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+
   next(error);
 });
 
@@ -506,9 +566,10 @@ router.delete('/:category/:filename', (req: Request, res: Response) => {
         message: '文件删除成功'
       });
     } else {
-      return res.status(404).json({
-        success: false,
-        message: '文件不存在'
+      // 文件不存在时，返回成功状态，因为目标（文件不存在）已经达成
+      return res.json({
+        success: true,
+        message: '文件已不存在'
       });
     }
   } catch (error) {

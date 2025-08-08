@@ -153,18 +153,22 @@ const ServicePricing: React.FC = () => {
     // 编辑定价
     const handleEditPricing = (record: ServicePricing) => {
         setEditingPricing(record)
-        editForm.setFieldsValue({
-            serviceName: record.serviceName,
-            alias: record.alias,
-            categoryId: record.categoryId,
-            unitPrice: record.unitPrice,
-            unit: record.unit,
-            priceDescription: record.priceDescription,
-            link: record.link,
-            additionalConfigId: record.additionalConfigId,
-            serviceProcessId: record.serviceProcessId,
-            pricingPolicyIds: record.pricingPolicyIds
-        })
+        // 先重置表单，再设置值
+        editForm.resetFields()
+        setTimeout(() => {
+            editForm.setFieldsValue({
+                serviceName: record.serviceName,
+                alias: record.alias,
+                categoryId: record.categoryId,
+                unitPrice: record.unitPrice,
+                unit: record.unit,
+                priceDescription: record.priceDescription,
+                link: record.link,
+                additionalConfigId: record.additionalConfigId,
+                serviceProcessId: record.serviceProcessId,
+                pricingPolicyIds: record.pricingPolicyIds
+            })
+        }, 0)
 
         // 设置选中状态
         setSelectedAdditionalConfig(record.additionalConfigId || '')
@@ -292,7 +296,7 @@ const ServicePricing: React.FC = () => {
             width: 120,
             render: (_: any, record: ServicePricing) => (
                 <div style={{ fontWeight: 500 }}>
-                    ¥{record.unitPrice}/{record.unit}
+                    ¥{record.unitPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/{record.unit}
                 </div>
             )
         },
@@ -747,13 +751,15 @@ const ServicePricing: React.FC = () => {
                     setSelectedAdditionalConfig('')
                     setSelectedServiceProcess('')
                     setSelectedPricingPolicies([])
+                    editForm.resetFields()
                 }}
                 onOk={handleSaveEditPricing}
                 width={800}
                 okText="保存"
                 cancelText="取消"
+                destroyOnHidden
             >
-                <Form form={editForm} layout="vertical">
+                <Form form={editForm} layout="vertical" preserve={false}>
                     <Row gutter={16}>
                         <Col span={12}>
                             <Form.Item

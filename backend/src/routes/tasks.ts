@@ -1,26 +1,42 @@
 import { Router } from 'express';
-import { TaskController } from '../controllers/TaskController';
+import TaskController from '../controllers/TaskController';
 
 const router = Router();
-const taskController = new TaskController();
 
-// 任务管理路由
-router.post('/', taskController.createTask); // 创建单个任务
-router.post('/batch', taskController.createTasks); // 批量创建任务
-router.get('/', taskController.getTasks); // 获取任务列表
-router.get('/stats', taskController.getTaskStats); // 获取任务统计
+// 获取任务列表
+router.get('/', TaskController.getTasks);
 
-// 单个任务操作
-router.get('/:id', taskController.getTaskById); // 获取任务详情
-router.put('/:id', taskController.updateTask); // 更新任务
-router.patch('/:id/status', taskController.updateTaskStatus); // 更新任务状态
-router.patch('/:id/assign', taskController.assignDesigners); // 分配设计师
-router.delete('/:id', taskController.deleteTask); // 删除任务
+// 获取任务统计信息
+router.get('/stats', TaskController.getTaskStats);
 
-// 项目相关任务
-router.get('/project/:projectId', taskController.getTasksByProject); // 获取项目任务
+// 根据ID获取任务详情
+router.get('/:id', TaskController.getTaskById);
 
-// 设计师相关任务
-router.get('/designer/:designerId', taskController.getTasksByDesigner); // 获取设计师任务
+// 获取项目相关的任务
+router.get('/project/:projectId', TaskController.getTasksByProject);
+
+// 获取设计师分配的任务
+router.get('/designer/:designerId', TaskController.getTasksByDesigner);
+
+// 创建任务
+router.post('/', TaskController.createTask);
+
+// 批量创建任务
+router.post('/batch', TaskController.createTasks);
+
+// 更新任务
+router.put('/:id', TaskController.updateTask);
+
+// 更新任务状态
+router.patch('/:id/status', TaskController.updateTaskStatus);
+
+// 更新任务结算状态
+router.patch('/:id/settlement', TaskController.updateTaskSettlementStatus);
+
+// 分配设计师
+router.patch('/:id/assign', TaskController.assignDesigners);
+
+// 删除任务
+router.delete('/:id', TaskController.deleteTask);
 
 export default router; 

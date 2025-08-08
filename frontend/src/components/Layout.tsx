@@ -38,25 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       icon: <DashboardOutlined />,
       label: '仪表盘',
     },
-    {
-      key: 'projects',
-      icon: <ProjectOutlined />,
-      label: '项目管理',
-      children: [
-        {
-          key: '/projects',
-          label: '项目概览',
-        },
-        {
-          key: '/projects/task-board',
-          label: '任务看板',
-        },
-        {
-          key: '/projects/proposal-center',
-          label: '提案中心',
-        },
-      ],
-    },
+
     {
       key: 'clients',
       icon: <UserOutlined />,
@@ -77,14 +59,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       ],
     },
     {
+      key: 'projects',
+      icon: <ProjectOutlined />,
+      label: '项目管理 [新]',
+      children: [
+        {
+          key: '/projects',
+          label: '项目列表',
+        },
+        {
+          key: '/projects/create',
+          label: '新建项目',
+        },
+      ],
+    },
+    {
       key: 'finance',
       icon: <DollarOutlined />,
       label: '财务管理',
       children: [
-        {
-          key: '/finance/orders',
-          label: '订单',
-        },
+
         {
           key: '/finance/settlements',
           label: '结算单',
@@ -163,6 +157,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           label: '表单列表',
         },
         {
+          key: '/forms/categories',
+          label: '表单分类',
+        },
+        {
           key: '/forms/settings',
           label: '表单设置',
         },
@@ -180,6 +178,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         {
           key: '/content/articles',
           label: '文章',
+        },
+        {
+          key: '/content/categories',
+          label: '文章分类',
+        },
+        {
+          key: '/content/tags',
+          label: '文章标签',
         },
         {
           key: '/content/menus',
@@ -280,7 +286,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     const pathname = location.pathname
     const newOpenKeys: string[] = []
 
-    if (pathname.startsWith('/projects')) newOpenKeys.push('projects')
+
     if (pathname.startsWith('/clients')) newOpenKeys.push('clients')
     if (pathname.startsWith('/finance')) newOpenKeys.push('finance')
     if (pathname.startsWith('/pricing')) newOpenKeys.push('pricing')

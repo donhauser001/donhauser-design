@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
     Card,
     Table,
@@ -23,97 +24,59 @@ import {
     FormOutlined
 } from '@ant-design/icons'
 import ActionMenu, { ActionTypes } from '../../components/ActionMenu'
+import { getForms, createForm, updateForm, deleteForm, toggleFormStatus, Form as FormType, FormQuery } from '../../api/forms'
+import { getActiveFormCategories, FormCategory } from '../../api/formCategories'
 
 const { Search } = Input
 const { Option } = Select
 
-interface FormItem {
-    _id: string
-    name: string
-    description?: string
-    type: 'contract' | 'customer' | 'survey' | 'application'
-    status: 'draft' | 'published' | 'disabled'
-    createdBy: string
-    createTime: string
-    updateTime: string
-    submissions?: number
-}
+// 使用从API导入的Form接口
 
 const FormList: React.FC = () => {
-    const [forms, setForms] = useState<FormItem[]>([])
+    const navigate = useNavigate()
+    const [forms, setForms] = useState<FormType[]>([])
+    const [categories, setCategories] = useState<FormCategory[]>([])
     const [loading, setLoading] = useState(false)
     const [searchText, setSearchText] = useState('')
-    const [typeFilter, setTypeFilter] = useState<string>('')
+    const [categoryFilter, setCategoryFilter] = useState<string>('')
     const [statusFilter, setStatusFilter] = useState<string>('')
     const [isModalVisible, setIsModalVisible] = useState(false)
-    const [editingForm, setEditingForm] = useState<FormItem | null>(null)
+    const [editingForm, setEditingForm] = useState<FormType | null>(null)
     const [form] = Form.useForm()
-
-    // 模拟数据
-    const mockForms: FormItem[] = [
-        {
-            _id: '1',
-            name: '标准服务合同模板',
-            description: '用于生成标准服务合同的模板',
-            type: 'contract',
-            status: 'published',
-            createdBy: 'admin',
-            createTime: '2024-01-15 10:30:00',
-            updateTime: '2024-01-20 14:20:00',
-            submissions: 25
-        },
-        {
-            _id: '2',
-            name: '客户需求收集表',
-            description: '收集客户项目需求的表单',
-            type: 'customer',
-            status: 'published',
-            createdBy: 'admin',
-            createTime: '2024-01-10 09:15:00',
-            updateTime: '2024-01-18 16:45:00',
-            submissions: 12
-        },
-        {
-            _id: '3',
-            name: '客户满意度调查',
-            description: '调查客户对服务的满意度',
-            type: 'survey',
-            status: 'draft',
-            createdBy: 'admin',
-            createTime: '2024-01-22 11:00:00',
-            updateTime: '2024-01-22 11:00:00',
-            submissions: 0
-        }
-    ]
 
     useEffect(() => {
         loadForms()
-    }, [searchText, typeFilter, statusFilter])
+        loadCategories()
+    }, [searchText, categoryFilter, statusFilter])
 
-    const loadForms = () => {
+    const loadCategories = async () => {
+        try {
+            const categoriesData = await getActiveFormCategories()
+            setCategories(categoriesData)
+        } catch (error) {
+            console.error('加载分类失败:', error)
+            message.error('加载分类失败')
+        }
+    }
+
+    const loadForms = async () => {
         setLoading(true)
-        // 模拟API调用
-        setTimeout(() => {
-            let filteredForms = mockForms
-
-            if (searchText) {
-                filteredForms = filteredForms.filter(form =>
-                    form.name.toLowerCase().includes(searchText.toLowerCase()) ||
-                    (form.description && form.description.toLowerCase().includes(searchText.toLowerCase()))
-                )
+        try {
+            const query: FormQuery = {
+                search: searchText || undefined,
+                categoryId: categoryFilter || undefined,
+                status: statusFilter || undefined,
+                page: 1,
+                limit: 100
             }
-
-            if (typeFilter) {
-                filteredForms = filteredForms.filter(form => form.type === typeFilter)
-            }
-
-            if (statusFilter) {
-                filteredForms = filteredForms.filter(form => form.status === statusFilter)
-            }
-
-            setForms(filteredForms)
+            const result = await getForms(query)
+            setForms(result.forms)
+        } catch (error) {
+            console.error('加载表单失败:', error)
+            message.error('加载表单失败')
+        } finally {
             setLoading(false)
-        }, 500)
+        }
     }
 
     const handleCreate = () => {
@@ -122,14 +85,18 @@ const FormList: React.FC = () => {
         setIsModalVisible(true)
     }
 
-    const handleEdit = (record: FormItem) => {
+    const handleEdit = (record: FormType) => {
         setEditingForm(record)
-        form.setFieldsValue({
-            name: record.name,
-            description: record.description,
-            type: record.type,
-            status: record.status
-        })
+        // 先重置表单，再设置值
+        form.resetFields()
+        setTimeout(() => {
+            form.setFieldsValue({
+                name: record.name,
+                description: record.description,
+                categoryId: record.categoryId._id,
+                status: record.status
+            })
+        }, 0)
         setIsModalVisible(true)
     }
 
@@ -138,57 +105,53 @@ const FormList: React.FC = () => {
             const values = await form.validateFields()
 
             if (editingForm) {
-                // 更新表单
+                // 编辑模式：更新后跳转到编辑器
+                const updatedForm = await updateForm(editingForm._id, values)
                 message.success('表单更新成功')
+                setIsModalVisible(false)
+                loadForms()
+                // 跳转到编辑器页面
+                navigate(`/forms/edit/${editingForm._id}`)
             } else {
-                // 创建表单
+                // 创建模式：创建后跳转到编辑器
+                const newForm = await createForm(values)
                 message.success('表单创建成功')
+                setIsModalVisible(false)
+                loadForms()
+                // 跳转到编辑器页面
+                navigate(`/forms/edit/${newForm._id}`)
             }
-
-            setIsModalVisible(false)
-            loadForms()
-        } catch (error) {
+        } catch (error: any) {
             console.error('表单保存失败:', error)
+            message.error(error.response?.data?.message || '表单保存失败')
         }
     }
 
-    const handleDelete = (id: string) => {
-        Modal.confirm({
-            title: '确认删除',
-            content: '确定要删除这个表单吗？删除后无法恢复。',
-            okText: '确定',
-            cancelText: '取消',
-            onOk: () => {
-                message.success('表单删除成功')
-                loadForms()
-            }
-        })
-    }
-
-    const handleToggleStatus = (id: string, currentStatus: string) => {
-        const newStatus = currentStatus === 'published' ? 'disabled' : 'published'
-        const actionText = newStatus === 'published' ? '发布' : '停用'
-
-        Modal.confirm({
-            title: `确认${actionText}`,
-            content: `确定要${actionText}这个表单吗？`,
-            okText: '确定',
-            cancelText: '取消',
-            onOk: () => {
-                message.success(`${actionText}成功`)
-                loadForms()
-            }
-        })
-    }
-
-    const getTypeLabel = (type: string) => {
-        const typeMap = {
-            contract: { label: '合同模板', color: 'blue' },
-            customer: { label: '客户表单', color: 'green' },
-            survey: { label: '问卷调查', color: 'orange' },
-            application: { label: '申请表单', color: 'purple' }
+    const handleDelete = async (id: string) => {
+        try {
+            await deleteForm(id)
+            message.success('表单删除成功')
+            loadForms()
+        } catch (error: any) {
+            console.error('删除失败:', error)
+            message.error(error.response?.data?.message || '删除失败')
         }
-        return typeMap[type as keyof typeof typeMap] || { label: type, color: 'default' }
+    }
+
+    const handleToggleStatus = async (id: string, currentStatus: string) => {
+        try {
+            await toggleFormStatus(id)
+            message.success(`表单已${currentStatus === 'published' ? '停用' : '发布'}`)
+            loadForms()
+        } catch (error: any) {
+            console.error('状态切换失败:', error)
+            message.error(error.response?.data?.message || '状态切换失败')
+        }
+    }
+
+    const getCategoryLabel = (category: any) => {
+        if (!category) return { label: '未分类', color: 'default' }
+        return { label: category.name, color: category.color }
     }
 
     const getStatusLabel = (status: string) => {
@@ -231,11 +194,11 @@ const FormList: React.FC = () => {
             render: (text: string) => text || '-'
         },
         {
-            title: '类型',
-            dataIndex: 'type',
-            key: 'type',
-            render: (type: string) => {
-                const { label, color } = getTypeLabel(type)
+            title: '分类',
+            dataIndex: 'categoryId',
+            key: 'categoryId',
+            render: (category: any) => {
+                const { label, color } = getCategoryLabel(category)
                 return <Tag color={color}>{label}</Tag>
             }
         },
@@ -280,9 +243,15 @@ const FormList: React.FC = () => {
         {
             title: '操作',
             key: 'action',
-            width: 120,
-            render: (_: any, record: FormItem) => {
+            width: 150,
+            render: (_: any, record: FormType) => {
                 const actions = [
+                    {
+                        key: 'design',
+                        label: '设计表单',
+                        icon: <FormOutlined />,
+                        onClick: () => navigate(`/forms/edit/${record._id}`)
+                    },
                     {
                         ...ActionTypes.EDIT,
                         onClick: () => handleEdit(record)
@@ -325,15 +294,16 @@ const FormList: React.FC = () => {
                         onChange={(e) => setSearchText(e.target.value)}
                     />
                     <Select
-                        placeholder="选择类型"
+                        placeholder="选择分类"
                         allowClear
                         style={{ width: 150 }}
-                        onChange={setTypeFilter}
+                        onChange={setCategoryFilter}
                     >
-                        <Option value="contract">合同模板</Option>
-                        <Option value="customer">客户表单</Option>
-                        <Option value="survey">问卷调查</Option>
-                        <Option value="application">申请表单</Option>
+                        {categories.map(category => (
+                            <Option key={category._id} value={category._id}>
+                                {category.name}
+                            </Option>
+                        ))}
                     </Select>
                     <Select
                         placeholder="选择状态"
@@ -369,61 +339,82 @@ const FormList: React.FC = () => {
             </Card>
 
             {/* 创建/编辑表单模态框 */}
-            <Modal
-                title={editingForm ? '编辑表单' : '创建表单'}
-                open={isModalVisible}
-                onOk={handleSave}
-                onCancel={() => setIsModalVisible(false)}
-                width={600}
-            >
-                <Form
-                    form={form}
-                    layout="vertical"
+            {isModalVisible && (
+                <Modal
+                    title={editingForm ? '编辑表单' : '创建表单'}
+                    open={isModalVisible}
+                    onOk={handleSave}
+                    onCancel={() => {
+                        setIsModalVisible(false)
+                        form.resetFields()
+                    }}
+                    width={600}
+                    destroyOnHidden
+                    okText={editingForm ? '保存并编辑' : '创建并编辑'}
+                    cancelText="取消"
                 >
-                    <Form.Item
-                        name="name"
-                        label="表单名称"
-                        rules={[{ required: true, message: '请输入表单名称' }]}
+                    <Form
+                        form={form}
+                        layout="vertical"
+                        preserve={false}
                     >
-                        <Input placeholder="请输入表单名称" />
-                    </Form.Item>
+                        <Form.Item
+                            name="name"
+                            label="表单名称"
+                            rules={[{ required: true, message: '请输入表单名称' }]}
+                        >
+                            <Input placeholder="请输入表单名称" />
+                        </Form.Item>
 
-                    <Form.Item
-                        name="description"
-                        label="表单描述"
-                    >
-                        <Input.TextArea
-                            placeholder="请输入表单描述"
-                            rows={3}
-                        />
-                    </Form.Item>
+                        <Form.Item
+                            name="description"
+                            label="表单描述"
+                        >
+                            <Input.TextArea
+                                placeholder="请输入表单描述"
+                                rows={3}
+                            />
+                        </Form.Item>
 
-                    <Form.Item
-                        name="type"
-                        label="表单类型"
-                        rules={[{ required: true, message: '请选择表单类型' }]}
-                    >
-                        <Select placeholder="请选择表单类型">
-                            <Option value="contract">合同模板</Option>
-                            <Option value="customer">客户表单</Option>
-                            <Option value="survey">问卷调查</Option>
-                            <Option value="application">申请表单</Option>
-                        </Select>
-                    </Form.Item>
+                        <Form.Item
+                            name="categoryId"
+                            label="表单分类"
+                            rules={[{ required: true, message: '请选择表单分类' }]}
+                        >
+                            <Select placeholder="请选择表单分类">
+                                {categories.map(category => (
+                                    <Option key={category._id} value={category._id}>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            <div
+                                                style={{
+                                                    width: '12px',
+                                                    height: '12px',
+                                                    backgroundColor: category.color,
+                                                    borderRadius: '2px',
+                                                    marginRight: '8px'
+                                                }}
+                                            />
+                                            {category.name}
+                                        </div>
+                                    </Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
 
-                    <Form.Item
-                        name="status"
-                        label="表单状态"
-                        initialValue="draft"
-                    >
-                        <Select>
-                            <Option value="draft">草稿</Option>
-                            <Option value="published">已发布</Option>
-                            <Option value="disabled">已停用</Option>
-                        </Select>
-                    </Form.Item>
-                </Form>
-            </Modal>
+                        <Form.Item
+                            name="status"
+                            label="表单状态"
+                            initialValue="draft"
+                        >
+                            <Select>
+                                <Option value="draft">草稿</Option>
+                                <Option value="published">已发布</Option>
+                                <Option value="disabled">已停用</Option>
+                            </Select>
+                        </Form.Item>
+                    </Form>
+                </Modal>
+            )}
         </div>
     )
 }

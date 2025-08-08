@@ -233,6 +233,23 @@ export class UserService {
         }
     }
 
+    // 获取员工和超级管理员用户
+    async getEmployeesAndAdmins(): Promise<any[]> {
+        try {
+            const users = await User.find({
+                role: { $in: ['员工', '超级管理员'] },
+                status: 'active'
+            }).lean();
+            
+            return users.map(user => ({
+                ...user,
+                id: user._id.toString()
+            }));
+        } catch (error) {
+            throw new Error('获取员工和管理员失败');
+        }
+    }
+
     // 检查用户名是否存在
     async isUsernameExists(username: string): Promise<boolean> {
         try {

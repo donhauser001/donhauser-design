@@ -9,7 +9,7 @@ export * from './ServicePricingService';
 export * from './QuotationService';
 export * from './SpecificationService';
 export * from './ProjectService';
-export declare const projectService: {};
+export * from './TaskService';
 export declare const clientService: {};
 export declare const authService: {};
 //# sourceMappingURL=index.d.ts.map

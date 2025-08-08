@@ -1,119 +1,52 @@
 import { Request, Response } from 'express';
 import { TaskService } from '../services/TaskService';
 
+const taskService = new TaskService();
+
 export class TaskController {
-    private taskService: TaskService;
-
-    constructor() {
-        this.taskService = new TaskService();
-    }
-
-    // 创建任务
-    createTask = async (req: Request, res: Response) => {
+    /**
+     * 获取任务列表
+     */
+    static async getTasks(req: Request, res: Response) {
         try {
-            const task = await this.taskService.createTask(req.body);
-            res.status(201).json({
-                success: true,
-                data: task,
-                message: '任务创建成功'
-            });
-        } catch (error: any) {
-            console.error('创建任务失败:', error);
-            
-            // 提供更详细的错误信息
-            let errorMessage = '创建任务失败';
-            let statusCode = 500;
-            
-            if (error.name === 'ValidationError') {
-                // Mongoose 验证错误
-                statusCode = 400;
-                const validationErrors = Object.values(error.errors).map((err: any) => err.message);
-                errorMessage = `数据验证失败: ${validationErrors.join(', ')}`;
-            } else if (error.name === 'CastError') {
-                // Mongoose 类型转换错误
-                statusCode = 400;
-                errorMessage = `数据类型错误: ${error.message}`;
-            } else if (error.code === 11000) {
-                // MongoDB 重复键错误
-                statusCode = 409;
-                errorMessage = '任务已存在，请检查任务名称';
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
-            
-            res.status(statusCode).json({
-                success: false,
-                message: errorMessage,
-                error: process.env.NODE_ENV === 'development' ? error.message : undefined
-            });
-        }
-    };
+            const { page, limit, projectId, designerId, status, priority, settlementStatus, search } = req.query;
 
-    // 批量创建任务
-    createTasks = async (req: Request, res: Response) => {
-        try {
-            const { tasks } = req.body;
-            if (!Array.isArray(tasks)) {
-                return res.status(400).json({
-                    success: false,
-                    message: '任务数据格式错误'
-                });
-            }
-
-            const createdTasks = await this.taskService.createTasks(tasks);
-            res.status(201).json({
-                success: true,
-                data: createdTasks,
-                message: `成功创建 ${createdTasks.length} 个任务`
-            });
-        } catch (error) {
-            console.error('批量创建任务失败:', error);
-            res.status(500).json({
-                success: false,
-                message: '批量创建任务失败'
-            });
-        }
-    };
-
-    // 获取任务列表
-    getTasks = async (req: Request, res: Response) => {
-        try {
-            const { page, limit, projectId, designerId, status, priority, search } = req.query;
-
-            const result = await this.taskService.getTasks({
-                page: page ? parseInt(page as string) : 1,
-                limit: limit ? parseInt(limit as string) : 20,
+            const result = await taskService.getTasks({
+                page: page ? parseInt(page as string) : undefined,
+                limit: limit ? parseInt(limit as string) : undefined,
                 projectId: projectId as string,
                 designerId: designerId as string,
                 status: status as string,
                 priority: priority as string,
+                settlementStatus: settlementStatus as string,
                 search: search as string
             });
 
             res.json({
                 success: true,
                 data: result.tasks,
-                pagination: {
-                    page: page ? parseInt(page as string) : 1,
-                    limit: limit ? parseInt(limit as string) : 20,
-                    total: result.total,
-                    pages: Math.ceil(result.total / (limit ? parseInt(limit as string) : 20))
-                }
+                total: result.total,
+                page: page ? parseInt(page as string) : 1,
+                limit: limit ? parseInt(limit as string) : 20
             });
         } catch (error) {
             console.error('获取任务列表失败:', error);
             res.status(500).json({
                 success: false,
-                message: '获取任务列表失败'
+                message: '获取任务列表失败',
+                error: error instanceof Error ? error.message : '未知错误'
             });
         }
-    };
+    }
 
-    // 根据ID获取任务
-    getTaskById = async (req: Request, res: Response) => {
+    /**
+     * 根据ID获取任务详情
+     */
+    static async getTaskById(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const task = await this.taskService.getTaskById(id);
+
+            const task = await taskService.getTaskById(id);
 
             if (!task) {
                 return res.status(404).json({
@@ -130,16 +63,20 @@ export class TaskController {
             console.error('获取任务详情失败:', error);
             res.status(500).json({
                 success: false,
-                message: '获取任务详情失败'
+                message: '获取任务详情失败',
+                error: error instanceof Error ? error.message : '未知错误'
             });
         }
-    };
+    }
 
-    // 获取项目相关的任务
-    getTasksByProject = async (req: Request, res: Response) => {
+    /**
+     * 获取项目相关的任务
+     */
+    static async getTasksByProject(req: Request, res: Response) {
         try {
             const { projectId } = req.params;
-            const tasks = await this.taskService.getTasksByProject(projectId);
+
+            const tasks = await taskService.getTasksByProject(projectId);
 
             res.json({
                 success: true,
@@ -149,17 +86,21 @@ export class TaskController {
             console.error('获取项目任务失败:', error);
             res.status(500).json({
                 success: false,
-                message: '获取项目任务失败'
+                message: '获取项目任务失败',
+                error: error instanceof Error ? error.message : '未知错误'
             });
         }
-    };
+    }
 
-    // 获取设计师的任务
-    getTasksByDesigner = async (req: Request, res: Response) => {
+    /**
+     * 获取设计师分配的任务
+     */
+    static async getTasksByDesigner(req: Request, res: Response) {
         try {
             const { designerId } = req.params;
             const { status } = req.query;
-            const tasks = await this.taskService.getTasksByDesigner(designerId, status as string);
+
+            const tasks = await taskService.getTasksByDesigner(designerId, status as string);
 
             res.json({
                 success: true,
@@ -169,16 +110,77 @@ export class TaskController {
             console.error('获取设计师任务失败:', error);
             res.status(500).json({
                 success: false,
-                message: '获取设计师任务失败'
+                message: '获取设计师任务失败',
+                error: error instanceof Error ? error.message : '未知错误'
             });
         }
-    };
+    }
 
-    // 更新任务
-    updateTask = async (req: Request, res: Response) => {
+    /**
+     * 创建任务
+     */
+    static async createTask(req: Request, res: Response) {
+        try {
+            const taskData = req.body;
+
+            const task = await taskService.createTask(taskData);
+
+            res.status(201).json({
+                success: true,
+                message: '任务创建成功',
+                data: task
+            });
+        } catch (error) {
+            console.error('创建任务失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '创建任务失败',
+                error: error instanceof Error ? error.message : '未知错误'
+            });
+        }
+    }
+
+    /**
+     * 批量创建任务
+     */
+    static async createTasks(req: Request, res: Response) {
+        try {
+            const { tasks } = req.body;
+
+            if (!Array.isArray(tasks)) {
+                return res.status(400).json({
+                    success: false,
+                    message: '任务数据必须是数组'
+                });
+            }
+
+            const createdTasks = await taskService.createTasks(tasks);
+
+            res.status(201).json({
+                success: true,
+                message: `成功创建 ${createdTasks.length} 个任务`,
+                data: createdTasks
+            });
+        } catch (error) {
+            console.error('批量创建任务失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '批量创建任务失败',
+                error: error instanceof Error ? error.message : '未知错误'
+            });
+        }
+    }
+
+    /**
+     * 更新任务
+     */
+    static async updateTask(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const task = await this.taskService.updateTask(id, req.body);
+            const updateData = req.body;
+            const updatedBy = (req as any).user?.id || 'system';
+
+            const task = await taskService.updateTask(id, updateData, updatedBy);
 
             if (!task) {
                 return res.status(404).json({
@@ -189,25 +191,29 @@ export class TaskController {
 
             res.json({
                 success: true,
-                data: task,
-                message: '任务更新成功'
+                message: '任务更新成功',
+                data: task
             });
         } catch (error) {
             console.error('更新任务失败:', error);
             res.status(500).json({
                 success: false,
-                message: '更新任务失败'
+                message: '更新任务失败',
+                error: error instanceof Error ? error.message : '未知错误'
             });
         }
-    };
+    }
 
-    // 更新任务状态
-    updateTaskStatus = async (req: Request, res: Response) => {
+    /**
+     * 更新任务状态
+     */
+    static async updateTaskStatus(req: Request, res: Response) {
         try {
             const { id } = req.params;
             const { status, progress } = req.body;
+            const updatedBy = (req as any).user?.id || 'system';
 
-            const task = await this.taskService.updateTaskStatus(id, status, progress);
+            const task = await taskService.updateTaskStatus(id, status, updatedBy, progress);
 
             if (!task) {
                 return res.status(404).json({
@@ -218,32 +224,29 @@ export class TaskController {
 
             res.json({
                 success: true,
-                data: task,
-                message: '任务状态更新成功'
+                message: '任务状态更新成功',
+                data: task
             });
         } catch (error) {
             console.error('更新任务状态失败:', error);
             res.status(500).json({
                 success: false,
-                message: '更新任务状态失败'
+                message: '更新任务状态失败',
+                error: error instanceof Error ? error.message : '未知错误'
             });
         }
-    };
+    }
 
-    // 分配设计师
-    assignDesigners = async (req: Request, res: Response) => {
+    /**
+     * 更新任务结算状态
+     */
+    static async updateTaskSettlementStatus(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const { designerIds } = req.body;
+            const { status } = req.body;
+            const updatedBy = (req as any).user?.id || 'system';
 
-            if (!Array.isArray(designerIds)) {
-                return res.status(400).json({
-                    success: false,
-                    message: '设计师ID格式错误'
-                });
-            }
-
-            const task = await this.taskService.assignDesigners(id, designerIds);
+            const task = await taskService.updateTaskSettlementStatus(id, status, updatedBy);
 
             if (!task) {
                 return res.status(404).json({
@@ -254,23 +257,75 @@ export class TaskController {
 
             res.json({
                 success: true,
-                data: task,
-                message: '设计师分配成功'
+                message: '任务结算状态更新成功',
+                data: task
+            });
+        } catch (error) {
+            console.error('更新任务结算状态失败:', error);
+            res.status(500).json({
+                success: false,
+                message: '更新任务结算状态失败',
+                error: error instanceof Error ? error.message : '未知错误'
+            });
+        }
+    }
+
+    /**
+     * 分配设计师
+     */
+    static async assignDesigners(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const { mainDesignerIds, assistantDesignerIds } = req.body;
+            const updatedBy = (req as any).user?.id || 'system';
+
+            if (!Array.isArray(mainDesignerIds)) {
+                return res.status(400).json({
+                    success: false,
+                    message: '主创设计师ID必须是数组'
+                });
+            }
+
+            if (!Array.isArray(assistantDesignerIds)) {
+                return res.status(400).json({
+                    success: false,
+                    message: '助理设计师ID必须是数组'
+                });
+            }
+
+            const task = await taskService.assignDesigners(id, mainDesignerIds, assistantDesignerIds, updatedBy);
+
+            if (!task) {
+                return res.status(404).json({
+                    success: false,
+                    message: '任务不存在'
+                });
+            }
+
+            res.json({
+                success: true,
+                message: '设计师分配成功',
+                data: task
             });
         } catch (error) {
             console.error('分配设计师失败:', error);
             res.status(500).json({
                 success: false,
-                message: '分配设计师失败'
+                message: '分配设计师失败',
+                error: error instanceof Error ? error.message : '未知错误'
             });
         }
-    };
+    }
 
-    // 删除任务
-    deleteTask = async (req: Request, res: Response) => {
+    /**
+     * 删除任务
+     */
+    static async deleteTask(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const success = await this.taskService.deleteTask(id);
+            const deletedBy = (req as any).user?.id || 'system';
+
+            const success = await taskService.deleteTask(id, deletedBy);
 
             if (!success) {
                 return res.status(404).json({
@@ -287,16 +342,20 @@ export class TaskController {
             console.error('删除任务失败:', error);
             res.status(500).json({
                 success: false,
-                message: '删除任务失败'
+                message: '删除任务失败',
+                error: error instanceof Error ? error.message : '未知错误'
             });
         }
-    };
+    }
 
-    // 获取任务统计
-    getTaskStats = async (req: Request, res: Response) => {
+    /**
+     * 获取任务统计信息
+     */
+    static async getTaskStats(req: Request, res: Response) {
         try {
             const { projectId, designerId } = req.query;
-            const stats = await this.taskService.getTaskStats(
+
+            const stats = await taskService.getTaskStats(
                 projectId as string,
                 designerId as string
             );
@@ -309,8 +368,11 @@ export class TaskController {
             console.error('获取任务统计失败:', error);
             res.status(500).json({
                 success: false,
-                message: '获取任务统计失败'
+                message: '获取任务统计失败',
+                error: error instanceof Error ? error.message : '未知错误'
             });
         }
-    };
-} 
+    }
+}
+
+export default TaskController; 

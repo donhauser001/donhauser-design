@@ -1,514 +1,688 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-
-// Antd 组件导入
+import React, { useState } from 'react';
 import {
     Card,
-    Row,
-    Col,
-    Tag,
     Button,
     Space,
-    Descriptions,
-    Typography,
     message,
-    Spin,
-    Tabs,
-    Table
-} from 'antd'
+    Row,
+    Col,
+    Statistic,
+    Tag
+} from 'antd';
+import {
+    ArrowLeftOutlined,
+    EditOutlined,
+    FileTextOutlined,
+    TeamOutlined,
+    DollarOutlined,
+    SettingOutlined,
+    PauseCircleOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    CloseCircleOutlined,
+    CreditCardOutlined,
+    WalletOutlined,
+    CheckOutlined
+} from '@ant-design/icons';
+import { useParams, useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
 
-// Antd 图标导入
-import { ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons'
+// 导入组件
+import BasicInfoCard from './components/BasicInfoCard';
+import TaskList from './components/TaskList';
+import AdditionalInfoCard from './components/AdditionalInfoCard';
+import {
+    AssignDesignersModal,
+    ContactEditModal,
+    RemarkEditModal,
+    TeamEditModal,
+    ProjectNameEditModal
+} from './components/Modals';
 
-// 类型导入
-import type { UploadFile } from 'antd/es/upload/interface'
+// 导入类型和工具
+import { Task, Enterprise, User } from './types';
+import {
+    getProgressStatusColor,
+    getProgressStatusText,
+    getSettlementStatusColor,
+    getSettlementStatusText,
+    getProgressColor,
+    calculateProjectProgress
+} from './utils';
 
-// API 导入
-import { getProjectById, Project as ApiProject } from '../../../api/projects'
-import { getActiveEnterprises, Enterprise } from '../../../api/enterprises'
-import { getEmployees, User } from '../../../api/users'
-import { getTasksByProject, Task } from '../../../api/tasks'
-import { getClients, Client } from '../../../api/clients'
-import { Specification } from '../../../components/SpecificationSelector'
-
-// 本地模块导入
-import { FileInfo, Priority } from './types'
-import { STATUS_COLORS, STATUS_TEXT } from './constants'
-import { createTableColumns } from './tableColumns'
-import { createMainTabsItems, createFileTabsItems } from './tabConfigs'
-
-import { ProgressModal } from './ProgressModal'
-import AddTaskModal, { CreateTaskData } from './AddTaskModal'
-
-const { Title, Text } = Typography
+// 导入hooks
+import { useProjectDetail } from './hooks/useProjectDetail';
 
 const ProjectDetail: React.FC = () => {
-    // ==================== 状态管理 ====================
+    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
 
-    // 基础数据状态
-    const [project, setProject] = useState<ApiProject | null>(null)
-    const [tasks, setTasks] = useState<Task[]>([])
-    const [enterprises, setEnterprises] = useState<Enterprise[]>([])
-    const [employees, setEmployees] = useState<User[]>([])
+    // 使用自定义hook获取项目数据
+    const { project, tasks, loading, fetchProject, fetchTasks, updateProjectProgress, updateProjectDesigners } = useProjectDetail(id || '');
 
-    // UI 状态
-    const [loading, setLoading] = useState(true)
-    const [updatingTaskId, setUpdatingTaskId] = useState<string | null>(null)
-    const [progressModalVisible, setProgressModalVisible] = useState(false)
-    const [addTaskModalVisible, setAddTaskModalVisible] = useState(false)
+    // 模态窗状态
+    const [assignModalVisible, setAssignModalVisible] = useState(false);
+    const [currentTask, setCurrentTask] = useState<Task | null>(null);
+    const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+    const [selectedMainDesigners, setSelectedMainDesigners] = useState<string[]>([]);
+    const [selectedAssistantDesigners, setSelectedAssistantDesigners] = useState<string[]>([]);
+    const [assignLoading, setAssignLoading] = useState(false);
+    const [priorityLoading, setPriorityLoading] = useState(false);
+    const [contactModalVisible, setContactModalVisible] = useState(false);
+    const [availableContacts, setAvailableContacts] = useState<User[]>([]);
+    const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
+    const [contactLoading, setContactLoading] = useState(false);
+    const [remarkModalVisible, setRemarkModalVisible] = useState(false);
+    const [remarkValue, setRemarkValue] = useState('');
+    const [remarkLoading, setRemarkLoading] = useState(false);
+    const [teamModalVisible, setTeamModalVisible] = useState(false);
+    const [availableEnterprises, setAvailableEnterprises] = useState<Enterprise[]>([]);
+    const [selectedTeam, setSelectedTeam] = useState<string>('');
+    const [teamLoading, setTeamLoading] = useState(false);
+    const [projectNameModalVisible, setProjectNameModalVisible] = useState(false);
+    const [projectNameValue, setProjectNameValue] = useState('');
+    const [projectNameLoading, setProjectNameLoading] = useState(false);
 
-    // 编辑状态
-    const [editingTask, setEditingTask] = useState<Task | null>(null)
-    const [editingProgress, setEditingProgress] = useState(0)
-    const [editingPriority, setEditingPriority] = useState<Priority>('medium')
-
-    // 文件管理状态
-    const [projectFiles, setProjectFiles] = useState<UploadFile[]>([])
-    const [clientFiles, setClientFiles] = useState<UploadFile[]>([])
-
-    // ==================== 路由参数 ====================
-
-    const navigate = useNavigate()
-    const { id } = useParams<{ id: string }>()
-
-    // ==================== 数据获取 ====================
-
-    const fetchProjectData = async () => {
-        if (!id) return
-
+    // 获取可用用户
+    const fetchAvailableUsers = async () => {
         try {
-            setLoading(true)
-            const [projectResponse, tasksResponse, enterprisesResponse, employeesResponse] = await Promise.all([
-                getProjectById(id),
-                getTasksByProject(id),
-                getActiveEnterprises(),
-                getEmployees()
-            ])
-
-            setProject(projectResponse.data)
-            setTasks(tasksResponse.data)
-            setEnterprises(enterprisesResponse.data)
-            setEmployees(employeesResponse.data)
-
-            // 初始化项目文件列表
-            if (projectResponse.data.relatedFiles && Array.isArray(projectResponse.data.relatedFiles)) {
-                const files = projectResponse.data.relatedFiles.map((file: FileInfo, index: number) => ({
-                    uid: `project-file-${Date.now()}-${index}`,
-                    name: file.originalName,
-                    status: 'done' as const,
-                    url: file.path,
-                    size: file.size,
-                    type: file.path.split('.').pop()?.toLowerCase() || '',
-                    response: {
-                        data: {
-                            url: file.path,
-                            originalname: file.originalName,
-                            size: file.size
-                        }
-                    }
-                }))
-                setProjectFiles(files)
-            } else {
-                setProjectFiles([])
-            }
-
-            // 初始化客户文件列表 - 从客户API获取真实的客户文件数据
-            if (projectResponse.data.client) {
-                try {
-                    const clientsResponse = await getClients()
-
-                    if (clientsResponse.success && clientsResponse.data) {
-                        const client = clientsResponse.data.find((c: Client) => c.name === projectResponse.data.client)
-
-                        if (client && client.files && Array.isArray(client.files)) {
-                            const clientFiles = client.files.map((file: { path: string; originalName: string; size: number }, index: number) => ({
-                                uid: `client-file-${index}-${Date.now()}`,
-                                name: file.originalName,
-                                status: 'done' as const,
-                                url: file.path,
-                                size: file.size,
-                                type: file.path.split('.').pop()?.toLowerCase() || '',
-                                response: {
-                                    data: {
-                                        url: file.path,
-                                        originalname: file.originalName,
-                                        size: file.size
-                                    }
-                                }
-                            }))
-                            setClientFiles(clientFiles)
-                        } else {
-                            setClientFiles([])
-                        }
-                    } else {
-                        setClientFiles([])
-                    }
-                } catch (error) {
-                    console.error('获取客户文件失败:', error)
-                    setClientFiles([])
-                }
-            } else {
-                setClientFiles([])
+            const response = await fetch('/api/users?role=设计师&limit=100');
+            const data = await response.json();
+            if (data.success) {
+                setAvailableUsers(data.data);
             }
         } catch (error) {
-            console.error('获取项目详情失败:', error)
-            message.error('项目不存在或获取失败')
-            navigate('/projects')
-        } finally {
-            setLoading(false)
+            // 获取用户列表失败
         }
-    }
+    };
 
-    useEffect(() => {
-        fetchProjectData()
-    }, [id])
-
-    // ==================== 事件处理函数 ====================
-
-    const handleBack = () => {
-        navigate('/projects')
-    }
-
-    const handleSpecificationChange = async (taskId: string, specification: Specification | undefined) => {
+    // 获取客户联系人
+    const fetchClientContacts = async () => {
         try {
-            setUpdatingTaskId(taskId)
-
-            const { updateTask } = await import('../../../api/tasks')
-
-            await updateTask(taskId, {
-                specification: specification ? {
-                    id: specification.id,
-                    name: specification.name,
-                    length: specification.length,
-                    width: specification.width,
-                    height: specification.height,
-                    unit: specification.unit,
-                    resolution: specification.resolution
-                } : undefined
-            })
-
-            await fetchProjectData()
-            message.success('规格更新成功')
+            const response = await fetch('/api/users?role=客户&limit=100');
+            const data = await response.json();
+            if (data.success) {
+                // 过滤出与当前项目客户相关的联系人
+                const filteredContacts = data.data.filter((contact: User) =>
+                    contact.company === project?.clientName
+                );
+                setAvailableContacts(filteredContacts);
+            }
         } catch (error) {
-            console.error('更新规格失败:', error)
-            message.error('更新规格失败')
-        } finally {
-            setUpdatingTaskId(null)
+            // 获取联系人列表失败
         }
-    }
+    };
 
-    const handleOpenProgressModal = (task: Task) => {
-        setEditingTask(task)
-        setEditingProgress(task.progress || 0)
-        setEditingPriority(task.priority || 'medium')
-        setProgressModalVisible(true)
-    }
-
-
-
-    const handleConfirmProgress = async () => {
-        if (!editingTask) return
-
+    // 获取企业列表
+    const fetchEnterprises = async () => {
         try {
-            setUpdatingTaskId(editingTask._id)
-
-            const { updateTask } = await import('../../../api/tasks')
-
-            await updateTask(editingTask._id, {
-                progress: editingProgress,
-                priority: editingPriority
-            })
-
-            await fetchProjectData()
-            message.success('更新成功')
-
-            setProgressModalVisible(false)
-            setEditingTask(null)
-            setEditingProgress(0)
-            setEditingPriority('medium')
+            const response = await fetch('/api/enterprises?limit=100');
+            const data = await response.json();
+            if (data.success) {
+                setAvailableEnterprises(data.data);
+            }
         } catch (error) {
-            console.error('更新失败:', error)
-            message.error('更新失败')
-        } finally {
-            setUpdatingTaskId(null)
+            // 获取企业列表失败
         }
-    }
+    };
 
-    const handleProjectFilesChange = async (fileList: UploadFile[]) => {
-        setProjectFiles(fileList)
+    // 处理联系人编辑
+    const handleContactEdit = () => {
+        const currentContactIds: string[] = [];
+        if (project?.contactNames && project?.contactIds) {
+            setSelectedContacts(project.contactIds);
+        }
+        setContactModalVisible(true);
+        fetchClientContacts();
+    };
 
+    // 确认联系人更新
+    const handleContactUpdate = async () => {
+        setContactLoading(true);
         try {
-            const files = fileList
-                .filter(file => file.status === 'done')
-                .map(file => {
-                    const fileInfo: FileInfo = {
-                        path: file.response?.data?.url || file.url || '',
-                        originalName: file.name || '未知文件',
-                        size: file.size || 0
-                    }
-                    return fileInfo
+            const selectedContactInfo = availableContacts.filter(contact =>
+                selectedContacts.includes(contact._id)
+            );
+
+            const contactNames = selectedContactInfo.map(contact => contact.realName);
+            const contactPhones = selectedContactInfo.map(contact => contact.phone);
+
+            const response = await fetch(`/api/projects/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contactIds: selectedContacts,
+                    contactNames: contactNames,
+                    contactPhones: contactPhones
                 })
-                .filter(file => file.path !== '')
+            });
 
-            // 无论文件列表是否为空，都要更新数据库
-            const { updateProject } = await import('../../../api/projects')
-            await updateProject(project!._id, {
-                relatedFiles: files
-            })
+            const data = await response.json();
+            if (data.success) {
+                message.success('联系人更新成功');
+                setContactModalVisible(false);
+                fetchProject();
+            } else {
+                message.error(data.message || '联系人更新失败');
+            }
         } catch (error) {
-            console.error('保存文件列表失败:', error)
-            message.error('保存文件列表失败')
+            message.error('更新联系人失败');
+        } finally {
+            setContactLoading(false);
         }
-    }
+    };
 
-    // 处理追加任务
-    const handleAddTask = async (taskDataList: CreateTaskData[]) => {
-        if (!id) return
+    // 打开备注编辑模态窗
+    const handleRemarkEdit = () => {
+        setRemarkValue(project?.remark || '');
+        setRemarkModalVisible(true);
+    };
 
+    // 确认备注更新
+    const handleRemarkUpdate = async () => {
+        setRemarkLoading(true);
         try {
-            setLoading(true)
-            console.log('开始添加任务，任务数量:', taskDataList.length)
-            console.log('项目ID:', id)
-            console.log('项目信息:', project)
-            console.log('任务数据列表:', taskDataList)
+            const response = await fetch(`/api/projects/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    remark: remarkValue
+                })
+            });
 
-            // 单个创建任务（避免批量API问题）
-            const { createTask } = await import('../../../api/tasks')
+            const data = await response.json();
+            if (data.success) {
+                message.success('备注更新成功');
+                setRemarkModalVisible(false);
+                fetchProject();
+            } else {
+                message.error(data.message || '备注更新失败');
+            }
+        } catch (error) {
+            message.error('更新备注失败');
+        } finally {
+            setRemarkLoading(false);
+        }
+    };
 
-            // 逐个创建任务
-            const createdTasks = []
-            for (let i = 0; i < taskDataList.length; i++) {
-                const taskData = taskDataList[i]
-                console.log(`正在创建第 ${i + 1} 个任务:`, taskData.taskName)
-                console.log('任务详细数据:', taskData)
+    // 打开承接团队编辑模态窗
+    const handleTeamEdit = () => {
+        setSelectedTeam(project?.undertakingTeam || '');
+        setTeamModalVisible(true);
+        fetchEnterprises();
+    };
 
-                const createTaskData = {
-                    taskName: taskData.taskName,
-                    serviceId: taskData.serviceId,
-                    projectId: id,
-                    ...(project?.relatedOrders?.[0] && { orderId: project.relatedOrders[0] }), // 只在有订单时才发送orderId
-                    assignedDesigners: taskData.contactIds || [], // 使用选择的联系人作为分配的设计师
-                    specification: undefined,
-                    quantity: taskData.quantity,
-                    unit: taskData.unit,
-                    subtotal: taskData.subtotal,
-                    status: 'pending' as const,
-                    priority: taskData.priority,
-                    progress: 0,
-                    dueDate: taskData.dueDate,
-                    remarks: taskData.remarks
+    // 确认承接团队更新
+    const handleTeamUpdate = async () => {
+        if (!selectedTeam) {
+            message.error('请选择承接团队');
+            return;
+        }
+
+        setTeamLoading(true);
+        try {
+            const response = await fetch(`/api/projects/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    undertakingTeam: selectedTeam
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                message.success('承接团队更新成功');
+                setTeamModalVisible(false);
+                fetchProject();
+            } else {
+                message.error(data.message || '承接团队更新失败');
+            }
+        } catch (error) {
+            message.error('更新承接团队失败');
+        } finally {
+            setTeamLoading(false);
+        }
+    };
+
+    // 处理项目名称编辑
+    const handleProjectNameEdit = () => {
+        setProjectNameValue(project?.projectName || '');
+        setProjectNameModalVisible(true);
+    };
+
+    // 处理项目名称更新
+    const handleProjectNameUpdate = async () => {
+        if (!projectNameValue.trim()) {
+            message.error('项目名称不能为空');
+            return;
+        }
+
+        setProjectNameLoading(true);
+        try {
+            const response = await fetch(`/api/projects/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    projectName: projectNameValue.trim()
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                message.success('项目名称更新成功');
+                setProjectNameModalVisible(false);
+                fetchProject();
+            } else {
+                message.error(data.message || '项目名称更新失败');
+            }
+        } catch (error) {
+            message.error('项目名称更新失败');
+        } finally {
+            setProjectNameLoading(false);
+        }
+    };
+
+    // 处理项目名称编辑取消
+    const handleProjectNameCancel = () => {
+        setProjectNameModalVisible(false);
+        setProjectNameValue('');
+    };
+
+    // 打开分配设计师模态窗
+    const handleAssignDesigners = (task: Task) => {
+        setCurrentTask(task);
+        setSelectedMainDesigners(task.mainDesigners || []);
+        setSelectedAssistantDesigners(task.assistantDesigners || []);
+        setAssignModalVisible(true);
+        fetchAvailableUsers();
+    };
+
+    // 确认分配设计师
+    const handleConfirmAssign = async () => {
+        if (!currentTask) return;
+
+        setAssignLoading(true);
+        try {
+            const response = await fetch(`/api/tasks/${currentTask._id}/assign`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    mainDesignerIds: selectedMainDesigners,
+                    assistantDesignerIds: selectedAssistantDesigners
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                message.success('设计师分配成功');
+                setAssignModalVisible(false);
+
+                // 重新获取任务列表并更新项目设计师信息
+                await fetchTasks();
+                if (tasks.length > 0) {
+                    await updateProjectDesigners(tasks);
                 }
+            } else {
+                message.error(data.message || '设计师分配失败');
+            }
+        } catch (error) {
+            message.error('分配设计师失败');
+        } finally {
+            setAssignLoading(false);
+        }
+    };
 
-                console.log('发送到API的任务数据:', createTaskData)
+    // 选择紧急度
+    const handlePrioritySelect = async (task: Task, priority: string) => {
+        setPriorityLoading(true);
+        try {
+            const response = await fetch(`/api/tasks/${task._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    priority: priority
+                })
+            });
 
-                try {
-                    const result = await createTask(createTaskData)
-                    console.log(`任务 ${taskData.taskName} 创建成功:`, result)
-                    createdTasks.push(result)
-                } catch (taskError) {
-                    console.error(`任务 ${taskData.taskName} 创建失败:`, taskError)
-                    // 如果某个任务创建失败，继续创建其他任务，但记录错误
-                    throw new Error(`任务 "${taskData.taskName}" 创建失败: ${taskError instanceof Error ? taskError.message : '未知错误'}`)
-                }
+            const data = await response.json();
+
+            if (data.success) {
+                message.success('紧急度修改成功');
+                fetchTasks();
+            } else {
+                message.error(data.message || '紧急度修改失败');
+            }
+        } catch (error) {
+            message.error('修改紧急度失败');
+        } finally {
+            setPriorityLoading(false);
+        }
+    };
+
+    // 处理规格变更
+    const handleSpecificationChange = async (task: Task, specification: any) => {
+        try {
+            const response = await fetch(`/api/tasks/${task._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    specificationId: specification?.id || null
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                message.success('规格修改成功');
+                fetchTasks();
+            } else {
+                message.error(data.message || '规格修改失败');
+            }
+        } catch (error) {
+            message.error('修改规格失败');
+        }
+    };
+
+    // 处理流程状态变更
+    const handleProcessStepChange = async (task: Task, stepId: string) => {
+        try {
+            // 找到选中的流程节点
+            const selectedStep = task.processSteps?.find(step => step.id === stepId);
+
+            // 计算截止日期：当前时间 + 周期天数
+            let dueDate = null;
+            if (selectedStep && selectedStep.cycle) {
+                const currentDate = new Date();
+                dueDate = new Date(currentDate.getTime() + selectedStep.cycle * 24 * 60 * 60 * 1000);
             }
 
-            console.log(`成功创建 ${createdTasks.length} 个任务`)
+            const response = await fetch(`/api/tasks/${task._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    processStepId: stepId,
+                    dueDate: dueDate ? dueDate.toISOString() : null
+                })
+            });
 
-            // 刷新任务列表
-            const tasksResponse = await getTasksByProject(id)
-            setTasks(tasksResponse.data)
+            const data = await response.json();
 
-            // 刷新项目数据（包括订单信息）
-            await fetchProjectData()
+            if (data.success) {
+                message.success('流程状态修改成功');
+                if (dueDate) {
+                    message.info(`截止日期已设置为: ${dayjs(dueDate).format('YYYY-MM-DD')}`);
+                }
 
-            message.success(`成功添加 ${createdTasks.length} 个任务`)
-            setAddTaskModalVisible(false)
+                // 重新获取任务列表
+                await fetchTasks();
+
+                // 计算并更新项目进度（使用最新的任务数据）
+                const updatedTasks = await fetch(`/api/tasks/project/${id}`).then(res => res.json()).then(data => data.data || []);
+                const newProjectProgress = calculateProjectProgress(updatedTasks);
+                await updateProjectProgress(newProjectProgress);
+
+                // 更新项目设计师信息
+                await updateProjectDesigners(updatedTasks);
+
+                // 重新获取项目信息以显示最新进度
+                await fetchProject();
+            } else {
+                message.error(data.message || '流程状态修改失败');
+            }
         } catch (error) {
-            console.error('添加任务失败:', error)
-            const errorMessage = error instanceof Error ? error.message : '添加任务失败'
-            message.error(errorMessage)
-        } finally {
-            setLoading(false)
+            message.error('修改流程状态失败');
         }
-    }
-
-    // ==================== 表格列定义 ====================
-
-    const tableColumns = createTableColumns({
-        updatingTaskId,
-        onSpecificationChange: handleSpecificationChange,
-        onOpenProgressModal: handleOpenProgressModal
-    })
-
-    // ==================== 选项卡配置 ====================
-
-    const mainTabsItems = createMainTabsItems(project)
-    const fileTabsItems = createFileTabsItems({
-        project,
-        projectFiles,
-        clientFiles,
-        onProjectFilesChange: handleProjectFilesChange
-    })
-
-    // ==================== 加载状态 ====================
+    };
 
     if (loading) {
-        return (
-            <div style={{ textAlign: 'center', padding: '50px' }}>
-                <Spin size="large" />
-                <div style={{ marginTop: 16 }}>加载中...</div>
-            </div>
-        )
+        return <div style={{ padding: '24px' }}>加载中...</div>;
     }
 
     if (!project) {
-        return (
-            <div style={{ textAlign: 'center', padding: '50px' }}>
-                <Text type="secondary">项目不存在</Text>
-            </div>
-        )
+        return <div style={{ padding: '24px' }}>项目不存在</div>;
     }
 
-    // ==================== 主渲染 ====================
+    const totalAmount = tasks.reduce((sum, task) => sum + task.subtotal, 0);
 
     return (
-        <div>
+        <div style={{ padding: '24px' }}>
+            <style>
+                {`
+                    .ant-table-tbody > tr {
+                        position: relative;
+                        border-bottom: 1px solid #f0f0f0;
+                        margin-bottom: 8px;
+                    }
+                    .ant-table-tbody > tr > td {
+                        padding: 20px 8px !important;
+                        border-bottom: 2px solid #f5f5f5 !important;
+                    }
+                    .ant-table-tbody > tr:hover > td {
+                        background-color: #fafafa !important;
+                    }
+                    .ant-table-tbody > tr::after {
+                        content: '';
+                        position: absolute;
+                        bottom: -1px;
+                        left: 0;
+                        height: 2px;
+                        background: #f0f0f0;
+                        transition: width 0.3s ease;
+                        z-index: 10;
+                        width: 0%;
+                        border-radius: 0 1px 1px 0;
+                        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                    }
+                    ${tasks.map(task => {
+                    const progressRatio = task.currentProcessStep?.progressRatio || 0;
+                    const progressColor = task.currentProcessStep ?
+                        getProgressColor(task.currentProcessStep.progressRatio) : '#f0f0f0';
+                    return `
+                            .task-row-${task._id}::after {
+                                width: ${progressRatio}% !important;
+                                background: ${progressColor} !important;
+                            }
+                        `;
+                }).join('')}
+                `}
+            </style>
+
             {/* 页面头部 */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-                <Space>
-                    <Button icon={<ArrowLeftOutlined />} onClick={handleBack}>
-                        返回
-                    </Button>
-                    <div>
-                        <Title level={3} style={{ margin: 0 }}>
-                            {project.projectName}
-                        </Title>
-                        <Text type="secondary" style={{ fontSize: '12px' }}>
-                            创建时间: {project.createdAt}
-                        </Text>
-                    </div>
-                    <Tag color={STATUS_COLORS[project.status]}>
-                        {STATUS_TEXT[project.status]}
-                    </Tag>
-                </Space>
-            </div>
-
-            <Row gutter={16}>
-                {/* 主要内容区域 */}
-                <Col span={18}>
-                    {/* 基本信息 */}
-                    <Card title="基本信息" style={{ marginBottom: 16 }}>
-                        <Descriptions column={2} bordered>
-                            <Descriptions.Item label="客户">
-                                <Text>{project.client}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="联系人">
-                                <Text>{project.contact}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="团队">
-                                <Text>{(() => {
-                                    const team = enterprises.find(enterprise => enterprise.id === project.team)
-                                    return team ? team.enterpriseName : '未选择'
-                                })()}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="主创设计师">
-                                <Text>{(() => {
-                                    const mainDesigners = employees.filter(emp => project.mainDesigner?.includes(emp._id))
-                                    return mainDesigners.length > 0
-                                        ? mainDesigners.map(emp => emp.realName).join(', ')
-                                        : '未选择'
-                                })()}</Text>
-                            </Descriptions.Item>
-                            <Descriptions.Item label="助理设计师">
-                                <Text>{(() => {
-                                    const assistantDesigners = employees.filter(emp => project.assistantDesigners?.includes(emp._id))
-                                    return assistantDesigners.length > 0
-                                        ? assistantDesigners.map(emp => emp.realName).join(', ')
-                                        : '无'
-                                })()}</Text>
-                            </Descriptions.Item>
-                        </Descriptions>
-                    </Card>
-
-                    {/* 任务列表 */}
-                    <Card
-                        title={
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span>任务列表</span>
-                                <Button
-                                    type="primary"
-                                    icon={<PlusOutlined />}
-                                    size="small"
-                                    onClick={() => setAddTaskModalVisible(true)}
-                                >
-                                    追加任务
-                                </Button>
-                            </div>
-                        }
-                        style={{ marginBottom: 16 }}
-                    >
-                        <Table
-                            columns={tableColumns}
-                            dataSource={tasks}
-                            rowKey="_id"
-                            pagination={false}
-                            size="small"
-                            scroll={{ x: 800 }}
+            <Card
+                title={
+                    <Space>
+                        <Button
+                            icon={<ArrowLeftOutlined />}
+                            onClick={() => navigate('/projects')}
+                        >
+                            返回
+                        </Button>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span
+                                style={{
+                                    fontSize: '16px',
+                                    fontWeight: 'bold'
+                                }}
+                            >
+                                {project.projectName}
+                            </span>
+                            <Space>
+                                <Tag color={getProgressStatusColor(project.progressStatus)}>
+                                    {getProgressStatusText(project.progressStatus)}
+                                    {project.progressStatus === 'consulting' && (
+                                        <FileTextOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.progressStatus === 'in-progress' && (
+                                        <SettingOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.progressStatus === 'partial-delivery' && (
+                                        <ClockCircleOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.progressStatus === 'completed' && (
+                                        <CheckCircleOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.progressStatus === 'on-hold' && (
+                                        <PauseCircleOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.progressStatus === 'cancelled' && (
+                                        <CloseCircleOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                </Tag>
+                                <Tag color={getSettlementStatusColor(project.settlementStatus)}>
+                                    {getSettlementStatusText(project.settlementStatus)}
+                                    {project.settlementStatus === 'unpaid' && (
+                                        <DollarOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.settlementStatus === 'prepaid' && (
+                                        <CreditCardOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.settlementStatus === 'partial-paid' && (
+                                        <WalletOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                    {project.settlementStatus === 'fully-paid' && (
+                                        <CheckOutlined style={{ marginLeft: '4px', fontSize: '12px' }} />
+                                    )}
+                                </Tag>
+                            </Space>
+                        </div>
+                    </Space>
+                }
+                extra={
+                    <Space>
+                        <Button
+                            icon={<EditOutlined />}
+                            onClick={() => navigate(`/projects/${id}/edit`)}
+                        >
+                            编辑项目
+                        </Button>
+                    </Space>
+                }
+            >
+                {/* 项目统计 */}
+                <Row gutter={16} style={{ marginBottom: 24 }}>
+                    <Col span={6}>
+                        <Statistic
+                            title="任务总数"
+                            value={tasks.length}
+                            prefix={<FileTextOutlined />}
                         />
-                    </Card>
-
-                    {/* 选项卡 */}
-                    <Card>
-                        <Tabs
-                            defaultActiveKey="requirements"
-                            items={mainTabsItems}
+                    </Col>
+                    <Col span={6}>
+                        <Statistic
+                            title="项目金额"
+                            value={totalAmount}
+                            prefix="¥"
+                            precision={2}
                         />
-                    </Card>
-                </Col>
-
-                {/* 文件管理区域 */}
-                <Col span={6}>
-                    {/* 文件管理 */}
-                    <Card title="文件管理" style={{ marginBottom: 16 }}>
-                        <Tabs
-                            defaultActiveKey="projectFiles"
-                            size="small"
-                            items={fileTabsItems}
+                    </Col>
+                    <Col span={6}>
+                        <Statistic
+                            title="项目进度"
+                            value={project.progress || calculateProjectProgress(tasks)}
+                            suffix="%"
+                            precision={1}
+                            valueStyle={{ color: getProgressColor(project.progress || calculateProjectProgress(tasks)) }}
                         />
-                    </Card>
-                </Col>
-            </Row>
+                    </Col>
+                    <Col span={6}>
+                        <Statistic
+                            title="项目成员"
+                            value={project.mainDesigners.length + project.assistantDesigners.length}
+                            prefix={<TeamOutlined />}
+                        />
+                    </Col>
+                </Row>
 
-            {/* 进度编辑模态框 */}
-            <ProgressModal
-                visible={progressModalVisible}
-                editingTask={editingTask}
-                editingProgress={editingProgress}
-                editingPriority={editingPriority}
-                updatingTaskId={updatingTaskId}
-                onOk={handleConfirmProgress}
-                onCancel={() => {
-                    setProgressModalVisible(false)
-                    setEditingTask(null)
-                    setEditingProgress(0)
-                    setEditingPriority('medium')
-                }}
-                onProgressChange={setEditingProgress}
-                onPriorityChange={setEditingPriority}
+                <Row gutter={24}>
+                    {/* 左侧：项目信息 */}
+                    <Col span={19}>
+                        {/* 基本信息卡片 */}
+                        <BasicInfoCard
+                            project={project}
+                            onProjectNameEdit={handleProjectNameEdit}
+                            onContactEdit={handleContactEdit}
+                            onTeamEdit={handleTeamEdit}
+                        />
+
+                        {/* 任务列表 */}
+                        <TaskList
+                            tasks={tasks}
+                            projectId={id || ''}
+                            onAssignDesigners={handleAssignDesigners}
+                            onPrioritySelect={handlePrioritySelect}
+                            onSpecificationChange={handleSpecificationChange}
+                            onProcessStepChange={handleProcessStepChange}
+                        />
+                    </Col>
+
+                    {/* 右侧：附加信息 */}
+                    <Col span={5}>
+                        <AdditionalInfoCard
+                            project={project}
+                            onRemarkEdit={handleRemarkEdit}
+                        />
+                    </Col>
+                </Row>
+            </Card>
+
+            {/* 模态窗组件 */}
+            <AssignDesignersModal
+                visible={assignModalVisible}
+                task={currentTask}
+                availableUsers={availableUsers}
+                selectedMainDesigners={selectedMainDesigners}
+                selectedAssistantDesigners={selectedAssistantDesigners}
+                loading={assignLoading}
+                onOk={handleConfirmAssign}
+                onCancel={() => setAssignModalVisible(false)}
+                onMainDesignersChange={setSelectedMainDesigners}
+                onAssistantDesignersChange={setSelectedAssistantDesigners}
             />
 
-            {/* 追加任务模态框 */}
-            <AddTaskModal
-                visible={addTaskModalVisible}
-                projectId={id}
-                projectClient={project?.client}
-                projectContacts={[]}
-                onOk={handleAddTask}
-                onCancel={() => setAddTaskModalVisible(false)}
-                loading={loading}
+            <ContactEditModal
+                visible={contactModalVisible}
+                clientName={project.clientName}
+                availableContacts={availableContacts}
+                selectedContacts={selectedContacts}
+                loading={contactLoading}
+                onOk={handleContactUpdate}
+                onCancel={() => setContactModalVisible(false)}
+                onContactsChange={setSelectedContacts}
+            />
+
+            <RemarkEditModal
+                visible={remarkModalVisible}
+                value={remarkValue}
+                loading={remarkLoading}
+                onOk={handleRemarkUpdate}
+                onCancel={() => setRemarkModalVisible(false)}
+                onValueChange={setRemarkValue}
+            />
+
+            <TeamEditModal
+                visible={teamModalVisible}
+                availableEnterprises={availableEnterprises}
+                selectedTeam={selectedTeam}
+                loading={teamLoading}
+                onOk={handleTeamUpdate}
+                onCancel={() => setTeamModalVisible(false)}
+                onTeamChange={setSelectedTeam}
+            />
+
+            <ProjectNameEditModal
+                visible={projectNameModalVisible}
+                value={projectNameValue}
+                loading={projectNameLoading}
+                onOk={handleProjectNameUpdate}
+                onCancel={handleProjectNameCancel}
+                onValueChange={setProjectNameValue}
             />
         </div>
-    )
-}
+    );
+};
 
-export default ProjectDetail 
+export default ProjectDetail; 

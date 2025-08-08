@@ -19,7 +19,7 @@ export class AdditionalConfigController {
     }
 
     // 根据ID获取附加配置
-    static async getConfigById(req: Request, res: Response) {
+    static async getConfigById(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params
             const config = await AdditionalConfigService.getConfigById(id)
@@ -62,7 +62,7 @@ export class AdditionalConfigController {
     }
 
     // 更新附加配置
-    static async updateConfig(req: Request, res: Response) {
+    static async updateConfig(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params
             const configData = req.body
@@ -88,7 +88,7 @@ export class AdditionalConfigController {
     }
 
     // 切换附加配置状态
-    static async toggleConfigStatus(req: Request, res: Response) {
+    static async toggleConfigStatus(req: Request, res: Response): Promise<void> {
         try {
             const { id } = req.params
             const config = await AdditionalConfigService.toggleConfigStatus(id)

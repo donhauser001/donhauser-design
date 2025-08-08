@@ -1,6 +1,7 @@
 import React from 'react'
 import { Button, Dropdown } from 'antd'
 import { MoreOutlined, EditOutlined, DeleteOutlined, LockOutlined, SettingOutlined, StopOutlined, CopyOutlined, EyeOutlined } from '@ant-design/icons'
+import type { MenuProps } from 'antd'
 
 export interface ActionItem {
     key: string
@@ -17,7 +18,7 @@ export interface ActionMenuProps {
 }
 
 const ActionMenu: React.FC<ActionMenuProps> = ({ actions, width = 80 }) => {
-    const menuItems = actions.map(action => ({
+    const menuItems: MenuProps['items'] = actions.map(action => ({
         key: action.key,
         label: action.label,
         icon: action.icon,

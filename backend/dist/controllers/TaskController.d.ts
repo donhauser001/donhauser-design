@@ -1,17 +1,17 @@
 import { Request, Response } from 'express';
 export declare class TaskController {
-    private taskService;
-    constructor();
-    createTask: (req: Request, res: Response) => Promise<void>;
-    createTasks: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
-    getTasks: (req: Request, res: Response) => Promise<void>;
-    getTaskById: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
-    getTasksByProject: (req: Request, res: Response) => Promise<void>;
-    getTasksByDesigner: (req: Request, res: Response) => Promise<void>;
-    updateTask: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
-    updateTaskStatus: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
-    assignDesigners: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
-    deleteTask: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
-    getTaskStats: (req: Request, res: Response) => Promise<void>;
+    static getTasks(req: Request, res: Response): Promise<void>;
+    static getTaskById(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    static getTasksByProject(req: Request, res: Response): Promise<void>;
+    static getTasksByDesigner(req: Request, res: Response): Promise<void>;
+    static createTask(req: Request, res: Response): Promise<void>;
+    static createTasks(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    static updateTask(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    static updateTaskStatus(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    static updateTaskSettlementStatus(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    static assignDesigners(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    static deleteTask(req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined>;
+    static getTaskStats(req: Request, res: Response): Promise<void>;
 }
+export default TaskController;
 //# sourceMappingURL=TaskController.d.ts.map

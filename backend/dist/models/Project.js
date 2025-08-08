@@ -36,32 +36,46 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
 const ProjectSchema = new mongoose_1.Schema({
     projectName: { type: String, required: true },
-    client: { type: String, required: true },
-    contact: { type: String, required: true },
-    team: { type: String, required: true },
-    mainDesigner: [{ type: String }],
+    clientId: { type: String, required: true },
+    clientName: { type: String, required: true },
+    contactIds: [{ type: String, required: true }],
+    contactNames: [{ type: String, required: true }],
+    contactPhones: [{ type: String, required: true }],
+    undertakingTeam: { type: String, required: true },
+    mainDesigners: [{ type: String }],
     assistantDesigners: [{ type: String }],
-    relatedContracts: [{ type: String }],
-    relatedOrders: [{ type: String }],
-    relatedSettlements: [{ type: String }],
-    relatedInvoices: [{ type: String }],
-    relatedFiles: [{
-            path: { type: String, required: true },
-            originalName: { type: String, required: true },
-            size: { type: Number, required: true }
-        }],
-    relatedTaskIds: [{ type: String }],
-    relatedProposals: [{ type: String }],
-    clientRequirements: { type: String },
-    status: {
+    progressStatus: {
         type: String,
-        enum: ['pending', 'in-progress', 'completed', 'cancelled', 'on-hold'],
-        default: 'pending'
+        enum: ['consulting', 'in-progress', 'partial-delivery', 'completed', 'on-hold', 'cancelled'],
+        default: 'consulting'
     },
-    startDate: { type: Date, required: true },
-    endDate: { type: Date },
+    settlementStatus: {
+        type: String,
+        enum: ['unpaid', 'prepaid', 'partial-paid', 'fully-paid'],
+        default: 'unpaid'
+    },
+    createdAt: { type: Date, default: Date.now },
+    startedAt: { type: Date },
+    deliveredAt: { type: Date },
+    settledAt: { type: Date },
+    clientRequirements: { type: String },
+    quotationId: { type: String },
+    remark: { type: String },
+    taskIds: [{ type: String }],
+    fileIds: [{ type: String }],
+    contractIds: [{ type: String }],
+    invoiceIds: [{ type: String }],
+    proposalIds: [{ type: String }],
+    logIds: [{ type: String }]
 }, {
-    timestamps: true
+    timestamps: true,
+    collection: 'projects'
 });
+ProjectSchema.index({ projectName: 1 });
+ProjectSchema.index({ clientId: 1 });
+ProjectSchema.index({ undertakingTeam: 1 });
+ProjectSchema.index({ progressStatus: 1 });
+ProjectSchema.index({ settlementStatus: 1 });
+ProjectSchema.index({ createdAt: -1 });
 exports.default = mongoose_1.default.model('Project', ProjectSchema);
 //# sourceMappingURL=Project.js.map

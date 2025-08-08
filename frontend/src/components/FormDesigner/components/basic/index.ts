@@ -1,0 +1,10 @@
+export { default as InputComponent } from './InputComponent';
+export { default as TextareaComponent } from './TextareaComponent';
+export { default as PresetTextComponent } from './PresetTextComponent';
+export { default as NumberComponent } from './NumberComponent';
+export { default as DateComponent } from './DateComponent';
+export { default as TimeComponent } from './TimeComponent';
+export { default as SelectComponent } from './SelectComponent';
+export { default as RadioComponent } from './RadioComponent';
+export { default as CheckboxComponent } from './CheckboxComponent';
+export { default as UploadComponent } from './UploadComponent'; 

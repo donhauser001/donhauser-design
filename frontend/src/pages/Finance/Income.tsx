@@ -79,7 +79,12 @@ const Income: React.FC = () => {
                         { title: '收入日期', dataIndex: 'date', key: 'date' },
                         { title: '客户名称', dataIndex: 'clientName', key: 'clientName' },
                         { title: '收入类型', dataIndex: 'type', key: 'type' },
-                        { title: '收入金额', dataIndex: 'amount', key: 'amount' },
+                        { 
+                            title: '收入金额', 
+                            dataIndex: 'amount', 
+                            key: 'amount',
+                            render: (amount: number) => `¥${amount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        },
                         { title: '备注', dataIndex: 'remark', key: 'remark' }
                     ]}
                     dataSource={[]}

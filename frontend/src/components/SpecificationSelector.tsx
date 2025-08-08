@@ -197,69 +197,7 @@ const SpecificationSelector: React.FC<SpecificationSelectorProps> = ({
     return parts.join(' ')
   }
 
-  // 预设规格列表
-  const presetSpecifications: Specification[] = [
-    {
-      id: 'preset-1',
-      name: 'A4纸张',
-      length: 210,
-      width: 297,
-      unit: 'mm',
-      resolution: '300dpi'
-    },
-    {
-      id: 'preset-2',
-      name: 'A3纸张',
-      length: 297,
-      width: 420,
-      unit: 'mm',
-      resolution: '300dpi'
-    },
-    {
-      id: 'preset-3',
-      name: '名片',
-      length: 90,
-      width: 54,
-      unit: 'mm',
-      resolution: '300dpi'
-    },
-    {
-      id: 'preset-4',
-      name: '海报A2',
-      length: 420,
-      width: 594,
-      unit: 'mm',
-      resolution: '300dpi'
-    },
-    {
-      id: 'preset-5',
-      name: '网页横幅',
-      length: 1200,
-      width: 300,
-      unit: 'px',
-      resolution: '72dpi'
-    },
-    {
-      id: 'preset-6',
-      name: '手机屏幕',
-      length: 375,
-      width: 812,
-      unit: 'px',
-      resolution: '72dpi'
-    }
-  ]
 
-  // 处理预设规格选择
-  const handleSelectPreset = (presetSpec: Specification) => {
-    form.setFieldsValue({
-      name: presetSpec.name,
-      length: presetSpec.length,
-      width: presetSpec.width,
-      height: presetSpec.height,
-      unit: presetSpec.unit,
-      resolution: presetSpec.resolution
-    })
-  }
 
   // 生成下拉菜单项
   const generateMenuItems = () => {
@@ -285,15 +223,7 @@ const SpecificationSelector: React.FC<SpecificationSelectorProps> = ({
         key: spec._id,
         label: (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>{formatSpecification({
-              id: spec._id,
-              name: spec.name,
-              length: spec.length,
-              width: spec.width,
-              height: spec.height,
-              unit: spec.unit,
-              resolution: spec.resolution
-            })}</span>
+            <span><strong>{spec.name}</strong> {spec.length}×{spec.width}{spec.height ? `×${spec.height}` : ''} {spec.unit}{spec.resolution ? ` ${spec.resolution}` : ''}</span>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               {spec.isDefault && (
                 <span style={{ fontSize: '10px', color: '#52c41a', marginRight: 8 }}>默认</span>
@@ -386,7 +316,6 @@ const SpecificationSelector: React.FC<SpecificationSelectorProps> = ({
           <Dropdown menu={menu} trigger={['click']} disabled={disabled}>
             <Button
               size="small"
-              icon={<PlusOutlined />}
               style={{ display: 'flex', alignItems: 'center' }}
             >
               选择规格
@@ -492,21 +421,7 @@ const SpecificationSelector: React.FC<SpecificationSelectorProps> = ({
           </Form.Item>
         </Form>
 
-        {/* 预设规格选择 */}
-        <div style={{ marginTop: 16 }}>
-          <div style={{ marginBottom: 8, fontWeight: 'bold' }}>常用规格：</div>
-          <Space wrap>
-            {presetSpecifications.map(spec => (
-              <Button
-                key={spec.id}
-                size="small"
-                onClick={() => handleSelectPreset(spec)}
-              >
-                {formatSpecification(spec)}
-              </Button>
-            ))}
-          </Space>
-        </div>
+
       </Modal>
     </div>
   )

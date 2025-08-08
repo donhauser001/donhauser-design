@@ -10,6 +10,9 @@ router.get('/', userController.getUsers.bind(userController));
 // 获取所有用户（不分页）
 router.get('/all', userController.getAllUsers.bind(userController));
 
+// 获取员工和超级管理员用户
+router.get('/employees-admins', userController.getEmployeesAndAdmins.bind(userController));
+
 // 根据ID获取用户
 router.get('/:id', userController.getUserById.bind(userController));
 

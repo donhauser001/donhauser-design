@@ -183,6 +183,39 @@ class QuotationController {
             });
         }
     }
+    async getQuotationsByClientId(req, res) {
+        try {
+            const { clientId } = req.params;
+            const Client = require('../models/Client').default;
+            const client = await Client.findById(clientId);
+            if (!client) {
+                return res.status(404).json({
+                    success: false,
+                    message: '客户不存在'
+                });
+            }
+            if (client.quotationId) {
+                const quotation = await QuotationService_1.default.getQuotationById(client.quotationId);
+                if (quotation) {
+                    return res.json({
+                        success: true,
+                        data: [quotation]
+                    });
+                }
+            }
+            res.json({
+                success: true,
+                data: []
+            });
+        }
+        catch (error) {
+            res.status(500).json({
+                success: false,
+                message: '获取客户关联报价单失败',
+                error: error instanceof Error ? error.message : '未知错误'
+            });
+        }
+    }
 }
 exports.QuotationController = QuotationController;
 exports.default = new QuotationController();

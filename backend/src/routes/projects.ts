@@ -1,31 +1,33 @@
-import { Router } from 'express'
-import { ProjectController } from '../controllers/ProjectController'
+import { Router } from 'express';
+import ProjectController from '../controllers/ProjectController';
 
-const router = Router()
-const projectController = new ProjectController()
+const router = Router();
 
 // 获取项目列表
-router.get('/', projectController.getProjects)
+router.get('/', ProjectController.getProjects);
 
 // 获取项目统计信息
-router.get('/stats', projectController.getProjectStats)
+router.get('/stats', ProjectController.getProjectStats);
 
-// 获取项目任务列表
-router.get('/:id/tasks', projectController.getProjectTasks)
+// 根据ID获取项目详情
+router.get('/:id', ProjectController.getProjectById);
 
-// 获取项目详情
-router.get('/:id', projectController.getProjectById)
+// 获取项目日志
+router.get('/:id/logs', ProjectController.getProjectLogs);
 
 // 创建项目
-router.post('/', projectController.createProject)
+router.post('/', ProjectController.createProject);
 
 // 更新项目
-router.put('/:id', projectController.updateProject)
-
-// 删除项目
-router.delete('/:id', projectController.deleteProject)
+router.put('/:id', ProjectController.updateProject);
 
 // 更新项目状态
-router.patch('/:id/status', projectController.updateProjectStatus)
+router.patch('/:id/status', ProjectController.updateProjectStatus);
 
-export default router 
+// 更新结算状态
+router.patch('/:id/settlement', ProjectController.updateSettlementStatus);
+
+// 删除项目
+router.delete('/:id', ProjectController.deleteProject);
+
+export default router; 
