@@ -10,7 +10,7 @@ interface GroupComponentProps {
 }
 
 const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
-    const { getComponentsByParent, addComponent, moveComponent } = useFormDesignerStore();
+    const { getComponentsByParent, addComponent, moveComponent, previewTarget, setPreviewTarget, clearPreviewTarget } = useFormDesignerStore();
     const childComponents = getComponentsByParent(component.id);
 
     return (
@@ -35,6 +35,7 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                 e.stopPropagation();
                 e.currentTarget.style.borderColor = '#d9d9d9';
                 e.currentTarget.style.backgroundColor = '#ffffff';
+                clearPreviewTarget();
             }}
             onDrop={(e) => {
                 e.preventDefault();
@@ -46,7 +47,8 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                 console.log('Group drop event:', componentType, component.id);
                 if (componentType) {
                     // 在组容器顶部插入
-                    addComponent(componentType, 0, component.id);
+                    addComponent(componentType, previewTarget?.index ?? 0, component.id);
+                    clearPreviewTarget();
                 }
             }}
         >
@@ -76,6 +78,21 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                         e.stopPropagation();
                         e.currentTarget.style.backgroundColor = '#f0f8ff';
                         e.currentTarget.style.border = '2px dashed #1890ff';
+                        // 计算预览插入位置
+                        const clientY = e.clientY;
+                        let insertIndex = childComponents.length;
+                        let minDistance = Number.MAX_VALUE;
+                        childComponents.forEach((comp, index) => {
+                            const el = document.querySelector(`[data-component-id="${comp.id}"]`) as HTMLElement | null;
+                            if (!el) return;
+                            const mid = el.getBoundingClientRect().top + el.offsetHeight / 2;
+                            const dist = Math.abs(clientY - mid);
+                            if (dist < minDistance) {
+                                minDistance = dist;
+                                insertIndex = clientY < mid ? index : index + 1;
+                            }
+                        });
+                        setPreviewTarget(component.id, insertIndex);
                     }}
                     onDragLeave={(e) => {
                         e.preventDefault();
@@ -92,23 +109,9 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                         const componentType = e.dataTransfer.getData('componentType');
                         console.log('Group inner drop event:', componentType, component.id);
                         if (componentType) {
-                            // 基于鼠标位置计算插入索引
-                            const siblings = childComponents;
-                            const clientY = e.clientY;
-                            let insertIndex = siblings.length;
-                            let minDistance = Number.MAX_VALUE;
-                            siblings.forEach((comp, index) => {
-                                const el = document.querySelector(`[data-component-id="${comp.id}"]`) as HTMLElement | null;
-                                if (!el) return;
-                                const rect = el.getBoundingClientRect();
-                                const mid = rect.top + rect.height / 2;
-                                const dist = Math.abs(clientY - mid);
-                                if (dist < minDistance) {
-                                    minDistance = dist;
-                                    insertIndex = clientY < mid ? index : index + 1;
-                                }
-                            });
+                            const insertIndex = previewTarget?.parentId === component.id ? previewTarget.index : childComponents.length;
                             addComponent(componentType, insertIndex, component.id);
+                            clearPreviewTarget();
                         }
                     }}
                 >
@@ -120,6 +123,35 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                                     component={child}
                                 />
                             ))}
+                            {previewTarget?.parentId === component.id && (
+                                <div style={{ position: 'relative' }}>
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            left: 0,
+                                            right: 0,
+                                            height: 0,
+                                            pointerEvents: 'none',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                position: 'relative',
+                                                top: (() => {
+                                                    const beforeId = childComponents[previewTarget.index - 1]?.id;
+                                                    const el = beforeId ? (document.querySelector(`[data-component-id="${beforeId}"]`) as HTMLElement | null) : null;
+                                                    if (!el) return 0;
+                                                    return el.offsetTop + el.offsetHeight + 8;
+                                                })(),
+                                                height: '2px',
+                                                background: '#1890ff',
+                                                borderRadius: 1,
+                                                boxShadow: '0 0 0 2px rgba(24,144,255,0.15)'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </SortableContext>
                 </div>

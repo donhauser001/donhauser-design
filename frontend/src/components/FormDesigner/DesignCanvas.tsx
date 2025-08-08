@@ -23,6 +23,9 @@ const DesignCanvas: React.FC = () => {
         selectComponent,
         addComponent,
         moveComponent,
+        previewTarget,
+        setPreviewTarget,
+        clearPreviewTarget,
     } = useFormDesignerStore();
 
     const sensors = useSensors(
@@ -77,11 +80,15 @@ const DesignCanvas: React.FC = () => {
             const rootComponents = components.filter(comp => !comp.parentId).sort((a, b) => a.order - b.order);
             const insertIndex = getInsertIndex(e.clientY, rootComponents);
             addComponent(componentType, insertIndex);
+            clearPreviewTarget();
         }
     };
 
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
+        const rootComponents = components.filter(comp => !comp.parentId).sort((a, b) => a.order - b.order);
+        const insertIndex = getInsertIndex(e.clientY, rootComponents);
+        setPreviewTarget(null, insertIndex);
     };
 
     const handleDragEnd = (event: DragEndEvent) => {
@@ -197,6 +204,35 @@ const DesignCanvas: React.FC = () => {
                                         component={component}
                                     />
                                 ))}
+                                {typeof previewTarget?.index === 'number' && previewTarget?.parentId == null && (
+                                    <div
+                                        style={{
+                                            position: 'absolute',
+                                            left: 0,
+                                            right: 0,
+                                            height: '0',
+                                            pointerEvents: 'none',
+                                        }}
+                                    >
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                top: (() => {
+                                                    const beforeId = rootComponents[previewTarget.index - 1]?.id;
+                                                    const el = beforeId ? (document.querySelector(`[data-component-id="${beforeId}"]`) as HTMLElement | null) : null;
+                                                    if (!el) return 0;
+                                                    return el.offsetTop + el.offsetHeight + 8;
+                                                })(),
+                                                left: 0,
+                                                right: 0,
+                                                height: '2px',
+                                                background: '#1890ff',
+                                                borderRadius: 1,
+                                                boxShadow: '0 0 0 2px rgba(24,144,255,0.15)'
+                                            }}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         </SortableContext>
                     )}

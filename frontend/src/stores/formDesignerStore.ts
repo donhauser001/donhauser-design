@@ -35,6 +35,10 @@ interface FormDesignerStore extends FormDesignerState {
     updateTheme: (theme: Partial<ThemeConfig>) => void;
     loadFormConfig: (config: any) => void;
     clearForm: () => void;
+    // UI preview for insert line
+    previewTarget: { parentId: string | null; index: number } | null;
+    setPreviewTarget: (parentId: string | null, index: number) => void;
+    clearPreviewTarget: () => void;
     // Helper methods
     getComponentsByParent: (parentId?: string) => FormComponent[];
 }
@@ -48,11 +52,18 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
     currentStep: -1,
     layout: defaultLayout,
     theme: defaultTheme,
+    previewTarget: null,
 
     // 辅助方法
     getComponentsByParent: (parentId?: string) => {
         return get().components.filter(comp => comp.parentId === parentId);
     },
+
+    setPreviewTarget: (parentId: string | null, index: number) => {
+        set({ previewTarget: { parentId, index } });
+    },
+
+    clearPreviewTarget: () => set({ previewTarget: null }),
 
     // Actions
     addComponent: (type: string, position?: number, parentId?: string) => {
