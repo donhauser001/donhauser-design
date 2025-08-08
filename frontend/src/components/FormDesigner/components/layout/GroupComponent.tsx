@@ -118,38 +118,32 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                     <SortableContext items={childComponents.map(child => child.id)} strategy={verticalListSortingStrategy}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
                             {childComponents.map((child, index) => (
-                                <SortableComponent
-                                    key={child.id || index}
-                                    component={child}
-                                />
-                            ))}
-                            {previewTarget?.parentId === component.id && (
-                                <div style={{ position: 'relative' }}>
-                                    <div
-                                        style={{
-                                            position: 'absolute',
-                                            left: 0,
-                                            right: 0,
-                                            height: 0,
-                                            pointerEvents: 'none',
-                                        }}
-                                    >
-                                        <div
-                                            style={{
-                                                position: 'relative',
-                                                top: (() => {
-                                                    const beforeId = childComponents[previewTarget.index - 1]?.id;
-                                                    const el = beforeId ? (document.querySelector(`[data-component-id="${beforeId}"]`) as HTMLElement | null) : null;
-                                                    if (!el) return 0;
-                                                    return el.offsetTop + el.offsetHeight + 8;
-                                                })(),
-                                                height: '2px',
+                                <React.Fragment key={child.id || index}>
+                                    {previewTarget?.parentId === component.id && previewTarget.index === index && (
+                                        <div style={{ height: 0 }}>
+                                            <div style={{
+                                                height: 2,
                                                 background: '#1890ff',
                                                 borderRadius: 1,
-                                                boxShadow: '0 0 0 2px rgba(24,144,255,0.15)'
-                                            }}
-                                        />
-                                    </div>
+                                                margin: '8px 0',
+                                                boxShadow: '0 0 0 2px rgba(24,144,255,0.12)',
+                                                transition: 'all 120ms ease'
+                                            }} />
+                                        </div>
+                                    )}
+                                    <SortableComponent component={child} />
+                                </React.Fragment>
+                            ))}
+                            {previewTarget?.parentId === component.id && previewTarget.index === childComponents.length && (
+                                <div style={{ height: 0 }}>
+                                    <div style={{
+                                        height: 2,
+                                        background: '#1890ff',
+                                        borderRadius: 1,
+                                        margin: '8px 0',
+                                        boxShadow: '0 0 0 2px rgba(24,144,255,0.12)',
+                                        transition: 'all 120ms ease'
+                                    }} />
                                 </div>
                             )}
                         </div>

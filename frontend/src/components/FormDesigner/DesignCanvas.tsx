@@ -46,9 +46,8 @@ const DesignCanvas: React.FC = () => {
         }
     };
 
-    // 记录插入位置的参考线索
-    const getInsertIndex = (clientY: number, siblings: typeof components) => {
-        // 找到与鼠标最近的组件，决定插入到其前或后
+    // 计算原生拖拽（来自组件库）在根层的插入索引
+    const getInsertIndexNative = (clientY: number, siblings: typeof components) => {
         let closestIndex = siblings.length;
         let minDistance = Number.MAX_VALUE;
         siblings.forEach((comp, index) => {
@@ -59,7 +58,6 @@ const DesignCanvas: React.FC = () => {
             const dist = Math.abs(clientY - mid);
             if (dist < minDistance) {
                 minDistance = dist;
-                // 若鼠标在该组件上半区，则插入到其前；否则插到其后
                 closestIndex = clientY < mid ? index : index + 1;
             }
         });
@@ -78,7 +76,9 @@ const DesignCanvas: React.FC = () => {
         const componentType = e.dataTransfer.getData('componentType');
         if (componentType) {
             const rootComponents = components.filter(comp => !comp.parentId).sort((a, b) => a.order - b.order);
-            const insertIndex = getInsertIndex(e.clientY, rootComponents);
+            const insertIndex = typeof previewTarget?.index === 'number' && previewTarget?.parentId == null
+                ? previewTarget.index
+                : getInsertIndexNative(e.clientY, rootComponents);
             addComponent(componentType, insertIndex);
             clearPreviewTarget();
         }
@@ -87,8 +87,33 @@ const DesignCanvas: React.FC = () => {
     const handleDragOver = (e: React.DragEvent) => {
         e.preventDefault();
         const rootComponents = components.filter(comp => !comp.parentId).sort((a, b) => a.order - b.order);
-        const insertIndex = getInsertIndex(e.clientY, rootComponents);
+        const insertIndex = getInsertIndexNative(e.clientY, rootComponents);
         setPreviewTarget(null, insertIndex);
+    };
+
+    // dnd-kit 内部拖动的实时预览
+    const handleKitDragOver = (event: any) => {
+        const { active, over } = event;
+        if (!active || !over) return;
+        const activeComponent = components.find(c => c.id === active.id);
+        const overComponent = components.find(c => c.id === over.id);
+        if (!activeComponent || !overComponent) return;
+
+        const newParentId = overComponent.type === 'group' ? overComponent.id : overComponent.parentId || null;
+        const siblings = components
+            .filter(c => c.parentId === newParentId)
+            .sort((a, b) => a.order - b.order);
+
+        const activeIndex = siblings.findIndex(s => s.id === active.id);
+        const overIndex = overComponent.type === 'group' ? siblings.length : siblings.findIndex(s => s.id === overComponent.id);
+        if (overIndex === -1 && overComponent.type !== 'group') return;
+
+        let insertIndex = overIndex;
+        if (activeIndex !== -1) {
+            // 同列表移动：向下拖动插到后面，向上拖动插到前面
+            insertIndex = activeIndex < overIndex ? overIndex + 1 : overIndex;
+        }
+        setPreviewTarget(newParentId, Math.max(0, Math.min(insertIndex, siblings.length)));
     };
 
     const handleDragEnd = (event: DragEndEvent) => {
@@ -100,58 +125,20 @@ const DesignCanvas: React.FC = () => {
             const overComponent = components.find(comp => comp.id === over?.id);
 
             if (!activeComponent || !overComponent) return;
+            // 若有实时预览目标，直接使用
+            if (previewTarget) {
+                moveComponent(active.id as string, previewTarget.index, previewTarget.parentId || undefined);
+                clearPreviewTarget();
+                return;
+            }
 
-            // 找到活动组件的父分组
-            const parentGroup = components.find(comp =>
-                comp.type === 'group' &&
-                comp.id === activeComponent.parentId
-            );
-
-            // 找到目标组件的父分组
-            const targetGroup = components.find(comp =>
-                comp.type === 'group' &&
-                comp.id === overComponent.parentId
-            );
-
-            // 检查是否拖拽到分组组件本身
-            const isOverGroup = overComponent.type === 'group';
-
-            // 情况1: 分组子组件拖拽到画布外部
-            if (parentGroup && !targetGroup && !isOverGroup) {
-                const rootComponents = components.filter(comp => !comp.parentId).sort((a, b) => a.order - b.order);
-                const insertIndex = getInsertIndex(event.delta.y + (event.activatorEvent as any)?.clientY || 0, rootComponents);
-                moveComponent(active.id as string, insertIndex);
-            }
-            // 情况2: 分组子组件拖拽到另一个分组组件本身
-            else if (parentGroup && isOverGroup && parentGroup.id !== overComponent.id) {
-                moveComponent(active.id as string, 0, overComponent.id);
-            }
-            // 情况3: 画布组件拖拽到分组中（无论是子组件还是分组本身）
-            else if (!parentGroup && (targetGroup || isOverGroup)) {
-                const targetGroupId = targetGroup?.id || overComponent.id;
-                moveComponent(active.id as string, 0, targetGroupId);
-            }
-            // 情况4: 分组子组件拖拽到另一个分组（拖拽到该分组的子组件上）
-            else if (parentGroup && targetGroup && parentGroup.id !== targetGroup.id) {
-                moveComponent(active.id as string, 0, targetGroup.id);
-            }
-            // 情况5: 分组内子组件排序（同一分组内）
-            else if (parentGroup && targetGroup && parentGroup.id === targetGroup.id) {
-                const siblings = components.filter(comp => comp.parentId === parentGroup.id);
-                const oldIndex = siblings.findIndex(child => child.id === active.id);
-                const newIndex = siblings.findIndex(child => child.id === over?.id);
-
-                if (oldIndex !== -1 && newIndex !== -1) {
-                    moveComponent(active.id as string, newIndex, parentGroup.id);
-                }
-            }
-            // 情况6: 画布组件排序
-            else if (!parentGroup && !targetGroup) {
-                const rootComponents = components.filter(comp => !comp.parentId);
-                // 使用几何中线算法确定更自然的停驻位置
-                const newIndex = getInsertIndex((event.activatorEvent as any)?.clientY || 0, rootComponents);
-                moveComponent(active.id as string, newIndex);
-            }
+            // 退化逻辑：基于 over 目标计算
+            const newParentId = overComponent.type === 'group' ? overComponent.id : overComponent.parentId || undefined;
+            const siblings = components.filter(c => c.parentId === newParentId).sort((a, b) => a.order - b.order);
+            const overIndex = overComponent.type === 'group' ? siblings.length : siblings.findIndex(s => s.id === overComponent.id);
+            const activeIndex = siblings.findIndex(s => s.id === active.id);
+            const insertIndex = activeIndex !== -1 && activeIndex < overIndex ? overIndex + 1 : overIndex;
+            moveComponent(active.id as string, Math.max(0, insertIndex), newParentId);
         }
     };
 
@@ -174,6 +161,7 @@ const DesignCanvas: React.FC = () => {
             <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
+                onDragOver={handleKitDragOver}
                 onDragEnd={handleDragEnd}
             >
                 <div
@@ -200,37 +188,35 @@ const DesignCanvas: React.FC = () => {
                             strategy={verticalListSortingStrategy}
                         >
                             <div style={{ position: 'relative' }}>
-                                {rootComponents.map((component) => (
-                                    <SortableComponent
-                                        key={component.id}
-                                        component={component}
-                                    />
+                                {rootComponents.map((component, i) => (
+                                    <React.Fragment key={component.id}>
+                                        {previewTarget?.parentId == null && previewTarget?.index === i && (
+                                            <div key={`preview-${i}`} style={{ height: 0 }}>
+                                                <div
+                                                    style={{
+                                                        height: 2,
+                                                        background: '#1890ff',
+                                                        borderRadius: 1,
+                                                        margin: '8px 0',
+                                                        boxShadow: '0 0 0 2px rgba(24,144,255,0.12)',
+                                                        transition: 'all 120ms ease'
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
+                                        <SortableComponent component={component} />
+                                    </React.Fragment>
                                 ))}
-                                {typeof previewTarget?.index === 'number' && previewTarget?.parentId == null && (
-                                    <div
-                                        style={{
-                                            position: 'absolute',
-                                            left: 0,
-                                            right: 0,
-                                            height: '0',
-                                            pointerEvents: 'none',
-                                        }}
-                                    >
+                                {previewTarget?.parentId == null && previewTarget?.index === rootComponents.length && (
+                                    <div key={`preview-end`} style={{ height: 0 }}>
                                         <div
                                             style={{
-                                                position: 'absolute',
-                                                top: (() => {
-                                                    const beforeId = rootComponents[previewTarget.index - 1]?.id;
-                                                    const el = beforeId ? (document.querySelector(`[data-component-id="${beforeId}"]`) as HTMLElement | null) : null;
-                                                    if (!el) return 0;
-                                                    return el.offsetTop + el.offsetHeight + 8;
-                                                })(),
-                                                left: 0,
-                                                right: 0,
-                                                height: '2px',
+                                                height: 2,
                                                 background: '#1890ff',
                                                 borderRadius: 1,
-                                                boxShadow: '0 0 0 2px rgba(24,144,255,0.15)'
+                                                margin: '8px 0',
+                                                boxShadow: '0 0 0 2px rgba(24,144,255,0.12)',
+                                                transition: 'all 120ms ease'
                                             }}
                                         />
                                     </div>
