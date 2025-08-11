@@ -19,7 +19,7 @@ const DesignCanvas: React.FC = () => {
         id: 'design-canvas',
         data: {
             type: 'canvas',
-            accepts: ['component-from-library']
+            accepts: ['component-from-library', 'component-in-canvas']
         }
     });
 

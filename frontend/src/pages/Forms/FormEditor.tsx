@@ -27,6 +27,7 @@ import {
     PointerSensor,
     KeyboardSensor,
 } from '@dnd-kit/core'
+import { arrayMove } from '@dnd-kit/sortable'
 import {
     sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable'
@@ -56,7 +57,8 @@ const FormEditor: React.FC = () => {
         currentStep,
         history,
         addComponent,
-        moveComponent
+        moveComponent,
+        batchUpdateComponents
     } = useFormDesignerStore()
 
     const sensors = useSensors(
@@ -116,7 +118,7 @@ const FormEditor: React.FC = () => {
 
         if (!over) return
 
-        // 从组件库拖拽到画布
+        // 从组件库拖拽到画布或分组
         if (active.data.current?.type === 'component-from-library') {
             const componentType = active.data.current.componentType
 
@@ -126,6 +128,16 @@ const FormEditor: React.FC = () => {
                 const position = rootComponents.length // 添加到末尾
                 addComponent(componentType, position)
                 console.log('添加组件到画布:', componentType)
+                return
+            }
+
+            // 检查是否放置到分组区域
+            if (over.data.current?.type === 'group') {
+                const groupId = over.data.current.componentId
+                const groupComponents = components.filter(comp => comp.parentId === groupId)
+                const position = groupComponents.length // 添加到分组末尾
+                addComponent(componentType, position, groupId)
+                console.log('添加组件到分组:', componentType, '分组ID:', groupId)
                 return
             }
 
@@ -140,16 +152,58 @@ const FormEditor: React.FC = () => {
             }
         }
 
-        // 画布内组件排序
-        if (active.id !== over.id && active.data.current?.type === 'component-in-canvas') {
+        // 画布内组件移动和排序
+        if (active.data.current?.type === 'component-in-canvas') {
             const activeComponent = components.find(comp => comp.id === active.id)
-            const overComponent = components.find(comp => comp.id === over.id)
 
-            if (activeComponent && overComponent) {
-                // 只处理同级组件的排序
-                if (activeComponent.parentId === overComponent.parentId) {
-                    moveComponent(active.id as string, overComponent.order, overComponent.parentId)
-                    console.log('组件重新排序:', active.id, '->', overComponent.order)
+            if (!activeComponent) return
+
+            // 如果拖拽到分组区域，移动组件到分组
+            if (over.data.current?.type === 'group') {
+                const groupId = over.data.current.componentId
+                const groupComponents = components.filter(comp => comp.parentId === groupId)
+                const position = groupComponents.length // 添加到分组末尾
+                moveComponent(active.id as string, position, groupId)
+                console.log('移动组件到分组:', active.id, '分组ID:', groupId)
+                return
+            }
+
+            // 如果拖拽到画布区域，移动组件到画布
+            if (over.id === 'design-canvas' || over.data.current?.type === 'canvas') {
+                const rootComponents = components.filter(comp => !comp.parentId)
+                const position = rootComponents.length // 添加到画布末尾
+                moveComponent(active.id as string, position, undefined)
+                console.log('移动组件到画布:', active.id)
+                return
+            }
+
+            // 同级组件排序 - 简化处理
+            if (active.id !== over.id && active.data.current?.type === 'component-in-canvas') {
+                const overComponent = components.find(comp => comp.id === over.id)
+                if (activeComponent && overComponent && activeComponent.parentId === overComponent.parentId) {
+                    // 获取同级组件
+                    const siblings = components
+                        .filter(c => c.parentId === activeComponent.parentId)
+                        .sort((a, b) => a.order - b.order)
+
+                    const oldIndex = siblings.findIndex(s => s.id === active.id)
+                    const newIndex = siblings.findIndex(s => s.id === over.id)
+
+                    if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+                        // 使用arrayMove重新排序，然后批量更新所有order
+                        const reorderedSiblings = arrayMove(siblings, oldIndex, newIndex)
+
+                        // 创建批量更新
+                        const updates = reorderedSiblings.map((sibling, index) => ({
+                            id: sibling.id,
+                            updates: { order: index }
+                        }))
+
+                        // 批量更新组件order
+                        batchUpdateComponents(updates)
+                        console.log('组件重新排序完成:', active.id, '从位置', oldIndex, '到位置', newIndex)
+                        console.log('新的排序:', reorderedSiblings.map((s, i) => ({ id: s.id, newOrder: i })))
+                    }
                 }
             }
         }

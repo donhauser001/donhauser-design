@@ -133,6 +133,7 @@ export interface FormDesignerState {
 export type FormDesignerAction =
     | { type: 'ADD_COMPONENT'; component: FormComponent }
     | { type: 'UPDATE_COMPONENT'; id: string; updates: Partial<FormComponent> }
+    | { type: 'BATCH_UPDATE_COMPONENTS'; updates: Array<{ id: string, updates: Partial<FormComponent> }> }
     | { type: 'DELETE_COMPONENT'; id: string }
     | { type: 'MOVE_COMPONENT'; id: string; newOrder: number }
     | { type: 'SELECT_COMPONENT'; id: string | null }

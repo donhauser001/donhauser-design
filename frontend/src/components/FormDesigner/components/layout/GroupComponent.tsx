@@ -1,5 +1,7 @@
 import React from 'react';
 import { AppstoreOutlined } from '@ant-design/icons';
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 import SortableComponent from '../SortableComponent';
@@ -11,6 +13,19 @@ interface GroupComponentProps {
 const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
     const { getComponentsByParent } = useFormDesignerStore();
     const childComponents = getComponentsByParent(component.id);
+
+    // 配置分组为可放置区域
+    const { setNodeRef, isOver } = useDroppable({
+        id: `group-${component.id}`,
+        data: {
+            type: 'group',
+            componentId: component.id,
+            accepts: ['component-from-library', 'component-in-canvas']
+        }
+    });
+
+    // 获取子组件的ID列表，用于SortableContext（已经按order排序）
+    const childComponentIds = childComponents.map(child => child.id);
 
     return (
         <div
@@ -36,48 +51,58 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                 {component.label}
             </div>
 
-            {childComponents.length > 0 ? (
-                // 有子组件时，静态显示子组件
-                <div
-                    style={{
-                        minHeight: '60px',
-                        position: 'relative',
-                        zIndex: 1
-                    }}
-                >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
-                        {childComponents.map((child) => (
-                            <SortableComponent key={child.id} component={child} />
-                        ))}
+            {/* 分组内容区域 - 可拖拽放置 */}
+            <div
+                ref={setNodeRef}
+                style={{
+                    minHeight: '60px',
+                    position: 'relative',
+                    zIndex: 1,
+                    backgroundColor: isOver ? '#f0f8ff' : 'transparent',
+                    border: isOver ? '2px dashed #1890ff' : '2px dashed transparent',
+                    borderRadius: '4px',
+                    transition: 'all 0.2s ease',
+                    padding: isOver ? '8px' : '0px'
+                }}
+            >
+                {childComponents.length > 0 ? (
+                    // 有子组件时，使用SortableContext包装，支持排序和拖拽
+                    <SortableContext items={childComponentIds} strategy={verticalListSortingStrategy}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0px' }}>
+                            {childComponents.map((child) => (
+                                <SortableComponent key={child.id} component={child} />
+                            ))}
+                        </div>
+                    </SortableContext>
+                ) : (
+                    // 没有子组件时，显示拖拽提示
+                    <div
+                        style={{
+                            minHeight: '60px',
+                            padding: '12px',
+                            backgroundColor: isOver ? '#e6f7ff' : '#fafafa',
+                            borderRadius: '4px',
+                            border: isOver ? '2px dashed #1890ff' : '2px dashed #d9d9d9',
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        <div style={{
+                            color: isOver ? '#1890ff' : '#999',
+                            fontSize: '14px',
+                            textAlign: 'center',
+                            padding: '20px 0',
+                            fontStyle: 'italic',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                        }}>
+                            <AppstoreOutlined style={{ fontSize: '16px' }} />
+                            {isOver ? '放置组件到此处' : '拖拽组件到此处'}
+                        </div>
                     </div>
-                </div>
-            ) : (
-                // 没有子组件时，显示静态提示
-                <div
-                    style={{
-                        minHeight: '60px',
-                        padding: '12px',
-                        backgroundColor: '#fafafa',
-                        borderRadius: '4px',
-                        border: '2px dashed #d9d9d9',
-                    }}
-                >
-                    <div style={{
-                        color: '#999',
-                        fontSize: '14px',
-                        textAlign: 'center',
-                        padding: '20px 0',
-                        fontStyle: 'italic',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px'
-                    }}>
-                        <AppstoreOutlined style={{ fontSize: '16px' }} />
-                        空白分组
-                    </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 };
