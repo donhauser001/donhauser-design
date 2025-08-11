@@ -57,7 +57,9 @@ const FormEditor: React.FC = () => {
         currentStep,
         history,
         addComponent,
+        addComponentToColumn,
         moveComponent,
+        moveComponentToColumn,
         batchUpdateComponents
     } = useFormDesignerStore()
 
@@ -148,6 +150,30 @@ const FormEditor: React.FC = () => {
                 return
             }
 
+            // 检查是否放置到分栏容器区域
+            if (over.data.current?.type === 'column-container') {
+                const containerId = over.data.current.componentId
+                const containerComponents = components.filter(comp => comp.parentId === containerId)
+                const position = containerComponents.length // 添加到分栏容器末尾
+                addComponent(componentType, position, containerId)
+                console.log('添加组件到分栏容器:', componentType, '容器ID:', containerId)
+                return
+            }
+
+            // 检查是否放置到分栏的具体列
+            if (over.data.current?.type === 'column') {
+                const containerId = over.data.current.containerComponent.id
+                const columnIndex = over.data.current.columnIndex
+                const columnComponents = components.filter(comp =>
+                    comp.parentId === containerId &&
+                    (comp.columnIndex !== undefined ? comp.columnIndex : 0) === columnIndex
+                )
+                const position = columnComponents.length // 添加到该列末尾
+                addComponentToColumn(componentType, position, containerId, columnIndex)
+                console.log('添加组件到分栏列:', componentType, '容器ID:', containerId, '列索引:', columnIndex)
+                return
+            }
+
             // 如果放置到某个组件上，在该组件后面插入
             if (over.data.current?.type === 'component-in-canvas') {
                 const overComponent = components.find(comp => comp.id === over.id)
@@ -185,6 +211,33 @@ const FormEditor: React.FC = () => {
                     console.log('移动组件到分组:', active.id, '分组ID:', groupId)
                     return
                 }
+            }
+
+            // 优先级3: 检查是否拖拽到分栏容器区域
+            if (over.data.current?.type === 'column-container') {
+                const containerId = over.data.current.componentId
+                // 避免拖拽到自己所在的分栏容器
+                if (activeComponent.parentId !== containerId) {
+                    const containerComponents = components.filter(comp => comp.parentId === containerId)
+                    const position = containerComponents.length // 添加到分栏容器末尾
+                    moveComponent(active.id as string, position, containerId)
+                    console.log('移动组件到分栏容器:', active.id, '容器ID:', containerId)
+                    return
+                }
+            }
+
+            // 优先级4: 检查是否拖拽到分栏的具体列
+            if (over.data.current?.type === 'column') {
+                const containerId = over.data.current.containerComponent.id
+                const columnIndex = over.data.current.columnIndex
+                const columnComponents = components.filter(comp =>
+                    comp.parentId === containerId &&
+                    (comp.columnIndex !== undefined ? comp.columnIndex : 0) === columnIndex
+                )
+                const position = columnComponents.length // 添加到该列末尾
+                moveComponentToColumn(active.id as string, position, containerId, columnIndex)
+                console.log('移动组件到分栏列:', active.id, '容器ID:', containerId, '列索引:', columnIndex)
+                return
             }
 
             // 同级组件排序 - 简化处理

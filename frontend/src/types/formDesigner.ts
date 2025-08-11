@@ -6,10 +6,12 @@ export type ComponentType =
     | 'number'
     | 'select'
     | 'radio'
-    | 'checkbox'
     | 'date'
-    | 'time'
     | 'upload'
+    | 'image'
+    | 'slider'
+    | 'html'
+    | 'countdown'
     | 'group'
     | 'divider'
     | 'columnContainer'
@@ -57,7 +59,14 @@ export interface ComponentStyle {
     borderColor?: string;
     borderRadius?: string;
     fontSize?: string;
+    fontWeight?: string | number;
     color?: string;
+    lineHeight?: string;
+    textAlign?: string;
+    gap?: string; // 用于分栏容器的列间距
+    columnPadding?: string; // 用于分栏容器的栏内边距
+    borderWidth?: string; // 边框宽度
+    borderStyle?: string; // 边框样式
 }
 
 // 表单组件配置
@@ -69,18 +78,116 @@ export interface FormComponent {
     content?: string; // 用于presetText组件
     required?: boolean;
     disabled?: boolean;
+    // 通用属性
+    hideLabel?: boolean; // 隐藏标签
+    icon?: string; // 图标
+    fieldDescription?: string; // 字段说明
+    defaultValue?: any; // 默认值
+    // 单行文本特有属性
+    inputFormat?: 'text' | 'email' | 'name' | 'phone'; // 输入格式
+    // 数字组件特有属性
+    showThousandSeparator?: boolean; // 显示千分号
+    decimalPlaces?: number; // 小数位数
+    unit?: string; // 单位
+    // 日期组件特有属性
+    showTimePicker?: boolean; // 包含时间选择
+    autoCurrentTime?: boolean; // 自动抓取当前时间
+    // 文件上传组件特有属性
+    maxFileSize?: number; // 最大文件大小(MB)
+    allowedFileTypes?: string[]; // 允许的文件类型
+    maxFileCount?: number; // 最大文件数量
+    uploadButtonText?: string; // 上传按钮文本
+    uploadTip?: string; // 上传提示文本
+    uploadType?: 'button' | 'dragger'; // 上传类型：按钮或拖拽
+    showFileList?: boolean; // 显示文件列表
     validation?: ValidationRule[];
     style?: ComponentStyle;
-    options?: Array<{ label: string; value: any }>; // 用于select、radio、checkbox
-    defaultValue?: any;
+    options?: Array<{ label: string; value: any; defaultSelected?: boolean }>; // 用于select、radio、checkbox
+    allowMultiple?: boolean; // 允许多选（用于radio/checkbox合并组件）
+    optionLayout?: 'vertical' | 'horizontal'; // 选项布局方向
+    optionColumns?: number; // 横排时的分列数
+    // 下拉选择特有属性
+    allowClear?: boolean; // 允许清空选择
+    allowSearch?: boolean; // 允许搜索选项
+    selectMode?: 'single' | 'multiple'; // 选择模式：单选或多选
+    // 图片组件特有属性
+    imageUrl?: string; // 图片URL（单图模式）
+    imageWidth?: string; // 图片宽度
+    imageHeight?: string; // 图片高度
+    imageAlt?: string; // 图片描述
+    imageList?: Array<{ url: string; name: string; id: string }>; // 多图列表
+    imageMode?: 'single' | 'multiple' | 'slideshow'; // 图片模式
+    showImageName?: boolean; // 显示图片名称
+    maxImageCount?: number; // 最大图片数量
+    slideshowInterval?: number; // 幻灯片切换间隔（秒）
+    slideshowAutoplay?: boolean; // 自动播放幻灯片
+    // 滑块组件特有属性
+    sliderMode?: 'slider' | 'rate'; // 滑块模式：滑动条或星星评级
+    min?: number; // 最小值
+    max?: number; // 最大值
+    step?: number; // 步长
+    marks?: { [key: number]: string }; // 刻度标记
+    sliderAlign?: 'left' | 'center' | 'right'; // 滑块对齐方式
+    // HTML内容组件特有属性
+    htmlContent?: string; // HTML内容
+    // 倒计时组件特有属性
+    targetDate?: string; // 目标日期
+    countdownFormat?: string; // 倒计时格式
+    finishedText?: string; // 结束后显示的文本
+    countdownPrefix?: string; // 倒计时前缀文本
+    countdownSuffix?: string; // 倒计时后缀文本
+    syncWithFormExpiry?: boolean; // 与表单有效期同步
+    // 项目组件特有属性
+    fromProjectTable?: boolean; // 来自项目表（用于projectName组件）
+    showClient?: boolean; // 显示客户信息
+    showStatus?: boolean; // 显示项目状态
+    showContact?: boolean; // 显示联系人信息
+    // 客户组件特有属性
+    fromClientTable?: boolean; // 来自客户表（用于client组件）
+    showClientCategory?: boolean; // 显示客户分类
+    showClientRating?: boolean; // 显示客户评级
+    // 联系人组件特有属性
+    fromContactTable?: boolean; // 来自联系人表（用于contact组件）
+    showContactPhone?: boolean; // 显示联系人电话
+    showContactEmail?: boolean; // 显示联系人邮箱
+    showContactCompany?: boolean; // 显示联系人公司
+    showContactPosition?: boolean; // 显示联系人职位
+    enableCompanyFilter?: boolean; // 公司过滤（根据客户组件的选择过滤联系人）
+    allowMultipleContacts?: boolean; // 允许多选联系人
     parentId?: string; // 父容器ID，null表示在根容器中
     order: number; // 排序
+    columnIndex?: number; // 用于分栏容器，标识组件属于哪一列
     // 布局组件特有属性
     columns?: number; // 用于columnContainer
     current?: number; // 用于pagination和steps
     total?: number; // 用于pagination
     pageSize?: number; // 用于pagination
+    showSizeChanger?: boolean; // 用于pagination - 显示每页条数选择器
+    showQuickJumper?: boolean; // 用于pagination - 显示页码跳转
+    showTotal?: boolean; // 用于pagination - 显示总数
+    align?: 'left' | 'center' | 'right'; // 用于pagination - 对齐方式
     steps?: Array<{ title: string; description: string }>; // 用于steps
+    direction?: 'horizontal' | 'vertical'; // 用于steps - 步骤方向
+    size?: 'small' | 'default'; // 用于steps - 步骤大小
+    status?: 'wait' | 'process' | 'finish' | 'error'; // 用于steps - 步骤状态
+    // 分割线属性
+    dividerStyle?: 'solid' | 'dashed' | 'dotted'; // 用于divider - 线条样式
+    thickness?: number; // 用于divider - 线条粗细
+    lineColor?: string; // 用于divider - 线条颜色
+    title?: string; // 用于divider - 标题文本
+    description?: string; // 用于divider - 说明文本
+    textAlign?: 'left' | 'center' | 'right'; // 用于divider - 文本对齐
+    descriptionPosition?: 'above' | 'below'; // 用于divider - 说明文本位置
+    titleStyle?: {
+        fontSize?: string;
+        fontWeight?: string | number;
+        color?: string;
+    }; // 用于divider - 标题样式
+    descriptionStyle?: {
+        fontSize?: string;
+        fontWeight?: string | number;
+        color?: string;
+    }; // 用于divider - 描述样式
 }
 
 // 布局配置

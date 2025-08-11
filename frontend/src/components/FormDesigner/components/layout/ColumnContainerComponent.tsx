@@ -1,55 +1,65 @@
 import React from 'react';
-import { AppstoreOutlined } from '@ant-design/icons';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
-import SortableComponent from '../SortableComponent';
+import ColumnDropZone from './ColumnDropZone';
 
 interface ColumnContainerComponentProps {
     component: FormComponent;
 }
 
 const ColumnContainerComponent: React.FC<ColumnContainerComponentProps> = ({ component }) => {
-    const { getComponentsByParent, addComponent } = useFormDesignerStore();
+    const { getComponentsByParent, selectedComponent } = useFormDesignerStore();
     const childComponents = getComponentsByParent(component.id);
+    const isSelected = selectedComponent === component.id;
+
+    // 为每一列获取子组件
+    const getColumnComponents = (columnIndex: number) => {
+        return childComponents.filter(child =>
+            (child.columnIndex !== undefined ? child.columnIndex : 0) === columnIndex
+        );
+    };
+
+    // 构建边框样式
+    const borderStyle = component.style?.borderStyle || 'solid';
+    const borderWidth = component.style?.borderWidth || '1px';
+    const borderColor = component.style?.borderColor || '#d9d9d9';
+    const border = borderStyle === 'none' ? 'none' : `${borderWidth} ${borderStyle} ${borderColor}`;
 
     return (
         <div
             style={{
-                border: '1px solid #d9d9d9',
-                borderRadius: '6px',
-                padding: '16px',
-                backgroundColor: '#fafafa',
-                ...component.style
+                border: border,
+                borderRadius: component.style?.borderRadius || '6px',
+                padding: component.style?.padding || '16px',
+                backgroundColor: component.style?.backgroundColor || '#fafafa',
+                // 只展开需要的样式属性，避免类型冲突
+                width: component.style?.width,
+                height: component.style?.height,
+                margin: component.style?.margin,
+                fontSize: component.style?.fontSize,
+                fontWeight: component.style?.fontWeight,
+                color: component.style?.color,
+                lineHeight: component.style?.lineHeight
             }}
         >
-            <div style={{ fontWeight: 500, marginBottom: '12px' }}>
-                {component.label}
-            </div>
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: `repeat(${component.columns || 2}, 1fr)`,
-                gap: '16px'
-            }}>
-                {childComponents.length > 0 ? (
-                    childComponents.map((child, index) => (
-                        <SortableComponent key={child.id || index} component={child} />
-                    ))
-                ) : (
-                    <div style={{
-                        color: '#999',
-                        fontSize: '12px',
-                        gridColumn: '1 / -1',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px',
-                        padding: '20px'
-                    }}>
-                        <AppstoreOutlined style={{ fontSize: '14px' }} />
-                        拖拽组件到分栏容器中
-                    </div>
-                )}
+            <div
+                style={{
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(${component.columns || 2}, 1fr)`,
+                    gap: component.style?.gap || '16px',
+                    minHeight: '100px'
+                }}
+            >
+                {/* 为每一列创建独立的拖放区域 */}
+                {Array.from({ length: component.columns || 2 }).map((_, columnIndex) => (
+                    <ColumnDropZone
+                        key={columnIndex}
+                        containerComponent={component}
+                        columnIndex={columnIndex}
+                        components={getColumnComponents(columnIndex)}
+                        isSelected={isSelected}
+                    />
+                ))}
             </div>
         </div>
     );

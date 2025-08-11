@@ -11,7 +11,10 @@ import {
     CheckSquareOutlined,
     AppstoreOutlined,
     MinusOutlined,
-    UploadOutlined
+    UploadOutlined,
+    PictureOutlined,
+    SlidersOutlined,
+    CodeOutlined
 } from '@ant-design/icons';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
@@ -32,7 +35,10 @@ const iconMap: { [key: string]: React.ReactElement } = {
     CheckSquareOutlined: <CheckSquareOutlined />,
     AppstoreOutlined: <AppstoreOutlined />,
     MinusOutlined: <MinusOutlined />,
-    UploadOutlined: <UploadOutlined />
+    UploadOutlined: <UploadOutlined />,
+    PictureOutlined: <PictureOutlined />,
+    SlidersOutlined: <SlidersOutlined />,
+    CodeOutlined: <CodeOutlined />
 };
 
 // 可拖拽的组件项

@@ -87,28 +87,16 @@ class ComponentRegistry {
 
         this.register('date', {
             type: 'date',
-            name: '日期选择',
+            name: '日期时间',
             icon: 'CalendarOutlined',
             category: 'basic',
-            description: '用于选择日期',
+            description: '用于选择日期，可选择包含时间',
             defaultProps: {
-                label: '日期选择',
+                label: '日期时间',
                 required: false,
                 disabled: false,
-                order: 0
-            }
-        });
-
-        this.register('time', {
-            type: 'time',
-            name: '时间选择',
-            icon: 'ClockCircleOutlined',
-            category: 'basic',
-            description: '用于选择时间',
-            defaultProps: {
-                label: '时间选择',
-                required: false,
-                disabled: false,
+                showTimePicker: false,
+                autoCurrentTime: false,
                 order: 0
             }
         });
@@ -122,49 +110,40 @@ class ComponentRegistry {
             defaultProps: {
                 label: '下拉选择',
                 required: false,
-                disabled: false,
                 options: [
-                    { label: '选项1', value: 'option1' },
-                    { label: '选项2', value: 'option2' },
-                    { label: '选项3', value: 'option3' }
+                    { label: '选项1', value: 'option1', defaultSelected: false },
+                    { label: '选项2', value: 'option2', defaultSelected: false },
+                    { label: '选项3', value: 'option3', defaultSelected: false }
                 ],
+                selectMode: 'single',
+                allowClear: true,
+                allowSearch: false,
+                hideLabel: false,
+                icon: '',
+                fieldDescription: '',
+                defaultValue: '',
+                placeholder: '请选择',
                 order: 0
             }
         });
 
         this.register('radio', {
             type: 'radio',
-            name: '单选按钮',
+            name: '选择按钮',
             icon: 'CheckCircleOutlined',
             category: 'basic',
-            description: '从多个选项中选择一个',
+            description: '用于单选或多选，可通过开关切换模式',
             defaultProps: {
-                label: '单选按钮',
+                label: '选择按钮',
                 required: false,
                 disabled: false,
+                allowMultiple: false,
+                optionLayout: 'vertical',
+                optionColumns: 0,
                 options: [
-                    { label: '选项1', value: 'option1' },
-                    { label: '选项2', value: 'option2' },
-                    { label: '选项3', value: 'option3' }
-                ],
-                order: 0
-            }
-        });
-
-        this.register('checkbox', {
-            type: 'checkbox',
-            name: '多选框',
-            icon: 'CheckSquareOutlined',
-            category: 'basic',
-            description: '从多个选项中选择多个',
-            defaultProps: {
-                label: '多选框',
-                required: false,
-                disabled: false,
-                options: [
-                    { label: '选项1', value: 'option1' },
-                    { label: '选项2', value: 'option2' },
-                    { label: '选项3', value: 'option3' }
+                    { label: '选项1', value: 'option1', defaultSelected: false },
+                    { label: '选项2', value: 'option2', defaultSelected: false },
+                    { label: '选项3', value: 'option3', defaultSelected: false }
                 ],
                 order: 0
             }
@@ -192,6 +171,7 @@ class ComponentRegistry {
             description: '用于分隔表单内容',
             defaultProps: {
                 label: '分割线',
+                content: '分隔内容',
                 order: 0
             }
         });
@@ -249,11 +229,95 @@ class ComponentRegistry {
             name: '文件上传',
             icon: 'UploadOutlined',
             category: 'basic',
-            description: '用于上传文件',
+            description: '用于上传文件，支持多种文件类型和上传方式',
             defaultProps: {
                 label: '文件上传',
                 required: false,
                 disabled: false,
+                maxFileSize: 10,
+                allowedFileTypes: [],
+                maxFileCount: 1,
+                uploadButtonText: '点击上传',
+                uploadTip: '支持单个文件上传',
+                uploadType: 'button',
+                showFileList: true,
+                order: 0
+            }
+        });
+
+        this.register('image', {
+            type: 'image',
+            name: '图片展示',
+            icon: 'PictureOutlined',
+            category: 'basic',
+            description: '用于在表单中展示图片，支持上传、多图和幻灯片模式',
+            defaultProps: {
+                label: '图片',
+                imageUrl: '',
+                imageWidth: '200px',
+                imageHeight: 'auto',
+                imageAlt: '图片',
+                imageList: [],
+                imageMode: 'single',
+                showImageName: true,
+                maxImageCount: 9,
+                slideshowInterval: 3,
+                slideshowAutoplay: true,
+                fieldDescription: '',
+                order: 0
+            }
+        });
+
+        this.register('slider', {
+            type: 'slider',
+            name: '滑块/评级',
+            icon: 'SlidersOutlined',
+            category: 'basic',
+            description: '用滑动条设置数字或星星评级',
+            defaultProps: {
+                label: '滑块',
+                sliderMode: 'slider',
+                min: 0,
+                max: 100,
+                step: 1,
+                marks: {},
+                defaultValue: 0,
+                sliderAlign: 'left',
+                hideLabel: false,
+                fieldDescription: '',
+                order: 0
+            }
+        });
+
+        this.register('html', {
+            type: 'html',
+            name: 'HTML内容',
+            icon: 'CodeOutlined',
+            category: 'basic',
+            description: '用于插入自定义HTML内容',
+            defaultProps: {
+                label: 'HTML内容',
+                htmlContent: '<p>这里是HTML内容</p>',
+                fieldDescription: '',
+                order: 0
+            }
+        });
+
+        this.register('countdown', {
+            type: 'countdown',
+            name: '倒计时',
+            icon: 'ClockCircleOutlined',
+            category: 'basic',
+            description: '显示到指定日期的倒计时，支持与表单有效期同步',
+            defaultProps: {
+                label: '倒计时',
+                targetDate: '',
+                countdownFormat: 'DD天 HH:mm:ss',
+                finishedText: '时间到！',
+                countdownPrefix: '距离截止还有：',
+                countdownSuffix: '',
+                syncWithFormExpiry: false,
+                fieldDescription: '',
                 order: 0
             }
         });
@@ -270,6 +334,10 @@ class ComponentRegistry {
                 placeholder: '请输入项目名称',
                 required: true,
                 disabled: false,
+                fromProjectTable: false,
+                showClient: false,
+                showStatus: false,
+                showContact: false,
                 order: 0
             }
         });
@@ -285,6 +353,9 @@ class ComponentRegistry {
                 placeholder: '请输入客户名称',
                 required: true,
                 disabled: false,
+                fromClientTable: false,
+                showClientCategory: false,
+                showClientRating: false,
                 order: 0
             }
         });
@@ -300,6 +371,13 @@ class ComponentRegistry {
                 placeholder: '请输入联系人姓名',
                 required: false,
                 disabled: false,
+                fromContactTable: false,
+                showContactPhone: false,
+                showContactEmail: false,
+                showContactCompany: false,
+                showContactPosition: false,
+                enableCompanyFilter: false,
+                allowMultipleContacts: false,
                 order: 0
             }
         });

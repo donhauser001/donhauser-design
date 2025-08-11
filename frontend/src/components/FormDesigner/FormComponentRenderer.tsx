@@ -8,11 +8,13 @@ import {
     PresetTextComponent,
     NumberComponent,
     DateComponent,
-    TimeComponent,
     SelectComponent,
     RadioComponent,
-    CheckboxComponent,
-    UploadComponent
+    UploadComponent,
+    ImageComponent,
+    SliderComponent,
+    HtmlComponent,
+    CountdownComponent
 } from './components/basic';
 
 // 导入布局组件
@@ -78,16 +80,20 @@ const FormComponentRenderer: React.FC<FormComponentRendererProps> = ({ component
                 return <NumberComponent component={component} />;
             case 'date':
                 return <DateComponent component={component} />;
-            case 'time':
-                return <TimeComponent component={component} />;
             case 'select':
                 return <SelectComponent component={component} />;
             case 'radio':
                 return <RadioComponent component={component} />;
-            case 'checkbox':
-                return <CheckboxComponent component={component} />;
             case 'upload':
                 return <UploadComponent component={component} />;
+            case 'image':
+                return <ImageComponent component={component} />;
+            case 'slider':
+                return <SliderComponent component={component} />;
+            case 'html':
+                return <HtmlComponent component={component} />;
+            case 'countdown':
+                return <CountdownComponent component={component} />;
 
             // 布局组件
             case 'group':
@@ -156,17 +162,28 @@ const FormComponentRenderer: React.FC<FormComponentRendererProps> = ({ component
 
     return (
         <div style={{ width: '100%' }}>
-            {/* 分组组件不显示外部标签，因为内部已有标签 */}
-            {component.type !== 'group' && (
-                <div style={{ marginBottom: '8px' }}>
-                    <span style={{ fontWeight: 500, fontSize: '14px' }}>
-                        {component.label}
-                    </span>
-                    {component.required && (
-                        <span style={{ color: '#ff4d4f', marginLeft: '4px' }}>*</span>
-                    )}
-                </div>
-            )}
+            {/* 布局组件不显示外部标签，支持隐藏标签功能 */}
+            {!['group', 'columnContainer', 'divider', 'pagination', 'steps', 'presetText', 'image', 'html', 'countdown'].includes(component.type) &&
+                !component.hideLabel && (
+                    <div style={{ marginBottom: '8px' }}>
+                        <span style={{ fontWeight: 500, fontSize: '14px' }}>
+                            {component.label}
+                        </span>
+                        {component.required && (
+                            <span style={{
+                                color: '#ff4d4f',
+                                marginLeft: '8px',
+                                fontSize: '12px',
+                                padding: '2px 6px',
+                                backgroundColor: '#fff2f0',
+                                border: '1px solid #ffccc7',
+                                borderRadius: '4px'
+                            }}>
+                                必填
+                            </span>
+                        )}
+                    </div>
+                )}
             {renderComponent()}
         </div>
     );

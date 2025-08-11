@@ -20,8 +20,13 @@ const defaultTheme: ThemeConfig = {
 };
 
 interface FormDesignerStore extends FormDesignerState {
+    // 存储组件的运行时选择值（仅在设计模式下使用）
+    componentValues: Record<string, any>;
+
     // Actions
     addComponent: (type: string, position?: number, parentId?: string) => void;
+    addComponentToColumn: (type: string, position: number, parentId: string, columnIndex: number) => void;
+    moveComponentToColumn: (componentId: string, position: number, parentId: string, columnIndex: number) => void;
     updateComponent: (id: string, updates: Partial<FormComponent>) => void;
     batchUpdateComponents: (updates: Array<{ id: string, updates: Partial<FormComponent> }>) => void;
     deleteComponent: (id: string) => void;
@@ -38,6 +43,10 @@ interface FormDesignerStore extends FormDesignerState {
     loadFormConfig: (config: any) => void;
     clearForm: () => void;
 
+    // 运行时值管理
+    setComponentValue: (componentId: string, value: any) => void;
+    getComponentValue: (componentId: string) => any;
+
     // Helper methods
     getComponentsByParent: (parentId?: string) => FormComponent[];
 }
@@ -51,6 +60,7 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
     currentStep: -1,
     layout: defaultLayout,
     theme: defaultTheme,
+    componentValues: {},
     // 辅助方法
     getComponentsByParent: (parentId?: string) => {
         return get().components
@@ -97,6 +107,74 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
                 history: [...state.history.slice(0, state.currentStep + 1), action],
                 currentStep: state.currentStep + 1,
                 selectedComponent: newComponent.id
+            };
+        });
+    },
+
+    addComponentToColumn: (type: string, position: number, parentId: string, columnIndex: number) => {
+        const componentMeta = ComponentRegistry.getComponent(type as any);
+        if (!componentMeta) return;
+
+        const newComponent: FormComponent = {
+            id: `component_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            type: componentMeta.type,
+            label: componentMeta.defaultProps.label || componentMeta.name,
+            placeholder: componentMeta.defaultProps.placeholder,
+            required: componentMeta.defaultProps.required || false,
+            disabled: componentMeta.defaultProps.disabled || false,
+            options: componentMeta.defaultProps.options,
+            parentId: parentId,
+            columnIndex: columnIndex, // 设置列索引
+            order: position
+        };
+
+        const action: FormDesignerAction = {
+            type: 'ADD_COMPONENT',
+            component: newComponent
+        };
+
+        set(state => ({
+            components: [...state.components, newComponent],
+            selectedComponent: newComponent.id,
+            history: [...state.history.slice(0, state.currentStep + 1), action],
+            currentStep: state.currentStep + 1
+        }));
+    },
+
+    moveComponentToColumn: (componentId: string, position: number, parentId: string, columnIndex: number) => {
+        const action: FormDesignerAction = {
+            type: 'MOVE_COMPONENT',
+            id: componentId,
+            newOrder: position
+        };
+
+        set(state => {
+            const component = state.components.find(comp => comp.id === componentId);
+            if (!component) return state;
+
+            const newComponents = [...state.components];
+            const componentIndex = newComponents.findIndex(comp => comp.id === componentId);
+
+            if (componentIndex !== -1) {
+                newComponents[componentIndex] = {
+                    ...newComponents[componentIndex],
+                    parentId: parentId,
+                    columnIndex: columnIndex,
+                    order: position
+                };
+            }
+
+            console.log('moveComponentToColumn 完成:', {
+                componentId,
+                parentId,
+                columnIndex,
+                position
+            });
+
+            return {
+                components: newComponents,
+                history: [...state.history.slice(0, state.currentStep + 1), action],
+                currentStep: state.currentStep + 1
             };
         });
     },
@@ -497,7 +575,22 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
             history: [],
             currentStep: -1,
             layout: defaultLayout,
-            theme: defaultTheme
+            theme: defaultTheme,
+            componentValues: {}
         });
+    },
+
+    // 运行时值管理
+    setComponentValue: (componentId: string, value: any) => {
+        set(state => ({
+            componentValues: {
+                ...state.componentValues,
+                [componentId]: value
+            }
+        }));
+    },
+
+    getComponentValue: (componentId: string) => {
+        return get().componentValues[componentId];
     }
 })); 
