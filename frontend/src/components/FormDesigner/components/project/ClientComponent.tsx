@@ -22,15 +22,6 @@ const ClientComponent: React.FC<ClientComponentProps> = ({ component }) => {
         return getIconPrefix(component.icon);
     };
 
-    // 获取客户状态的显示样式
-    const getStatusTag = (status: string) => {
-        const statusMap: Record<string, { text: string; color: string }> = {
-            'active': { text: '活跃', color: '#52c41a' },
-            'inactive': { text: '停用', color: '#f5222d' }
-        };
-        return statusMap[status] || { text: status, color: '#d9d9d9' };
-    };
-
     // 加载客户数据
     const loadClients = async () => {
         if (!component.fromClientTable) return;
@@ -77,7 +68,7 @@ const ClientComponent: React.FC<ClientComponentProps> = ({ component }) => {
             placeholder={component.placeholder}
             value={component.defaultValue || ''}
             prefix={getPrefix()}
-            style={component.style}
+            style={component.style as React.CSSProperties}
             readOnly={true}
         />
     );
@@ -89,7 +80,7 @@ const ClientComponent: React.FC<ClientComponentProps> = ({ component }) => {
                 showSearch
                 placeholder={component.placeholder || '请选择客户'}
                 value={getComponentValue(component.id) || component.defaultValue || undefined}
-                style={{ width: '100%', ...component.style }}
+                style={{ width: '100%', ...(component.style as React.CSSProperties) }}
                 styles={{
                     popup: { root: { minWidth: '300px' } }
                 }}
