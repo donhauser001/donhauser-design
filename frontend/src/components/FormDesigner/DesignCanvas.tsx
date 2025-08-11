@@ -53,8 +53,8 @@ const DesignCanvas: React.FC = () => {
                     minHeight: '100%',
                     padding: '20px',
                     backgroundColor: isOver ? '#f0f8ff' : '#fff',
-                    borderRadius: '8px',
                     border: isOver ? '2px dashed #1890ff' : '2px dashed #d9d9d9',
+                    borderRadius: '8px',
                     position: 'relative',
                     transition: 'all 0.2s ease'
                 }}

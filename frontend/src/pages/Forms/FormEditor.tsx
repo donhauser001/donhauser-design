@@ -21,7 +21,7 @@ import {
     DragEndEvent,
     DragOverlay,
     DragStartEvent,
-    closestCenter,
+    pointerWithin,
     useSensor,
     useSensors,
     PointerSensor,
@@ -118,6 +118,13 @@ const FormEditor: React.FC = () => {
 
         if (!over) return
 
+        console.log('拖拽结束事件:', {
+            activeId: active.id,
+            overId: over.id,
+            overType: over.data.current?.type,
+            activeType: active.data.current?.type
+        })
+
         // 从组件库拖拽到画布或分组
         if (active.data.current?.type === 'component-from-library') {
             const componentType = active.data.current.componentType
@@ -158,23 +165,26 @@ const FormEditor: React.FC = () => {
 
             if (!activeComponent) return
 
-            // 如果拖拽到分组区域，移动组件到分组
-            if (over.data.current?.type === 'group') {
-                const groupId = over.data.current.componentId
-                const groupComponents = components.filter(comp => comp.parentId === groupId)
-                const position = groupComponents.length // 添加到分组末尾
-                moveComponent(active.id as string, position, groupId)
-                console.log('移动组件到分组:', active.id, '分组ID:', groupId)
-                return
-            }
-
-            // 如果拖拽到画布区域，移动组件到画布
+            // 优先级1: 检查是否拖拽到画布区域（最高优先级）
             if (over.id === 'design-canvas' || over.data.current?.type === 'canvas') {
                 const rootComponents = components.filter(comp => !comp.parentId)
                 const position = rootComponents.length // 添加到画布末尾
                 moveComponent(active.id as string, position, undefined)
-                console.log('移动组件到画布:', active.id)
+                console.log('移动组件到画布:', active.id, '从父级:', activeComponent.parentId, '到位置:', position)
                 return
+            }
+
+            // 优先级2: 检查是否拖拽到分组区域
+            if (over.data.current?.type === 'group') {
+                const groupId = over.data.current.componentId
+                // 避免拖拽到自己所在的分组
+                if (activeComponent.parentId !== groupId) {
+                    const groupComponents = components.filter(comp => comp.parentId === groupId)
+                    const position = groupComponents.length // 添加到分组末尾
+                    moveComponent(active.id as string, position, groupId)
+                    console.log('移动组件到分组:', active.id, '分组ID:', groupId)
+                    return
+                }
             }
 
             // 同级组件排序 - 简化处理
@@ -271,7 +281,7 @@ const FormEditor: React.FC = () => {
             {/* 表单设计器主区域（移除卡片容器层） */}
             <DndContext
                 sensors={sensors}
-                collisionDetection={closestCenter}
+                collisionDetection={pointerWithin}
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
             >

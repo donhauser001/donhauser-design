@@ -181,31 +181,35 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
 
             let newComponents = [...state.components];
             const oldParentId = component.parentId;
-            const actualNewParentId = newParentId !== undefined ? newParentId : oldParentId;
+            // 修复：当newParentId为undefined时，应该保持为undefined（表示移动到画布）
+            const actualNewParentId = newParentId;
 
-            // 更新组件的父级
-            const componentIndex = newComponents.findIndex(comp => comp.id === id);
-            if (componentIndex !== -1) {
-                newComponents[componentIndex] = {
-                    ...newComponents[componentIndex],
-                    parentId: actualNewParentId
-                };
-            }
+            console.log('moveComponent 调试:', {
+                componentId: id,
+                oldParentId,
+                newParentId,
+                actualNewParentId,
+                targetOrder
+            });
 
-            // 获取同一父级下的所有组件（包括移动的组件）
-            const siblings = newComponents.filter(c => c.parentId === actualNewParentId);
-            siblings.sort((a, b) => a.order - b.order);
+            // 处理跨容器移动
+            if (oldParentId !== actualNewParentId) {
+                console.log('跨容器移动:', oldParentId, '->', actualNewParentId);
 
-            // 找到移动组件和目标组件的索引
-            const moveIndex = siblings.findIndex(s => s.id === id);
-            const targetIndex = siblings.findIndex(s => s.order === targetOrder);
+                // 更新组件的父级和order
+                const componentIndex = newComponents.findIndex(comp => comp.id === id);
+                if (componentIndex !== -1) {
+                    newComponents[componentIndex] = {
+                        ...newComponents[componentIndex],
+                        parentId: actualNewParentId,
+                        order: targetOrder
+                    };
+                }
 
-            if (moveIndex !== -1 && targetIndex !== -1) {
-                // 使用arrayMove重新排序
-                const reorderedSiblings = arrayMove(siblings, moveIndex, targetIndex);
-
-                // 重新分配order值
-                reorderedSiblings.forEach((sibling, index) => {
+                // 重新整理旧父级下的组件order
+                const oldSiblings = newComponents.filter(c => c.parentId === oldParentId && c.id !== id);
+                oldSiblings.sort((a, b) => a.order - b.order);
+                oldSiblings.forEach((sibling, index) => {
                     const compIndex = newComponents.findIndex(c => c.id === sibling.id);
                     if (compIndex !== -1) {
                         newComponents[compIndex] = {
@@ -214,13 +218,50 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
                         };
                     }
                 });
+
+                // 重新整理新父级下的组件order
+                const newSiblings = newComponents.filter(c => c.parentId === actualNewParentId);
+                newSiblings.sort((a, b) => a.order - b.order);
+                newSiblings.forEach((sibling, index) => {
+                    const compIndex = newComponents.findIndex(c => c.id === sibling.id);
+                    if (compIndex !== -1) {
+                        newComponents[compIndex] = {
+                            ...newComponents[compIndex],
+                            order: index
+                        };
+                    }
+                });
+            } else {
+                // 同级移动：使用arrayMove
+                const siblings = newComponents.filter(c => c.parentId === actualNewParentId);
+                siblings.sort((a, b) => a.order - b.order);
+
+                const moveIndex = siblings.findIndex(s => s.id === id);
+                const targetIndex = siblings.findIndex(s => s.order === targetOrder);
+
+                if (moveIndex !== -1 && targetIndex !== -1) {
+                    const reorderedSiblings = arrayMove(siblings, moveIndex, targetIndex);
+
+                    reorderedSiblings.forEach((sibling, index) => {
+                        const compIndex = newComponents.findIndex(c => c.id === sibling.id);
+                        if (compIndex !== -1) {
+                            newComponents[compIndex] = {
+                                ...newComponents[compIndex],
+                                order: index
+                            };
+                        }
+                    });
+                }
             }
+
+            // 获取最终的兄弟组件用于日志
+            const finalSiblings = newComponents.filter(c => c.parentId === actualNewParentId);
 
             console.log('moveComponent 完成:', {
                 componentId: id,
                 newParentId: actualNewParentId,
                 targetOrder,
-                reorderedComponents: siblings.map(s => ({ id: s.id, order: s.order }))
+                reorderedComponents: finalSiblings.map(s => ({ id: s.id, order: s.order }))
             });
 
             return {
