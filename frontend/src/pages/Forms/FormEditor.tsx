@@ -16,12 +16,27 @@ import {
     UndoOutlined,
     RedoOutlined
 } from '@ant-design/icons'
+import {
+    DndContext,
+    DragEndEvent,
+    DragOverlay,
+    DragStartEvent,
+    closestCenter,
+    useSensor,
+    useSensors,
+    PointerSensor,
+    KeyboardSensor,
+} from '@dnd-kit/core'
+import {
+    sortableKeyboardCoordinates,
+} from '@dnd-kit/sortable'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getFormById, Form as FormType } from '../../api/forms'
 import { useFormDesignerStore } from '../../stores/formDesignerStore'
 import ComponentLibrary from '../../components/FormDesigner/ComponentLibrary'
 import DesignCanvas from '../../components/FormDesigner/DesignCanvas'
 import PropertyPanel from '../../components/FormDesigner/PropertyPanel'
+import FormComponentRenderer from '../../components/FormDesigner/FormComponentRenderer'
 
 const { Title, Text } = Typography
 
@@ -31,7 +46,29 @@ const FormEditor: React.FC = () => {
     const [, setLoading] = useState(false)
     const [formData, setFormData] = useState<FormType | null>(null)
     const [isNewForm] = useState(!id)
-    const { loadFormConfig, undo, redo, currentStep, history } = useFormDesignerStore()
+    const [activeId, setActiveId] = useState<string | null>(null)
+
+    const {
+        components,
+        loadFormConfig,
+        undo,
+        redo,
+        currentStep,
+        history,
+        addComponent,
+        moveComponent
+    } = useFormDesignerStore()
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        }),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    )
 
     useEffect(() => {
         if (id) {
@@ -67,6 +104,55 @@ const FormEditor: React.FC = () => {
 
     const handleBack = () => {
         navigate('/forms/list')
+    }
+
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveId(event.active.id as string)
+    }
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event
+        setActiveId(null)
+
+        if (!over) return
+
+        // 从组件库拖拽到画布
+        if (active.data.current?.type === 'component-from-library') {
+            const componentType = active.data.current.componentType
+
+            // 检查是否放置到画布区域
+            if (over.id === 'design-canvas' || over.data.current?.type === 'canvas') {
+                const rootComponents = components.filter(comp => !comp.parentId)
+                const position = rootComponents.length // 添加到末尾
+                addComponent(componentType, position)
+                console.log('添加组件到画布:', componentType)
+                return
+            }
+
+            // 如果放置到某个组件上，在该组件后面插入
+            if (over.data.current?.type === 'component-in-canvas') {
+                const overComponent = components.find(comp => comp.id === over.id)
+                if (overComponent) {
+                    addComponent(componentType, overComponent.order + 1, overComponent.parentId)
+                    console.log('添加组件到组件后:', componentType)
+                    return
+                }
+            }
+        }
+
+        // 画布内组件排序
+        if (active.id !== over.id && active.data.current?.type === 'component-in-canvas') {
+            const activeComponent = components.find(comp => comp.id === active.id)
+            const overComponent = components.find(comp => comp.id === over.id)
+
+            if (activeComponent && overComponent) {
+                // 只处理同级组件的排序
+                if (activeComponent.parentId === overComponent.parentId) {
+                    moveComponent(active.id as string, overComponent.order, overComponent.parentId)
+                    console.log('组件重新排序:', active.id, '->', overComponent.order)
+                }
+            }
+        }
     }
 
     return (
@@ -129,19 +215,48 @@ const FormEditor: React.FC = () => {
             </div>
 
             {/* 表单设计器主区域（移除卡片容器层） */}
-            <div style={{ width: '100%' }}>
-                <Row gutter={16} style={{ height: 'calc(100vh - 300px)' }}>
-                    <Col span={5}>
-                        <ComponentLibrary />
-                    </Col>
-                    <Col span={13}>
-                        <DesignCanvas />
-                    </Col>
-                    <Col span={6}>
-                        <PropertyPanel />
-                    </Col>
-                </Row>
-            </div>
+            <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+            >
+                <div style={{ width: '100%' }}>
+                    <Row gutter={16} style={{ height: 'calc(100vh - 300px)' }}>
+                        <Col span={5}>
+                            <ComponentLibrary />
+                        </Col>
+                        <Col span={13}>
+                            <DesignCanvas />
+                        </Col>
+                        <Col span={6}>
+                            <PropertyPanel />
+                        </Col>
+                    </Row>
+                </div>
+
+                <DragOverlay>
+                    {activeId ? (
+                        <div style={{
+                            opacity: 0.8,
+                            transform: 'rotate(5deg)',
+                            backgroundColor: '#fff',
+                            border: '2px solid #1890ff',
+                            borderRadius: '6px',
+                            padding: '8px'
+                        }}>
+                            {activeId.startsWith('component-') ? (
+                                <div>正在添加组件...</div>
+                            ) : (
+                                (() => {
+                                    const component = components.find(comp => comp.id === activeId)
+                                    return component ? <FormComponentRenderer component={component} /> : null
+                                })()
+                            )}
+                        </div>
+                    ) : null}
+                </DragOverlay>
+            </DndContext>
         </div>
     )
 }

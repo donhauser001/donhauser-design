@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Button, Space, Popconfirm } from 'antd';
-import { DeleteOutlined, CopyOutlined } from '@ant-design/icons';
+import { DeleteOutlined, CopyOutlined, DragOutlined } from '@ant-design/icons';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { FormComponent } from '../../../types/formDesigner';
 import { useFormDesignerStore } from '../../../stores/formDesignerStore';
 import FormComponentRenderer from '../FormComponentRenderer';
@@ -14,9 +16,32 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
 
     const { selectedComponent, selectComponent, deleteComponent, duplicateComponent } = useFormDesignerStore();
 
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({
+        id: component.id,
+        data: {
+            type: 'component-in-canvas',
+            component,
+        },
+    });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1,
+    };
+
     return (
         <div
+            ref={setNodeRef}
             style={{
+                ...style,
                 position: 'relative',
                 marginBottom: '16px',
                 padding: '8px',
@@ -31,7 +56,7 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
                     : isHovered
                         ? '#fafafa'
                         : 'transparent',
-                transition: 'all 0.2s',
+                transition: isDragging ? 'none' : 'all 0.2s',
                 cursor: 'pointer',
                 boxShadow: isHovered ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
             }}
@@ -46,7 +71,7 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
         >
             <FormComponentRenderer component={component} />
 
-            {/* 组件操作按钮 */}
+            {/* 组件操作按钮（包含拖拽手柄） */}
             <div
                 style={{
                     position: 'absolute',
@@ -63,6 +88,31 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
                 }}
             >
                 <Space size="small">
+                    {/* 拖拽手柄 */}
+                    <div
+                        {...attributes}
+                        {...listeners}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'grab',
+                            padding: '4px',
+                            borderRadius: '2px',
+                            transition: 'background-color 0.2s'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#f0f0f0';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                        title="拖拽移动"
+                    >
+                        <DragOutlined style={{ color: '#666', fontSize: '12px' }} />
+                    </div>
+
                     {selectedComponent === component.id && (
                         <>
                             <Button
