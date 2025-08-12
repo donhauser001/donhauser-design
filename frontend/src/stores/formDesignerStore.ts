@@ -77,6 +77,7 @@ interface FormDesignerStore extends FormDesignerState {
     getOrderItems: (orderComponentId: string) => OrderItem[];
     getOrderTotal: (orderComponentId: string) => number;
     isServiceSelected: (orderComponentId: string, serviceId: string) => boolean;
+    clearOrderItems: (orderComponentId: string) => void;
 }
 
 export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
@@ -739,5 +740,14 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
     isServiceSelected: (orderComponentId: string, serviceId: string) => {
         const orderItems = get().orderItems[orderComponentId] || [];
         return orderItems.some(item => item.id === serviceId);
+    },
+
+    clearOrderItems: (orderComponentId: string) => {
+        set(state => ({
+            orderItems: {
+                ...state.orderItems,
+                [orderComponentId]: []
+            }
+        }));
     }
 })); 

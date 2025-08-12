@@ -17,6 +17,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
     const isRadioComponent = component.type === 'radio';
     const isSliderComponent = component.type === 'slider';
     const isQuotationComponent = component.type === 'quotation';
+    const isOrderComponent = component.type === 'order';
 
     return (
         <>
@@ -41,14 +42,16 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         />
                     </Form.Item>
 
-                    <Form.Item label="必填字段">
-                        <Switch
-                            checked={component.required || false}
-                            onChange={(checked) => onPropertyChange('required', checked)}
-                        />
-                    </Form.Item>
+                    {!isOrderComponent && (
+                        <Form.Item label="必填字段">
+                            <Switch
+                                checked={component.required || false}
+                                onChange={(checked) => onPropertyChange('required', checked)}
+                            />
+                        </Form.Item>
+                    )}
 
-                    {component.type !== 'textarea' && !isRadioComponent && !isSliderComponent && !isQuotationComponent && (
+                    {component.type !== 'textarea' && !isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && (
                         <Form.Item label="图标">
                             <Select
                                 value={component.icon || ''}
@@ -177,7 +180,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         />
                     </Form.Item>
 
-                    {!isRadioComponent && !isQuotationComponent && (
+                    {!isRadioComponent && !isQuotationComponent && !isOrderComponent && (
                         <Form.Item label="默认值">
                             <Input
                                 value={component.defaultValue || ''}
@@ -187,7 +190,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         </Form.Item>
                     )}
 
-                    {!isRadioComponent && !isSliderComponent && !isQuotationComponent && (
+                    {!isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && (
                         <Form.Item label="占位符">
                             <Input
                                 value={component.placeholder || ''}

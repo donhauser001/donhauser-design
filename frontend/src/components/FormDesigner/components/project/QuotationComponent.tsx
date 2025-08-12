@@ -23,7 +23,7 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
         handlePolicyClick
     } = useQuotationData(component);
 
-    const { components, addServiceToOrder, isServiceSelected } = useFormDesignerStore();
+    const { components, addServiceToOrder, isServiceSelected, clearOrderItems } = useFormDesignerStore();
     const [orderComponentState, setOrderComponentState] = useState<any>(null);
 
     // 监听组件变化，检查是否存在订单组件
@@ -33,6 +33,14 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
     }, [components]);
 
     const hasOrderComponent = !!orderComponentState;
+
+    // 监听报价单切换，清空订单项目
+    useEffect(() => {
+        if (hasOrderComponent && orderComponentState && selectedQuotation) {
+            // 当报价单切换时，清空订单
+            clearOrderItems(orderComponentState.id);
+        }
+    }, [selectedQuotation?._id, hasOrderComponent, orderComponentState?.id]);
 
     // 处理服务选择
     const handleServiceSelect = (service: any) => {
@@ -91,7 +99,7 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
 
         // 检查服务是否已选中
         const checkServiceSelected = (serviceId: string) => {
-            return hasOrderComponent && orderComponentState ? 
+            return hasOrderComponent && orderComponentState ?
                 isServiceSelected(orderComponentState.id, serviceId) : false;
         };
 
