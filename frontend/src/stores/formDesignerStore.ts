@@ -32,6 +32,9 @@ export interface OrderItem {
     pricingPolicyNames?: string[];
     selectedPolicies?: string[]; // 用户选择的政策ID
     subtotal: number;
+    originalPrice?: number; // 原价
+    discountAmount?: number; // 优惠金额
+    calculationDetails?: string; // 计算详情
 }
 
 interface FormDesignerStore extends FormDesignerState {
@@ -41,6 +44,7 @@ interface FormDesignerStore extends FormDesignerState {
     // 订单相关状态
     selectedServices: Record<string, any[]>; // 按报价单组件ID存储选中的服务
     orderItems: Record<string, OrderItem[]>; // 按订单组件ID存储订单项
+    pricingPolicies: any[]; // 价格政策数据
 
     // Actions
     addComponent: (type: string, position?: number, parentId?: string) => void;
@@ -78,6 +82,8 @@ interface FormDesignerStore extends FormDesignerState {
     getOrderTotal: (orderComponentId: string) => number;
     isServiceSelected: (orderComponentId: string, serviceId: string) => boolean;
     clearOrderItems: (orderComponentId: string) => void;
+    loadPricingPolicies: () => Promise<void>;
+    calculateItemPrice: (orderItem: OrderItem) => { originalPrice: number; discountedPrice: number; discountAmount: number; calculationDetails: string };
 }
 
 export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
@@ -92,6 +98,7 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
     componentValues: {},
     selectedServices: {},
     orderItems: {},
+    pricingPolicies: [],
     // 辅助方法
     getComponentsByParent: (parentId?: string) => {
         return get().components
@@ -656,7 +663,10 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
                     pricingPolicyIds: service.pricingPolicyIds,
                     pricingPolicyNames: service.pricingPolicyNames,
                     selectedPolicies: [], // 默认不选择任何政策
-                    subtotal: service.unitPrice
+                    subtotal: service.unitPrice,
+                    originalPrice: service.unitPrice,
+                    discountAmount: 0,
+                    calculationDetails: service.priceDescription || `按${service.unit}计费`
                 };
 
                 return {
@@ -685,14 +695,23 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
 
     updateOrderItemQuantity: (orderComponentId: string, serviceId: string, quantity: number) => {
         set(state => {
+            const store = get();
             const currentOrderItems = state.orderItems[orderComponentId] || [];
             const updatedItems = currentOrderItems.map(item => {
                 if (item.id === serviceId) {
-                    return {
+                    const updatedItem = {
                         ...item,
                         quantity: Math.max(1, quantity), // 最小数量为1
-                        subtotal: item.unitPrice * Math.max(1, quantity)
                     };
+
+                    // 重新计算价格
+                    const priceResult = store.calculateItemPrice(updatedItem);
+                    updatedItem.originalPrice = priceResult.originalPrice;
+                    updatedItem.subtotal = priceResult.discountedPrice;
+                    updatedItem.discountAmount = priceResult.discountAmount;
+                    updatedItem.calculationDetails = priceResult.calculationDetails;
+
+                    return updatedItem;
                 }
                 return item;
             });
@@ -708,13 +727,23 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
 
     updateOrderItemPolicies: (orderComponentId: string, serviceId: string, selectedPolicies: string[]) => {
         set(state => {
+            const store = get();
             const currentOrderItems = state.orderItems[orderComponentId] || [];
             const updatedItems = currentOrderItems.map(item => {
                 if (item.id === serviceId) {
-                    return {
+                    const updatedItem = {
                         ...item,
                         selectedPolicies
                     };
+
+                    // 重新计算价格
+                    const priceResult = store.calculateItemPrice(updatedItem);
+                    updatedItem.originalPrice = priceResult.originalPrice;
+                    updatedItem.subtotal = priceResult.discountedPrice;
+                    updatedItem.discountAmount = priceResult.discountAmount;
+                    updatedItem.calculationDetails = priceResult.calculationDetails;
+
+                    return updatedItem;
                 }
                 return item;
             });
@@ -749,5 +778,144 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
                 [orderComponentId]: []
             }
         }));
+    },
+
+    loadPricingPolicies: async () => {
+        try {
+            const response = await fetch('/api/pricing-policies');
+            const data = await response.json();
+            const policies = data.success ? data.data : data;
+            set(state => ({ ...state, pricingPolicies: policies }));
+        } catch (error) {
+            console.error('加载价格政策失败:', error);
+        }
+    },
+
+    calculateItemPrice: (orderItem: OrderItem) => {
+        const originalPrice = orderItem.unitPrice * orderItem.quantity;
+        const pricingPolicies = get().pricingPolicies;
+
+        // 如果没有选择定价政策，返回原价
+        if (!orderItem.selectedPolicies || orderItem.selectedPolicies.length === 0) {
+            return {
+                originalPrice,
+                discountedPrice: originalPrice,
+                discountAmount: 0,
+                calculationDetails: orderItem.priceDescription || `按${orderItem.unit}计费`
+            };
+        }
+
+        // 获取选中的定价政策
+        let selectedPolicy = null;
+        if (orderItem.selectedPolicies && orderItem.selectedPolicies.length > 0) {
+            const selectedPolicyId = orderItem.selectedPolicies[0];
+            selectedPolicy = pricingPolicies.find(p => p._id === selectedPolicyId);
+
+            // 如果从pricingPolicies中找不到，尝试从服务数据中匹配
+            if (orderItem.pricingPolicyIds && orderItem.pricingPolicyNames) {
+                const selectedIndex = orderItem.pricingPolicyIds.indexOf(selectedPolicyId);
+                if (selectedIndex !== -1) {
+                    const expectedPolicyName = orderItem.pricingPolicyNames[selectedIndex];
+                    if (selectedPolicy && selectedPolicy.name !== expectedPolicyName && selectedPolicy.alias !== expectedPolicyName) {
+                        selectedPolicy = pricingPolicies.find(p => p.name === expectedPolicyName || p.alias === expectedPolicyName);
+                    }
+                }
+            }
+        }
+
+        if (!selectedPolicy || selectedPolicy.status !== 'active') {
+            return {
+                originalPrice,
+                discountedPrice: originalPrice,
+                discountAmount: 0,
+                calculationDetails: orderItem.priceDescription || `按${orderItem.unit}计费`
+            };
+        }
+
+        let discountedPrice = originalPrice;
+        let calculationDetails = '';
+
+        if (selectedPolicy.type === 'uniform_discount') {
+            // 统一折扣
+            const discountRatio = selectedPolicy.discountRatio || 100;
+            discountedPrice = (originalPrice * discountRatio) / 100;
+            const discountAmount = originalPrice - discountedPrice;
+            calculationDetails = `${orderItem.priceDescription || `按${orderItem.unit}计费`}\n\n优惠说明:\n统一按照${discountRatio}%计费\n小计:￥${orderItem.unitPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}×${orderItem.quantity}${orderItem.unit}×${discountRatio}%=￥${discountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n优惠：￥${discountAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        } else if (selectedPolicy.type === 'tiered_discount' && selectedPolicy.tierSettings) {
+            // 阶梯折扣
+            const unitPrice = orderItem.unitPrice;
+            let totalDiscountedPrice = 0;
+            let tierDetails: string[] = [];
+
+            const sortedTiers = [...selectedPolicy.tierSettings].sort((a, b) => (a.startQuantity || 0) - (b.startQuantity || 0));
+            let remainingQuantity = orderItem.quantity;
+
+            for (const tier of sortedTiers) {
+                if (remainingQuantity <= 0) break;
+
+                const startQuantity = tier.startQuantity || 0;
+                const endQuantity = tier.endQuantity || Infinity;
+                const discountRatio = tier.discountRatio || 100;
+
+                let tierQuantity = 0;
+                if (endQuantity === Infinity) {
+                    tierQuantity = remainingQuantity;
+                } else {
+                    const tierCapacity = endQuantity - startQuantity + 1;
+                    tierQuantity = Math.min(remainingQuantity, tierCapacity);
+                }
+
+                if (tierQuantity > 0) {
+                    const tierPrice = unitPrice * tierQuantity;
+                    const tierDiscountedPrice = (tierPrice * discountRatio) / 100;
+                    totalDiscountedPrice += tierDiscountedPrice;
+
+                    let tierRange = '';
+                    if (startQuantity === endQuantity) {
+                        tierRange = `第${startQuantity}${orderItem.unit}`;
+                    } else if (endQuantity === Infinity) {
+                        tierRange = `${startQuantity}${orderItem.unit}及以上`;
+                    } else {
+                        tierRange = `第${startQuantity}-${endQuantity}${orderItem.unit}`;
+                    }
+
+                    const tierDetail = `${tierRange}：￥${unitPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × ${tierQuantity}${orderItem.unit} × ${discountRatio}% = ￥${tierDiscountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    tierDetails.push(tierDetail);
+                    remainingQuantity -= tierQuantity;
+                }
+            }
+
+            discountedPrice = totalDiscountedPrice;
+
+            // 生成优惠说明
+            let discountDescription = '';
+            for (let i = 0; i < sortedTiers.length; i++) {
+                const tier = sortedTiers[i];
+                const startQuantity = tier.startQuantity || 0;
+                const endQuantity = tier.endQuantity || Infinity;
+                const discountRatio = tier.discountRatio || 100;
+
+                if (i > 0) discountDescription += '，';
+
+                if (startQuantity === endQuantity) {
+                    discountDescription += `第${startQuantity}${orderItem.unit}按${discountRatio}%计费`;
+                } else if (endQuantity === Infinity) {
+                    discountDescription += `${startQuantity}${orderItem.unit}及以上按${discountRatio}%计费`;
+                } else {
+                    discountDescription += `${startQuantity}-${endQuantity}${orderItem.unit}按${discountRatio}%计费`;
+                }
+            }
+
+            calculationDetails = `${orderItem.priceDescription || `按${orderItem.unit}计费`}\n\n优惠说明:\n${discountDescription}\n${tierDetails.join('\n')}\n\n小计：${tierDetails.map(detail => detail.split(' = ')[1]).join('+')}=￥${totalDiscountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n优惠：￥${(originalPrice - totalDiscountedPrice).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        const discountAmount = originalPrice - discountedPrice;
+
+        return {
+            originalPrice,
+            discountedPrice,
+            discountAmount,
+            calculationDetails
+        };
     }
 })); 

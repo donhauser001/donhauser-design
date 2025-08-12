@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Table, Alert, Typography, Checkbox, InputNumber, Button, Card, Divider } from 'antd';
 import { ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
@@ -11,13 +11,15 @@ interface OrderComponentProps {
 }
 
 const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
-    const { 
-        components, 
-        getOrderItems, 
+    const {
+        components,
+        getOrderItems,
         getOrderTotal,
         updateOrderItemQuantity,
         updateOrderItemPolicies,
-        removeServiceFromOrder
+        removeServiceFromOrder,
+        loadPricingPolicies,
+        pricingPolicies
     } = useFormDesignerStore();
 
     // 检查画布上是否存在报价单组件
@@ -26,6 +28,13 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
     // 获取当前订单项目
     const orderItems = getOrderItems(component.id);
     const orderTotal = getOrderTotal(component.id);
+
+    // 加载价格政策数据
+    useEffect(() => {
+        if (pricingPolicies.length === 0) {
+            loadPricingPolicies();
+        }
+    }, []);
 
     // 如果没有报价单组件，显示提示信息
     if (!hasQuotationComponent) {
@@ -154,14 +163,17 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         },
         {
             title: '价格说明',
-            dataIndex: 'priceDescription',
-            key: 'priceDescription',
-            width: '20%',
-            render: (text: string) => (
-                <Text style={{ fontSize: '12px', color: '#666' }}>
-                    {text || '—'}
-                </Text>
-            )
+            dataIndex: 'calculationDetails',
+            key: 'calculationDetails',
+            width: '25%',
+            render: (calculationDetails: string, record: OrderItem) => {
+                const details = calculationDetails || record.priceDescription || '—';
+                return (
+                    <div style={{ fontSize: '12px', color: '#666', whiteSpace: 'pre-line' }}>
+                        {details}
+                    </div>
+                );
+            }
         },
         {
             title: '操作',
@@ -194,8 +206,8 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                 }
             >
                 {orderItems.length === 0 ? (
-                    <div style={{ 
-                        textAlign: 'center', 
+                    <div style={{
+                        textAlign: 'center',
                         padding: '40px 20px',
                         color: '#999',
                         backgroundColor: '#fafafa',
@@ -217,7 +229,7 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                             style={{ marginBottom: '16px' }}
                         />
                         <Divider style={{ margin: '16px 0' }} />
-                        <div style={{ 
+                        <div style={{
                             textAlign: 'right',
                             backgroundColor: '#f0f8ff',
                             padding: '12px 16px',
@@ -231,7 +243,7 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                     </>
                 )}
             </Card>
-            
+
             {component.fieldDescription && (
                 <div style={{
                     fontSize: '12px',
