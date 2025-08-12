@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Switch, Select, Spin, ColorPicker, Input } from 'antd';
+import { Form, Switch, Select, Spin, Input } from 'antd';
 import { FormComponent } from '../../../types/formDesigner';
 import { quotationService, QuotationItem } from '../services/quotationService';
 import { useFormDesignerStore } from '../../../stores/formDesignerStore';
@@ -12,6 +12,37 @@ interface ProjectComponentsProps {
 }
 
 const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onPropertyChange }) => {
+    // 报价单相关状态（移到组件顶层）
+    const [quotations, setQuotations] = useState<QuotationItem[]>([]);
+    const [quotationLoading, setQuotationLoading] = useState(false);
+
+    // 当组件类型为报价单时，加载报价单数据并选择默认报价单
+    useEffect(() => {
+        if (component.type === 'quotation') {
+            const initializeQuotations = async () => {
+                setQuotationLoading(true);
+                try {
+                    const quotationData = await quotationService.getAllQuotations();
+                    setQuotations(quotationData);
+
+                    // 如果当前没有选择报价单，则自动选择默认报价单
+                    if (!component.selectedQuotationId) {
+                        const defaultQuotation = quotationData.find(q => q.isDefault && q.status === 'active');
+                        if (defaultQuotation) {
+                            onPropertyChange('selectedQuotationId', defaultQuotation._id);
+                        }
+                    }
+                } catch (error) {
+                    console.error('加载报价单数据失败:', error);
+                } finally {
+                    setQuotationLoading(false);
+                }
+            };
+
+            initializeQuotations();
+        }
+    }, [component.type, component.selectedQuotationId, onPropertyChange]);
+
     // 项目名称组件特有属性
     const renderProjectNameProperties = () => (
         <>
@@ -217,47 +248,6 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
 
     // 报价单组件特有属性
     const renderQuotationProperties = () => {
-        const [quotations, setQuotations] = useState<QuotationItem[]>([]);
-        const [loading, setLoading] = useState(false);
-
-        // 加载报价单列表
-        const loadQuotations = async () => {
-            setLoading(true);
-            try {
-                const quotationData = await quotationService.getAllQuotations();
-                setQuotations(quotationData);
-            } catch (error) {
-                console.error('加载报价单列表失败:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        // 组件加载时自动加载报价单数据，并选择默认报价单
-        useEffect(() => {
-            const initializeQuotations = async () => {
-                setLoading(true);
-                try {
-                    const quotationData = await quotationService.getAllQuotations();
-                    setQuotations(quotationData);
-
-                    // 如果当前没有选择报价单，则自动选择默认报价单
-                    if (!component.selectedQuotationId) {
-                        const defaultQuotation = quotationData.find(q => q.isDefault && q.status === 'active');
-                        if (defaultQuotation) {
-                            onPropertyChange('selectedQuotationId', defaultQuotation._id);
-                        }
-                    }
-                } catch (error) {
-                    console.error('加载报价单数据失败:', error);
-                } finally {
-                    setLoading(false);
-                }
-            };
-
-            initializeQuotations();
-        }, []);
-
         return (
             <>
                 <Form.Item label="选择报价单">
@@ -267,13 +257,13 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
                         value={component.selectedQuotationId || undefined}
                         onChange={(value) => onPropertyChange('selectedQuotationId', value)}
                         allowClear
-                        loading={loading}
+                        loading={quotationLoading}
                         showSearch
                         optionFilterProp="children"
                         filterOption={(input, option) =>
-                            (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
+                            option?.children?.toString().toLowerCase().includes(input.toLowerCase()) || false
                         }
-                        notFoundContent={loading ? <Spin size="small" /> : '无数据'}
+                        notFoundContent={quotationLoading ? <Spin size="small" /> : '无数据'}
                     >
                         {quotations.map((quotation) => (
                             <Option
@@ -405,7 +395,7 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
 
         const hasQuotationComponent = components.some(comp => comp.type === 'quotation');
         const hasProjectNameComponent = components.some(comp => comp.type === 'projectName');
-        
+
         // 动态确定关联模式的选项和值
         const getAssociationOptions = () => {
             if (!hasQuotationComponent && !hasProjectNameComponent) {
@@ -437,8 +427,8 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
                         { value: 'quotation', label: '关联报价单' },
                         { value: 'project', label: '关联项目' }
                     ],
-                    value: component.associationMode === 'quotation' || component.associationMode === 'project' 
-                        ? component.associationMode 
+                    value: component.associationMode === 'quotation' || component.associationMode === 'project'
+                        ? component.associationMode
                         : 'select',
                     disabled: false
                 };
