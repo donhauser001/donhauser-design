@@ -3,8 +3,9 @@ import { Table, Alert, Typography, Radio, InputNumber, Button, Card, Divider } f
 import { ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore, OrderItem } from '../../../../stores/formDesignerStore';
+import { convertToRMB } from '../../../RMBAmountConverter';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 interface OrderComponentProps {
     component: FormComponent;
@@ -238,15 +239,27 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                         />
                         <Divider style={{ margin: '16px 0' }} />
                         <div style={{
-                            textAlign: 'right',
-                            backgroundColor: '#f0f8ff',
-                            padding: '12px 16px',
+                            textAlign: 'center',
+                            backgroundColor: '#f8f9fa',
+                            padding: '16px',
                             borderRadius: '6px',
-                            border: '1px solid #d9d9d9'
+                            border: '1px solid #e9ecef'
                         }}>
-                            <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
+                            <div style={{ 
+                                fontSize: '16px', 
+                                fontWeight: 'bold',
+                                marginBottom: '8px',
+                                color: 'inherit'
+                            }}>
                                 总计：¥{orderTotal.toLocaleString()}
-                            </Title>
+                            </div>
+                            <div style={{ 
+                                fontSize: '14px', 
+                                color: '#666',
+                                fontWeight: 'normal'
+                            }}>
+                                大写：{convertToRMB(orderTotal, true)}
+                            </div>
                         </div>
                     </>
                 )}
