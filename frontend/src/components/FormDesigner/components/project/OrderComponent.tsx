@@ -353,27 +353,6 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
             baseTitle = '订单详情'; // 显示默认标题
         }
         
-        // 在项目任务模式下添加只读提示
-        if (isProjectTaskMode) {
-            return (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span>{baseTitle}</span>
-                    <Text 
-                        style={{ 
-                            fontSize: '12px',
-                            padding: '2px 6px',
-                            backgroundColor: '#f6f6f6',
-                            border: '1px solid #d9d9d9',
-                            borderRadius: '4px',
-                            color: '#666'
-                        }}
-                    >
-                        项目任务（只读）
-                    </Text>
-                </div>
-            );
-        }
-        
         return baseTitle;
     };
 
