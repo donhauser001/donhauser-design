@@ -23,8 +23,10 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         pricingPolicies
     } = useFormDesignerStore();
 
-    // 检查画布上是否存在报价单组件
+    // 检查画布上是否存在报价单组件或项目名称组件
     const hasQuotationComponent = components.some((comp: FormComponent) => comp.type === 'quotation');
+    const hasProjectNameComponent = components.some((comp: FormComponent) => comp.type === 'projectName');
+    const canUseOrderComponent = hasQuotationComponent || hasProjectNameComponent;
 
     // 获取当前订单项目
     const orderItems = getOrderItems(component.id);
@@ -37,12 +39,12 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         }
     }, []);
 
-    // 如果没有报价单组件，显示提示信息
-    if (!hasQuotationComponent) {
+    // 如果没有报价单组件或项目名称组件，显示提示信息
+    if (!canUseOrderComponent) {
         return (
             <div style={{ width: '100%' }}>
                 <Alert
-                    message="订单组件无法独立使用，请先在画布中添加报价单组件"
+                    message="订单组件无法独立使用，请先在画布中添加报价单或项目名称组件"
                     type="warning"
                     showIcon
                     icon={<ExclamationCircleOutlined />}
