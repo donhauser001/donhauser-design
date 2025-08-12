@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Typography, Empty, Spin, Divider } from 'antd';
 import { QuotationComponentProps } from './QuotationComponent/types';
 import { useQuotationData } from './QuotationComponent/hooks';
@@ -7,6 +7,7 @@ import { CardMode } from './QuotationComponent/CardMode';
 import { TabsMode } from './QuotationComponent/TabsMode';
 import { ListMode } from './QuotationComponent/ListMode';
 import { PolicyModal } from './QuotationComponent/PolicyModal';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 const { Text } = Typography;
 
@@ -21,6 +22,45 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
         getPolicyById,
         handlePolicyClick
     } = useQuotationData(component);
+
+    const { components, addServiceToOrder } = useFormDesignerStore();
+    const [orderComponentState, setOrderComponentState] = useState<any>(null);
+
+    // 监听组件变化，检查是否存在订单组件
+    useEffect(() => {
+        const orderComponent = components.find(comp => comp.type === 'order');
+        console.log('QuotationComponent: 检查订单组件', {
+            totalComponents: components.length,
+            componentTypes: components.map(c => c.type),
+            orderComponent: orderComponent ? orderComponent.id : null
+        });
+        setOrderComponentState(orderComponent || null);
+    }, [components]);
+
+    const hasOrderComponent = !!orderComponentState;
+
+    console.log('QuotationComponent: 当前状态', {
+        componentId: component.id,
+        hasOrderComponent,
+        orderComponentId: orderComponentState?.id
+    });
+
+    // 处理服务选择
+    const handleServiceSelect = (service: any) => {
+        console.log('QuotationComponent: handleServiceSelect调用', {
+            serviceName: service.serviceName,
+            hasOrderComponent,
+            orderComponentId: orderComponentState?.id,
+            quotationComponentId: component.id
+        });
+
+        if (hasOrderComponent && orderComponentState) {
+            console.log('QuotationComponent: 调用addServiceToOrder');
+            addServiceToOrder(component.id, orderComponentState.id, service);
+        } else {
+            console.log('QuotationComponent: 条件不满足，无法添加服务');
+        }
+    };
 
     // 渲染报价单详情内容
     const renderQuotationDetails = () => {
@@ -76,7 +116,9 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
             sortedCategories,
             component,
             renderPolicyTag: wrappedRenderPolicyTag,
-            renderPriceDescriptionWithPolicy: wrappedRenderPriceDescriptionWithPolicy
+            renderPriceDescriptionWithPolicy: wrappedRenderPriceDescriptionWithPolicy,
+            hasOrderComponent,
+            onServiceSelect: handleServiceSelect
         };
 
         // 渲染内容
