@@ -191,9 +191,9 @@ export const ListMode: React.FC<RenderModeProps> = ({
                     background-color: #f0f8ff !important;
                     border-left: none !important;
                     border-right: none !important;
-                    border-top: none !important;
-                    border-bottom: none !important;
                     position: relative !important;
+                    border-top: 3px solid #1890ff !important;
+                    border-bottom: 3px solid #1890ff !important;
                 }
                 
                 .quotation-table .table-row-selected > td:first-child {
@@ -205,8 +205,6 @@ export const ListMode: React.FC<RenderModeProps> = ({
                 }
                 
                 .quotation-table .table-row-selected {
-                    border-top: 3px solid #1890ff !important;
-                    border-bottom: 3px solid #1890ff !important;
                     box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15) !important;
                 }
                 
