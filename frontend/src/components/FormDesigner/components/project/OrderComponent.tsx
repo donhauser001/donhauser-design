@@ -1,38 +1,42 @@
 import React from 'react';
-import { Input, Alert } from 'antd';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Table, Alert, Typography, Checkbox, InputNumber, Button, Card, Divider } from 'antd';
+import { ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
-import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { useFormDesignerStore, OrderItem } from '../../../../stores/formDesignerStore';
+
+const { Text, Title } = Typography;
 
 interface OrderComponentProps {
     component: FormComponent;
 }
 
 const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
-    const { components } = useFormDesignerStore();
+    const { 
+        components, 
+        getOrderItems, 
+        getOrderTotal,
+        updateOrderItemQuantity,
+        updateOrderItemPolicies,
+        removeServiceFromOrder
+    } = useFormDesignerStore();
 
     // 检查画布上是否存在报价单组件
     const hasQuotationComponent = components.some((comp: FormComponent) => comp.type === 'quotation');
 
-    // 处理样式，排除textAlign属性
-    const { textAlign, ...inputStyle } = component.style || {};
+    // 获取当前订单项目
+    const orderItems = getOrderItems(component.id);
+    const orderTotal = getOrderTotal(component.id);
 
     // 如果没有报价单组件，显示提示信息
     if (!hasQuotationComponent) {
         return (
             <div style={{ width: '100%' }}>
-                <Input
-                    placeholder={component.placeholder}
-                    disabled={true}
-                    style={inputStyle}
-                />
                 <Alert
                     message="订单组件无法独立使用，请先在画布中添加报价单组件"
                     type="warning"
                     showIcon
                     icon={<ExclamationCircleOutlined />}
                     style={{
-                        marginTop: '8px',
                         fontSize: '12px'
                     }}
                 />
@@ -50,15 +54,184 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         );
     }
 
-    // 如果有报价单组件，正常显示订单组件
+    // 处理数量变更
+    const handleQuantityChange = (serviceId: string, quantity: number) => {
+        updateOrderItemQuantity(component.id, serviceId, quantity);
+    };
+
+    // 处理政策选择变更
+    const handlePolicyChange = (serviceId: string, policyIds: string[]) => {
+        updateOrderItemPolicies(component.id, serviceId, policyIds);
+    };
+
+    // 处理删除订单项
+    const handleRemoveItem = (serviceId: string) => {
+        removeServiceFromOrder(component.id, serviceId);
+    };
+
+    // 定义表格列
+    const columns = [
+        {
+            title: '服务项目',
+            dataIndex: 'serviceName',
+            key: 'serviceName',
+            width: '20%',
+            render: (text: string, record: OrderItem) => (
+                <div>
+                    <Text strong>{text}</Text>
+                    <br />
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                        {record.categoryName}
+                    </Text>
+                </div>
+            )
+        },
+        {
+            title: '单价',
+            dataIndex: 'unitPrice',
+            key: 'unitPrice',
+            width: '12%',
+            render: (price: number, record: OrderItem) => (
+                <Text strong>
+                    ¥{price.toLocaleString()}/{record.unit}
+                </Text>
+            )
+        },
+        {
+            title: '数量',
+            dataIndex: 'quantity',
+            key: 'quantity',
+            width: '10%',
+            render: (quantity: number, record: OrderItem) => (
+                <InputNumber
+                    min={1}
+                    value={quantity}
+                    onChange={(value) => handleQuantityChange(record.id, value || 1)}
+                    size="small"
+                    style={{ width: '80px' }}
+                />
+            )
+        },
+        {
+            title: '价格政策',
+            dataIndex: 'pricingPolicyNames',
+            key: 'pricingPolicyNames',
+            width: '15%',
+            render: (policyNames: string[], record: OrderItem) => {
+                if (!policyNames || policyNames.length === 0) {
+                    return <Text type="secondary">无</Text>;
+                }
+
+                return (
+                    <Checkbox.Group
+                        value={record.selectedPolicies || []}
+                        onChange={(values) => handlePolicyChange(record.id, values as string[])}
+                    >
+                        {policyNames.map((policyName, index) => {
+                            const policyId = record.pricingPolicyIds?.[index] || '';
+                            return (
+                                <div key={policyId} style={{ marginBottom: '4px' }}>
+                                    <Checkbox value={policyId} style={{ fontSize: '12px' }}>
+                                        {policyName}
+                                    </Checkbox>
+                                </div>
+                            );
+                        })}
+                    </Checkbox.Group>
+                );
+            }
+        },
+        {
+            title: '小计',
+            dataIndex: 'subtotal',
+            key: 'subtotal',
+            width: '12%',
+            render: (subtotal: number) => (
+                <Text strong style={{ color: '#1890ff' }}>
+                    ¥{subtotal.toLocaleString()}
+                </Text>
+            )
+        },
+        {
+            title: '价格说明',
+            dataIndex: 'priceDescription',
+            key: 'priceDescription',
+            width: '20%',
+            render: (text: string) => (
+                <Text style={{ fontSize: '12px', color: '#666' }}>
+                    {text || '—'}
+                </Text>
+            )
+        },
+        {
+            title: '操作',
+            key: 'action',
+            width: '8%',
+            render: (_: any, record: OrderItem) => (
+                <Button
+                    type="text"
+                    danger
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    onClick={() => handleRemoveItem(record.id)}
+                />
+            )
+        }
+    ];
+
     return (
         <div style={{ width: '100%' }}>
-            <Input
-                placeholder={component.placeholder}
-                disabled={true}
-                style={inputStyle}
-                value="订单将根据报价单内容自动生成"
-            />
+            <Card
+                title="订单详情"
+                size="small"
+                style={{ width: '100%' }}
+                extra={
+                    orderItems.length > 0 && (
+                        <Text type="secondary">
+                            共 {orderItems.length} 项服务
+                        </Text>
+                    )
+                }
+            >
+                {orderItems.length === 0 ? (
+                    <div style={{ 
+                        textAlign: 'center', 
+                        padding: '40px 20px',
+                        color: '#999',
+                        backgroundColor: '#fafafa',
+                        borderRadius: '6px'
+                    }}>
+                        <Text type="secondary">
+                            请在报价单中选择服务项目
+                        </Text>
+                    </div>
+                ) : (
+                    <>
+                        <Table
+                            dataSource={orderItems}
+                            columns={columns}
+                            rowKey="id"
+                            pagination={false}
+                            size="small"
+                            scroll={{ x: 'max-content' }}
+                            style={{ marginBottom: '16px' }}
+                        />
+                        <Divider style={{ margin: '16px 0' }} />
+                        <div style={{ 
+                            textAlign: 'right',
+                            backgroundColor: '#f0f8ff',
+                            padding: '12px 16px',
+                            borderRadius: '6px',
+                            border: '1px solid #d9d9d9'
+                        }}>
+                            <Title level={4} style={{ margin: 0, color: '#1890ff' }}>
+                                总计：¥{orderTotal.toLocaleString()}
+                            </Title>
+                        </div>
+                    </>
+                )}
+            </Card>
+            
             {component.fieldDescription && (
                 <div style={{
                     fontSize: '12px',

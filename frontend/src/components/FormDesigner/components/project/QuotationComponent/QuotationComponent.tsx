@@ -1,12 +1,13 @@
 import React from 'react';
 import { Card, Typography, Empty, Spin, Divider } from 'antd';
-import { QuotationComponentProps } from './QuotationComponent/types';
-import { useQuotationData } from './QuotationComponent/hooks';
-import { renderPolicyTag, renderPriceDescriptionWithPolicy } from './QuotationComponent/policyUtils';
-import { CardMode } from './QuotationComponent/CardMode';
-import { TabsMode } from './QuotationComponent/TabsMode';
-import { ListMode } from './QuotationComponent/ListMode';
-import { PolicyModal } from './QuotationComponent/PolicyModal';
+import { QuotationComponentProps } from './types';
+import { useQuotationData } from './hooks';
+import { renderPolicyTag, renderPriceDescriptionWithPolicy } from './policyUtils';
+import { CardMode } from './CardMode';
+import { TabsMode } from './TabsMode';
+import { ListMode } from './ListMode';
+import { PolicyModal } from './PolicyModal';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 const { Text } = Typography;
 
@@ -14,6 +15,7 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
     const {
         selectedQuotation,
         loading,
+        allPolicies,
         policyModalVisible,
         selectedPolicy,
         selectedPolicyService,
@@ -21,6 +23,19 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
         getPolicyById,
         handlePolicyClick
     } = useQuotationData(component);
+
+    const { components, addServiceToOrder } = useFormDesignerStore();
+
+    // 检查是否存在订单组件
+    const orderComponent = components.find(comp => comp.type === 'order');
+    const hasOrderComponent = !!orderComponent;
+
+    // 处理服务选择
+    const handleServiceSelect = (service: any) => {
+        if (hasOrderComponent && orderComponent) {
+            addServiceToOrder(component.id, orderComponent.id, service);
+        }
+    };
 
     // 渲染报价单详情内容
     const renderQuotationDetails = () => {
@@ -76,7 +91,9 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
             sortedCategories,
             component,
             renderPolicyTag: wrappedRenderPolicyTag,
-            renderPriceDescriptionWithPolicy: wrappedRenderPriceDescriptionWithPolicy
+            renderPriceDescriptionWithPolicy: wrappedRenderPriceDescriptionWithPolicy,
+            hasOrderComponent,
+            onServiceSelect: handleServiceSelect
         };
 
         // 渲染内容

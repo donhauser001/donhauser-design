@@ -19,9 +19,28 @@ const defaultTheme: ThemeConfig = {
     fontSize: '14px'
 };
 
+// 订单项接口
+export interface OrderItem {
+    id: string;
+    serviceName: string;
+    categoryName: string;
+    unitPrice: number;
+    unit: string;
+    quantity: number;
+    priceDescription: string;
+    pricingPolicyIds?: string[];
+    pricingPolicyNames?: string[];
+    selectedPolicies?: string[]; // 用户选择的政策ID
+    subtotal: number;
+}
+
 interface FormDesignerStore extends FormDesignerState {
     // 存储组件的运行时选择值（仅在设计模式下使用）
     componentValues: Record<string, any>;
+    
+    // 订单相关状态
+    selectedServices: Record<string, any[]>; // 按报价单组件ID存储选中的服务
+    orderItems: Record<string, OrderItem[]>; // 按订单组件ID存储订单项
 
     // Actions
     addComponent: (type: string, position?: number, parentId?: string) => void;
@@ -49,6 +68,14 @@ interface FormDesignerStore extends FormDesignerState {
 
     // Helper methods
     getComponentsByParent: (parentId?: string) => FormComponent[];
+    
+    // 订单相关方法
+    addServiceToOrder: (quotationComponentId: string, orderComponentId: string, service: any) => void;
+    removeServiceFromOrder: (orderComponentId: string, serviceId: string) => void;
+    updateOrderItemQuantity: (orderComponentId: string, serviceId: string, quantity: number) => void;
+    updateOrderItemPolicies: (orderComponentId: string, serviceId: string, selectedPolicies: string[]) => void;
+    getOrderItems: (orderComponentId: string) => OrderItem[];
+    getOrderTotal: (orderComponentId: string) => number;
 }
 
 export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
@@ -61,6 +88,8 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
     layout: defaultLayout,
     theme: defaultTheme,
     componentValues: {},
+    selectedServices: {},
+    orderItems: {},
     // 辅助方法
     getComponentsByParent: (parentId?: string) => {
         return get().components
@@ -592,5 +621,119 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
 
     getComponentValue: (componentId: string) => {
         return get().componentValues[componentId];
+    },
+
+    // 订单相关方法实现
+    addServiceToOrder: (_quotationComponentId: string, orderComponentId: string, service: any) => {
+        set(state => {
+            const currentOrderItems = state.orderItems[orderComponentId] || [];
+            
+            // 检查是否已存在该服务
+            const existingIndex = currentOrderItems.findIndex(item => item.id === service._id);
+            
+            if (existingIndex >= 0) {
+                // 如果已存在，增加数量
+                const updatedItems = [...currentOrderItems];
+                updatedItems[existingIndex].quantity += 1;
+                updatedItems[existingIndex].subtotal = updatedItems[existingIndex].unitPrice * updatedItems[existingIndex].quantity;
+                
+                return {
+                    orderItems: {
+                        ...state.orderItems,
+                        [orderComponentId]: updatedItems
+                    }
+                };
+            } else {
+                // 创建新的订单项
+                const newOrderItem: OrderItem = {
+                    id: service._id,
+                    serviceName: service.serviceName,
+                    categoryName: service.categoryName,
+                    unitPrice: service.unitPrice,
+                    unit: service.unit,
+                    quantity: 1,
+                    priceDescription: service.priceDescription,
+                    pricingPolicyIds: service.pricingPolicyIds,
+                    pricingPolicyNames: service.pricingPolicyNames,
+                    selectedPolicies: [], // 默认不选择任何政策
+                    subtotal: service.unitPrice
+                };
+                
+                return {
+                    orderItems: {
+                        ...state.orderItems,
+                        [orderComponentId]: [...currentOrderItems, newOrderItem]
+                    }
+                };
+            }
+        });
+    },
+
+    removeServiceFromOrder: (orderComponentId: string, serviceId: string) => {
+        set(state => {
+            const currentOrderItems = state.orderItems[orderComponentId] || [];
+            const filteredItems = currentOrderItems.filter(item => item.id !== serviceId);
+            
+            return {
+                orderItems: {
+                    ...state.orderItems,
+                    [orderComponentId]: filteredItems
+                }
+            };
+        });
+    },
+
+    updateOrderItemQuantity: (orderComponentId: string, serviceId: string, quantity: number) => {
+        set(state => {
+            const currentOrderItems = state.orderItems[orderComponentId] || [];
+            const updatedItems = currentOrderItems.map(item => {
+                if (item.id === serviceId) {
+                    return {
+                        ...item,
+                        quantity: Math.max(1, quantity), // 最小数量为1
+                        subtotal: item.unitPrice * Math.max(1, quantity)
+                    };
+                }
+                return item;
+            });
+            
+            return {
+                orderItems: {
+                    ...state.orderItems,
+                    [orderComponentId]: updatedItems
+                }
+            };
+        });
+    },
+
+    updateOrderItemPolicies: (orderComponentId: string, serviceId: string, selectedPolicies: string[]) => {
+        set(state => {
+            const currentOrderItems = state.orderItems[orderComponentId] || [];
+            const updatedItems = currentOrderItems.map(item => {
+                if (item.id === serviceId) {
+                    return {
+                        ...item,
+                        selectedPolicies
+                    };
+                }
+                return item;
+            });
+            
+            return {
+                orderItems: {
+                    ...state.orderItems,
+                    [orderComponentId]: updatedItems
+                }
+            };
+        });
+    },
+
+    getOrderItems: (orderComponentId: string) => {
+        return get().orderItems[orderComponentId] || [];
+    },
+
+    getOrderTotal: (orderComponentId: string) => {
+        const orderItems = get().orderItems[orderComponentId] || [];
+        return orderItems.reduce((total, item) => total + item.subtotal, 0);
     }
 })); 
