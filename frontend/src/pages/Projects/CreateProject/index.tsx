@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCreateProject } from './hooks';
 import { createProject } from './services';
 import { ProjectFormData } from './types';
+import { calculateServicePrice } from '../../../utils/priceCalculator';
 import BasicInfoTab from './components/BasicInfoTab';
 import QuotationsTab from './components/QuotationsTab';
 import OrderTab from './components/OrderTab';
@@ -284,19 +285,26 @@ const CreateProject: React.FC = () => {
             // 构建项目数据
             const projectData = buildProjectData(values, action);
 
-            // 处理服务数据
-            const servicesData = selectedServices.map(service => ({
-                serviceId: service._id,
-                serviceName: service.serviceName,
-                quantity: service.quantity,
-                unitPrice: service.unitPrice,
-                unit: service.unit,
-                subtotal: service.unitPrice * service.quantity,
-                pricingPolicies: service.selectedPricingPolicies || [],
-                pricingPolicyNames: getPricingPolicyNames(service.selectedPricingPolicies || []),
-                discountAmount: calculateServiceDiscount(service),
-                finalAmount: calculateServiceFinalAmount(service)
-            }));
+            // 处理服务数据，使用详细的价格计算
+            const servicesData = selectedServices.map(service => {
+                // 使用价格计算工具生成详细的计费说明
+                const priceResult = calculateServicePrice(service, pricingPolicies);
+                
+                return {
+                    serviceId: service._id,
+                    serviceName: service.serviceName,
+                    quantity: service.quantity,
+                    unitPrice: service.unitPrice,
+                    unit: service.unit,
+                    subtotal: priceResult.discountedPrice,
+                    originalPrice: priceResult.originalPrice,
+                    discountAmount: priceResult.discountAmount,
+                    pricingPolicies: service.selectedPricingPolicies || [],
+                    pricingPolicyNames: getPricingPolicyNames(service.selectedPricingPolicies || []),
+                    billingDescription: priceResult.calculationDetails, // 详细的计费说明
+                    finalAmount: priceResult.discountedPrice
+                };
+            });
 
             // 创建项目
             await createProject(projectData, servicesData);

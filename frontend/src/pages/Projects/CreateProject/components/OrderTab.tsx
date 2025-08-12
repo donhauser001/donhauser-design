@@ -1,6 +1,7 @@
 import React from 'react';
 import { Form, Input, Select, Row, Col, Card, Table, Tag, Typography, Space, InputNumber, Checkbox } from 'antd';
 import { UserOutlined, TeamOutlined, FileTextOutlined, EditOutlined } from '@ant-design/icons';
+import { calculateServicePrice } from '../../../../utils/priceCalculator';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -34,141 +35,9 @@ const OrderTab: React.FC<OrderTabProps> = ({ selectedClient, selectedServices, p
         }).join(', ');
     };
 
-    // 价格计算函数
+    // 价格计算函数 - 使用通用工具
     const calculatePrice = (service: any) => {
-        const originalPrice = service.unitPrice * service.quantity;
-
-
-
-        // 如果没有选择定价政策，返回原价
-        if (!service.selectedPricingPolicies || service.selectedPricingPolicies.length === 0) {
-            return {
-                originalPrice,
-                discountedPrice: originalPrice,
-                discountAmount: 0,
-                calculationDetails: service.priceDescription || `按${service.unit}计费`
-            };
-        }
-
-        // 获取选中的定价政策
-        let selectedPolicy = null;
-
-        if (service.selectedPricingPolicies && service.selectedPricingPolicies.length > 0) {
-            const selectedPolicyId = service.selectedPricingPolicies[0];
-
-            // 首先尝试从pricingPolicies中通过ID查找
-            selectedPolicy = pricingPolicies.find(p => p._id === selectedPolicyId);
-
-            // 如果从pricingPolicies中找不到，或者找到的政策名称不匹配，则从服务数据中获取
-            if (service.pricingPolicyIds && service.pricingPolicyNames) {
-                const selectedIndex = service.pricingPolicyIds.indexOf(selectedPolicyId);
-                if (selectedIndex !== -1) {
-                    const expectedPolicyName = service.pricingPolicyNames[selectedIndex];
-
-                    // 检查找到的政策名称是否匹配
-                    if (selectedPolicy && selectedPolicy.name !== expectedPolicyName && selectedPolicy.alias !== expectedPolicyName) {
-                        // 通过名称重新查找正确的政策
-                        selectedPolicy = pricingPolicies.find(p => p.name === expectedPolicyName || p.alias === expectedPolicyName);
-                    }
-                }
-            }
-        }
-
-        if (!selectedPolicy || selectedPolicy.status !== 'active') {
-            return {
-                originalPrice,
-                discountedPrice: originalPrice,
-                discountAmount: 0,
-                calculationDetails: service.priceDescription || `按${service.unit}计费`
-            };
-        }
-
-        let discountedPrice = originalPrice;
-        let calculationDetails = '';
-
-        if (selectedPolicy.type === 'uniform_discount') {
-            // 统一折扣
-            const discountRatio = selectedPolicy.discountRatio || 100;
-            discountedPrice = (originalPrice * discountRatio) / 100;
-            const discountAmount = originalPrice - discountedPrice;
-            calculationDetails = `${service.priceDescription || `按${service.unit}计费`}\n\n<b>优惠说明</b>:\n统一按照${discountRatio}%计费\n<b>小计</b>:￥${service.unitPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}×${service.quantity}${service.unit}×${discountRatio}%=￥${discountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n<b>优惠</b>：￥${discountAmount.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        } else if (selectedPolicy.type === 'tiered_discount' && selectedPolicy.tierSettings) {
-            // 阶梯折扣
-            const unitPrice = service.unitPrice;
-            let totalDiscountedPrice = 0;
-            let tierDetails: string[] = [];
-
-            const sortedTiers = [...selectedPolicy.tierSettings].sort((a, b) => (a.startQuantity || 0) - (b.startQuantity || 0));
-            let remainingQuantity = service.quantity;
-
-            for (const tier of sortedTiers) {
-                if (remainingQuantity <= 0) break;
-
-                const startQuantity = tier.startQuantity || 0;
-                const endQuantity = tier.endQuantity || Infinity;
-                const discountRatio = tier.discountRatio || 100;
-
-                let tierQuantity = 0;
-                if (endQuantity === Infinity) {
-                    tierQuantity = remainingQuantity;
-                } else {
-                    const tierCapacity = endQuantity - startQuantity + 1;
-                    tierQuantity = Math.min(remainingQuantity, tierCapacity);
-                }
-
-                if (tierQuantity > 0) {
-                    const tierPrice = unitPrice * tierQuantity;
-                    const tierDiscountedPrice = (tierPrice * discountRatio) / 100;
-                    totalDiscountedPrice += tierDiscountedPrice;
-
-                    let tierRange = '';
-                    if (startQuantity === endQuantity) {
-                        tierRange = `第${startQuantity}${service.unit}`;
-                    } else if (endQuantity === Infinity) {
-                        tierRange = `${startQuantity}${service.unit}及以上`;
-                    } else {
-                        tierRange = `第${startQuantity}-${endQuantity}${service.unit}`;
-                    }
-
-                    // 生成详细的计算公式
-                    const tierDetail = `${tierRange}：￥${unitPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} × ${tierQuantity}${service.unit} × ${discountRatio}% = ￥${tierDiscountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                    tierDetails.push(tierDetail);
-                    remainingQuantity -= tierQuantity;
-                }
-            }
-
-            discountedPrice = totalDiscountedPrice;
-
-            // 生成优惠说明
-            let discountDescription = '';
-            for (let i = 0; i < sortedTiers.length; i++) {
-                const tier = sortedTiers[i];
-                const startQuantity = tier.startQuantity || 0;
-                const endQuantity = tier.endQuantity || Infinity;
-                const discountRatio = tier.discountRatio || 100;
-
-                if (i > 0) discountDescription += '，';
-
-                if (startQuantity === endQuantity) {
-                    discountDescription += `第${startQuantity}${service.unit}按${discountRatio}%计费`;
-                } else if (endQuantity === Infinity) {
-                    discountDescription += `${startQuantity}${service.unit}及以上按${discountRatio}%计费`;
-                } else {
-                    discountDescription += `${startQuantity}-${endQuantity}${service.unit}按${discountRatio}%计费`;
-                }
-            }
-
-            calculationDetails = `${service.priceDescription || `按${service.unit}计费`}\n\n<b>优惠说明</b>:\n${discountDescription}\n${tierDetails.join('\n')}\n\n<b>小计</b>：${tierDetails.map(detail => detail.split(' = ')[1]).join('+')}=￥${totalDiscountedPrice.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n<b>优惠</b>：￥${(originalPrice - totalDiscountedPrice).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        }
-
-        const discountAmount = originalPrice - discountedPrice;
-
-        return {
-            originalPrice,
-            discountedPrice,
-            discountAmount,
-            calculationDetails
-        };
+        return calculateServicePrice(service, pricingPolicies);
     };
 
     // 表格列定义
