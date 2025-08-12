@@ -16,6 +16,13 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
     const [quotations, setQuotations] = useState<QuotationItem[]>([]);
     const [quotationLoading, setQuotationLoading] = useState(false);
 
+    // 订单组件所需的store钩子（移到组件顶层）
+    const { components, updateComponent } = useFormDesignerStore();
+
+    // 订单组件依赖判断（移到顶层）
+    const hasQuotationComponent = components.some(comp => comp.type === 'quotation');
+    const hasProjectNameComponent = components.some(comp => comp.type === 'projectName');
+
     // 当组件类型为报价单时，加载报价单数据并选择默认报价单
     useEffect(() => {
         if (component.type === 'quotation') {
@@ -42,6 +49,40 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
             initializeQuotations();
         }
     }, [component.type, component.selectedQuotationId, onPropertyChange]);
+
+    // 订单组件：自动更新关联模式
+    useEffect(() => {
+        if (component.type === 'order') {
+            let newValue = component.associationMode;
+
+            if (!hasQuotationComponent && !hasProjectNameComponent) {
+                newValue = 'auto';
+            } else if (hasQuotationComponent && !hasProjectNameComponent) {
+                newValue = 'quotation';
+            } else if (!hasQuotationComponent && hasProjectNameComponent) {
+                newValue = 'project';
+            } else if (hasQuotationComponent && hasProjectNameComponent) {
+                // 两者都有，如果当前不是有效值，设为select
+                if (component.associationMode !== 'quotation' && component.associationMode !== 'project') {
+                    newValue = 'select';
+                }
+            }
+
+            if (component.associationMode !== newValue) {
+                onPropertyChange('associationMode', newValue);
+            }
+        }
+    }, [component.type, hasQuotationComponent, hasProjectNameComponent, component.associationMode, onPropertyChange]);
+
+    // 订单组件：自动控制项目名称组件的"来自项目表"开关
+    useEffect(() => {
+        if (component.type === 'order' && component.associationMode === 'project' && hasProjectNameComponent) {
+            const projectNameComponent = components.find(comp => comp.type === 'projectName');
+            if (projectNameComponent && !projectNameComponent.fromProjectTable) {
+                updateComponent(projectNameComponent.id, { fromProjectTable: true });
+            }
+        }
+    }, [component.type, component.associationMode, hasProjectNameComponent, components, updateComponent]);
 
     // 项目名称组件特有属性
     const renderProjectNameProperties = () => (
@@ -391,7 +432,6 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
 
     // 订单组件特有属性
     const renderOrderProperties = () => {
-        const { components, updateComponent } = useFormDesignerStore();
 
         const hasQuotationComponent = components.some(comp => comp.type === 'quotation');
         const hasProjectNameComponent = components.some(comp => comp.type === 'projectName');
@@ -401,8 +441,8 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
             if (!hasQuotationComponent && !hasProjectNameComponent) {
                 // 没有任何依赖组件，冻结设置
                 return {
-                    options: [{ value: 'none', label: '无可关联组件' }],
-                    value: 'none',
+                    options: [{ value: 'auto', label: '无可关联组件' }],
+                    value: 'auto',
                     disabled: true
                 };
             } else if (hasQuotationComponent && !hasProjectNameComponent) {
@@ -436,25 +476,6 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
         };
 
         const associationConfig = getAssociationOptions();
-
-        // 自动更新关联模式
-        useEffect(() => {
-            const newValue = associationConfig.value;
-            if (component.associationMode !== newValue) {
-                onPropertyChange('associationMode', newValue);
-            }
-        }, [hasQuotationComponent, hasProjectNameComponent]);
-
-        // 当关联模式变化时，自动控制项目名称组件的"来自项目表"开关
-        useEffect(() => {
-            if (component.associationMode === 'project' && hasProjectNameComponent) {
-                // 找到项目名称组件并打开"来自项目表"开关
-                const projectNameComponent = components.find(comp => comp.type === 'projectName');
-                if (projectNameComponent && !projectNameComponent.fromProjectTable) {
-                    updateComponent(projectNameComponent.id, { fromProjectTable: true });
-                }
-            }
-        }, [component.associationMode, hasProjectNameComponent, components, updateComponent]);
 
         return (
             <>
