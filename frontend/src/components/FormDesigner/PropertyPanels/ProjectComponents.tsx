@@ -401,7 +401,7 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
 
     // 订单组件特有属性
     const renderOrderProperties = () => {
-        const { components } = useFormDesignerStore();
+        const { components, updateComponent } = useFormDesignerStore();
 
         const hasQuotationComponent = components.some(comp => comp.type === 'quotation');
         const hasProjectNameComponent = components.some(comp => comp.type === 'projectName');
@@ -454,6 +454,17 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
                 onPropertyChange('associationMode', newValue);
             }
         }, [hasQuotationComponent, hasProjectNameComponent]);
+
+        // 当关联模式变化时，自动控制项目名称组件的"来自项目表"开关
+        useEffect(() => {
+            if (component.associationMode === 'project' && hasProjectNameComponent) {
+                // 找到项目名称组件并打开"来自项目表"开关
+                const projectNameComponent = components.find(comp => comp.type === 'projectName');
+                if (projectNameComponent && !projectNameComponent.fromProjectTable) {
+                    updateComponent(projectNameComponent.id, { fromProjectTable: true });
+                }
+            }
+        }, [component.associationMode, hasProjectNameComponent, components, updateComponent]);
 
         return (
             <>
