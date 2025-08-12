@@ -71,9 +71,19 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
             const data = await response.json();
 
             if (data.success && data.data) {
+                // 调试：查看任务数据结构
+                console.log('项目任务原始数据:', data.data);
+                
                 // 将任务转换为订单项目格式
                 const taskOrderItems: OrderItem[] = data.data.map((task: any) => {
                     const basePrice = task.subtotal / task.quantity; // 基础单价
+                    
+                    // 调试：检查计费说明字段
+                    console.log(`任务 ${task.taskName} 的计费说明:`, {
+                        billingDescription: task.billingDescription,
+                        hasBillingDescription: !!task.billingDescription,
+                        pricingPolicies: task.pricingPolicies
+                    });
                     
                     // 构建计算详情（显示任务原始信息和应用的政策）
                     let calculationDetails = task.billingDescription || `${task.taskName}相关任务`;
