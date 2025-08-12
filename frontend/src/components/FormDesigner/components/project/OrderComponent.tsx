@@ -75,16 +75,8 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                 const taskOrderItems: OrderItem[] = data.data.map((task: any) => {
                     const basePrice = task.subtotal / task.quantity; // 基础单价
                     
-                    // 构建计算详情（显示任务原始信息和应用的政策）
+                    // 构建计算详情（显示任务原始信息，不包含额外的政策信息）
                     let calculationDetails = task.billingDescription;
-                    
-                    // 如果有价格政策，显示政策信息
-                    if (task.pricingPolicies && task.pricingPolicies.length > 0) {
-                        const policyDetails = task.pricingPolicies.map((p: any) => 
-                            `应用政策：${p.policyName}（${p.policyType === 'uniform_discount' ? '统一折扣' : '阶梯折扣'}）`
-                        ).join('\n');
-                        calculationDetails += `\n\n${policyDetails}`;
-                    }
                     
                     return {
                         id: task._id,
