@@ -17,7 +17,7 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
     const [quotationLoading, setQuotationLoading] = useState(false);
 
     // 订单组件所需的store钩子（移到组件顶层）
-    const { components, updateComponent } = useFormDesignerStore();
+    const { components } = useFormDesignerStore();
 
     // 订单组件依赖判断（移到顶层）
     const hasQuotationComponent = components.some(comp => comp.type === 'quotation');
@@ -50,39 +50,8 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
         }
     }, [component.type, component.selectedQuotationId, onPropertyChange]);
 
-    // 订单组件：自动更新关联模式
-    useEffect(() => {
-        if (component.type === 'order') {
-            let newValue = component.associationMode;
-
-            if (!hasQuotationComponent && !hasProjectNameComponent) {
-                newValue = 'auto';
-            } else if (hasQuotationComponent && !hasProjectNameComponent) {
-                newValue = 'quotation';
-            } else if (!hasQuotationComponent && hasProjectNameComponent) {
-                newValue = 'project';
-            } else if (hasQuotationComponent && hasProjectNameComponent) {
-                // 两者都有，如果当前不是有效值，设为select
-                if (component.associationMode !== 'quotation' && component.associationMode !== 'project') {
-                    newValue = 'select';
-                }
-            }
-
-            if (component.associationMode !== newValue) {
-                onPropertyChange('associationMode', newValue);
-            }
-        }
-    }, [component.type, hasQuotationComponent, hasProjectNameComponent, component.associationMode, onPropertyChange]);
-
-    // 订单组件：自动控制项目名称组件的"来自项目表"开关
-    useEffect(() => {
-        if (component.type === 'order' && component.associationMode === 'project' && hasProjectNameComponent) {
-            const projectNameComponent = components.find(comp => comp.type === 'projectName');
-            if (projectNameComponent && !projectNameComponent.fromProjectTable) {
-                updateComponent(projectNameComponent.id, { fromProjectTable: true });
-            }
-        }
-    }, [component.type, component.associationMode, hasProjectNameComponent, components, updateComponent]);
+    // 注意：订单组件的自动更新关联模式逻辑已移到 OrderComponent.tsx 中
+    // 这样确保无论属性面板是否展开，都能正确执行
 
     // 项目名称组件：当画布上只有项目名称和订单组件时，自动开启"来自项目表"
     useEffect(() => {

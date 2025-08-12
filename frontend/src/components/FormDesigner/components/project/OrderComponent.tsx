@@ -14,6 +14,7 @@ interface OrderComponentProps {
 const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
     const {
         components,
+        updateComponent,
         getOrderItems,
         getOrderTotal,
         updateOrderItemQuantity,
@@ -44,6 +45,38 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
             loadPricingPolicies();
         }
     }, []);
+
+    // 自动更新关联模式（从属性面板移到组件内部，确保始终执行）
+    useEffect(() => {
+        let newValue = component.associationMode;
+
+        if (!hasQuotationComponent && !hasProjectNameComponent) {
+            newValue = 'auto';
+        } else if (hasQuotationComponent && !hasProjectNameComponent) {
+            newValue = 'quotation';
+        } else if (!hasQuotationComponent && hasProjectNameComponent) {
+            newValue = 'project';
+        } else if (hasQuotationComponent && hasProjectNameComponent) {
+            // 两者都有，如果当前不是有效值，设为select
+            if (component.associationMode !== 'quotation' && component.associationMode !== 'project') {
+                newValue = 'select';
+            }
+        }
+
+        if (component.associationMode !== newValue) {
+            updateComponent(component.id, { associationMode: newValue });
+        }
+    }, [hasQuotationComponent, hasProjectNameComponent, component.associationMode, component.id, updateComponent]);
+
+    // 自动控制项目名称组件的"来自项目表"开关（从属性面板移到组件内部）
+    useEffect(() => {
+        if (component.associationMode === 'project' && hasProjectNameComponent) {
+            const projectNameComponent = components.find(comp => comp.type === 'projectName');
+            if (projectNameComponent && !projectNameComponent.fromProjectTable) {
+                updateComponent(projectNameComponent.id, { fromProjectTable: true });
+            }
+        }
+    }, [component.associationMode, hasProjectNameComponent, components, updateComponent]);
 
     // 获取选中的项目ID（从项目名称组件的componentValues中获取）
     const getSelectedProjectId = (): string | null => {
