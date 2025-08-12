@@ -22,7 +22,8 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         loadPricingPolicies,
         pricingPolicies,
         clearOrderItems,
-        addOrderItems
+        addOrderItems,
+        getComponentValue
     } = useFormDesignerStore();
 
     // 检查画布上是否存在报价单组件或项目名称组件
@@ -46,18 +47,19 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         const projectNameComponent = components.find(comp => comp.type === 'projectName');
         if (!projectNameComponent) return null;
         
-        const { getComponentValue } = useFormDesignerStore.getState();
         const selectedProject = getComponentValue(projectNameComponent.id);
         
-        // selectedProject可能是项目对象或项目ID字符串
+        // selectedProject现在应该是项目对象
         if (typeof selectedProject === 'object' && selectedProject?._id) {
             return selectedProject._id;
-        } else if (typeof selectedProject === 'string') {
-            return selectedProject;
         }
         
         return null;
     };
+
+    // 获取当前选中的项目（用于监听值变化）
+    const projectNameComponent = components.find(comp => comp.type === 'projectName');
+    const selectedProject = projectNameComponent ? getComponentValue(projectNameComponent.id) : null;
 
     // 获取项目任务并转换为订单项目
     const loadProjectTasks = async (projectId: string) => {
@@ -106,20 +108,19 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         }
     }, [component.associationMode, components]);
 
-    // 监听项目名称组件的值变化
+    // 监听项目选择变化，当项目选择改变时加载任务
     useEffect(() => {
-        if (component.associationMode === 'project') {
-            const projectNameComponent = components.find(comp => comp.type === 'projectName');
-            if (projectNameComponent) {
-                const projectId = getSelectedProjectId();
-                if (projectId) {
-                    loadProjectTasks(projectId);
-                } else {
-                    clearOrderItems(component.id);
-                }
+        if (component.associationMode === 'project' && projectNameComponent) {
+            const projectId = getSelectedProjectId();
+            if (projectId) {
+                console.log('OrderComponent: 检测到项目选择变化，加载任务:', projectId);
+                loadProjectTasks(projectId);
+            } else {
+                console.log('OrderComponent: 项目未选择，清空订单');
+                clearOrderItems(component.id);
             }
         }
-    }, [components.find(comp => comp.type === 'projectName')?.id]);
+    }, [component.associationMode, selectedProject?._id]);
 
     // 如果没有报价单组件或项目名称组件，显示提示信息
     if (!canUseOrderComponent) {

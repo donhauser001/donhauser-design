@@ -3,6 +3,7 @@ import { Input, Select, Spin } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { getIconPrefix } from '../../utils/iconUtils';
 import { projectService, ProjectItem } from '../../services/projectService';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 const { Option } = Select;
 
@@ -14,6 +15,9 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
     const [projects, setProjects] = useState<ProjectItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchLoading, setSearchLoading] = useState(false);
+    
+    // 使用store管理组件值
+    const { setComponentValue, getComponentValue } = useFormDesignerStore();
 
     // 获取图标，始终返回一个prefix以避免DOM结构变化
     const getPrefix = () => {
@@ -87,6 +91,9 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
         );
     };
 
+    // 获取当前选中的项目
+    const selectedProject = getComponentValue(component.id);
+    
     // 渲染下拉框模式
     const renderSelectMode = () => {
         const { textAlign, ...restStyle } = component.style || {};
@@ -94,13 +101,20 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
             <Select
                 showSearch
                 placeholder={component.placeholder || '请选择项目'}
-                value={component.defaultValue || undefined}
+                value={selectedProject?._id || undefined}
                 style={{ width: '100%', ...restStyle }}
                 styles={{
                     popup: { root: { minWidth: '300px' } }
                 }}
                 loading={loading || searchLoading}
                 onSearch={handleSearch}
+                onChange={(value) => {
+                    // 找到选中的项目对象
+                    const selectedProjectObj = projects.find(p => p._id === value);
+                    if (selectedProjectObj) {
+                        setComponentValue(component.id, selectedProjectObj);
+                    }
+                }}
                 onSelect={() => {
                     // 选择完成后，清空搜索词，恢复显示所有项目
                     handleSearch('');
@@ -143,7 +157,7 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
                 {projects.map(project => {
                     const status = getStatusTag(project.progressStatus);
                     return (
-                        <Option key={project._id} value={project.projectName}>
+                        <Option key={project._id} value={project._id}>
                             <div style={{
                                 display: 'flex',
                                 justifyContent: 'space-between',
