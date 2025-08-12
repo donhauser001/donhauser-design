@@ -17,7 +17,7 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
     const [searchLoading, setSearchLoading] = useState(false);
 
     // 使用store管理组件值
-    const { setComponentValue, getComponentValue } = useFormDesignerStore();
+    const { setComponentValue, getComponentValue, components, updateComponent } = useFormDesignerStore();
 
     // 获取图标，始终返回一个prefix以避免DOM结构变化
     const getPrefix = () => {
@@ -76,6 +76,17 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
             loadProjects();
         }
     }, [component.fromProjectTable]);
+
+    // 自动检测：当画布上只有项目名称和订单组件时，自动开启"来自项目表"
+    useEffect(() => {
+        const hasQuotationComponent = components.some(comp => comp.type === 'quotation');
+        const hasOrderComponent = components.some(comp => comp.type === 'order');
+
+        // 如果画布上有订单组件但没有报价单组件，且当前还没开启"来自项目表"
+        if (hasOrderComponent && !hasQuotationComponent && !component.fromProjectTable) {
+            updateComponent(component.id, { fromProjectTable: true });
+        }
+    }, [components, component.fromProjectTable, component.id, updateComponent]);
 
     // 渲染输入框模式
     const renderInputMode = () => {

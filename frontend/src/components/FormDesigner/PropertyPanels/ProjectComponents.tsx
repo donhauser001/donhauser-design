@@ -84,6 +84,19 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
         }
     }, [component.type, component.associationMode, hasProjectNameComponent, components, updateComponent]);
 
+    // 项目名称组件：当画布上只有项目名称和订单组件时，自动开启"来自项目表"
+    useEffect(() => {
+        if (component.type === 'projectName') {
+            // 检查画布上是否只有项目名称和订单组件（或者还有其他非关键组件）
+            const orderComponent = components.find(comp => comp.type === 'order');
+            const hasOnlyProjectAndOrder = hasProjectNameComponent && orderComponent && !hasQuotationComponent;
+
+            if (hasOnlyProjectAndOrder && !component.fromProjectTable) {
+                onPropertyChange('fromProjectTable', true);
+            }
+        }
+    }, [component.type, hasProjectNameComponent, hasQuotationComponent, components, component.fromProjectTable, onPropertyChange]);
+
     // 项目名称组件特有属性
     const renderProjectNameProperties = () => (
         <>
