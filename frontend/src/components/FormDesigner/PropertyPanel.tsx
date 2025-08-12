@@ -167,7 +167,7 @@ const PropertyPanel: React.FC = () => {
             },
 
             // 样式属性面板（仅特定组件显示）
-            ...(['presetText', 'image', 'countdown'].includes(selectedComponentData.type) ? [{
+            ...(['presetText', 'image', 'countdown', 'quotation'].includes(selectedComponentData.type) ? [{
                 key: 'style',
                 label: (
                     <div style={{
@@ -249,6 +249,136 @@ const PropertyPanel: React.FC = () => {
 
         const showBorderSettings = selectedComponentData.style?.borderWidth && selectedComponentData.style?.borderWidth !== '0';
         const isCountdownComponent = selectedComponentData.type === 'countdown';
+        const isQuotationComponent = selectedComponentData.type === 'quotation';
+
+        // 报价单组件有自己特殊的样式设置
+        if (isQuotationComponent) {
+            return (
+                <>
+                    <Form.Item label="显示模式">
+                        <Select
+                            value={selectedComponentData.quotationDisplayMode || 'card'}
+                            onChange={(value) => handlePropertyChange('quotationDisplayMode', value)}
+                            style={{ width: '100%' }}
+                        >
+                            <Option value="card">卡片列表</Option>
+                            <Option value="tabs">选项卡形式</Option>
+                            <Option value="list">列表形式</Option>
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item label="背景颜色">
+                        <ColorPicker
+                            value={selectedComponentData.style?.backgroundColor || 'transparent'}
+                            onChange={(color) => handlePropertyChange('style', {
+                                ...selectedComponentData.style,
+                                backgroundColor: typeof color === 'string' ? color : color.toHexString()
+                            })}
+                            showText
+                            allowClear
+                            presets={[
+                                { label: '推荐颜色', colors: ['#f0f8ff', '#f5f5f5', '#ffffff', '#fafafa', '#1890ff'] }
+                            ]}
+                        />
+                    </Form.Item>
+
+                    <Form.Item label="内边距">
+                        <Select
+                            value={selectedComponentData.style?.padding || '16px'}
+                            onChange={(value) => handlePropertyChange('style', {
+                                ...selectedComponentData.style,
+                                padding: value
+                            })}
+                        >
+                            <Option value="0px">无内边距</Option>
+                            <Option value="8px">8px</Option>
+                            <Option value="12px">12px</Option>
+                            <Option value="16px">16px</Option>
+                            <Option value="20px">20px</Option>
+                            <Option value="24px">24px</Option>
+                            <Option value="32px">32px</Option>
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item label="外边距">
+                        <Select
+                            value={selectedComponentData.style?.margin || '0'}
+                            onChange={(value) => handlePropertyChange('style', {
+                                ...selectedComponentData.style,
+                                margin: value
+                            })}
+                        >
+                            <Option value="0">无外边距</Option>
+                            <Option value="8px">8px</Option>
+                            <Option value="12px">12px</Option>
+                            <Option value="16px">16px</Option>
+                            <Option value="20px">20px</Option>
+                            <Option value="24px">24px</Option>
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item label="圆角">
+                        <Select
+                            value={selectedComponentData.style?.borderRadius || '8px'}
+                            onChange={(value) => handlePropertyChange('style', {
+                                ...selectedComponentData.style,
+                                borderRadius: value
+                            })}
+                        >
+                            <Option value="0">无圆角</Option>
+                            <Option value="4px">小圆角</Option>
+                            <Option value="8px">中圆角</Option>
+                            <Option value="12px">大圆角</Option>
+                            <Option value="16px">超大圆角</Option>
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item label="边框宽度">
+                        <Select
+                            value={selectedComponentData.style?.borderWidth || '1px'}
+                            onChange={(value) => handlePropertyChange('style', {
+                                ...selectedComponentData.style,
+                                borderWidth: value
+                            })}
+                        >
+                            <Option value="0">无边框</Option>
+                            <Option value="1px">1px</Option>
+                            <Option value="2px">2px</Option>
+                            <Option value="3px">3px</Option>
+                        </Select>
+                    </Form.Item>
+
+                    {selectedComponentData.style?.borderWidth && selectedComponentData.style.borderWidth !== '0' && (
+                        <>
+                            <Form.Item label="边框样式">
+                                <Select
+                                    value={selectedComponentData.style?.borderStyle || 'solid'}
+                                    onChange={(value) => handlePropertyChange('style', {
+                                        ...selectedComponentData.style,
+                                        borderStyle: value
+                                    })}
+                                >
+                                    <Option value="solid">实线</Option>
+                                    <Option value="dashed">虚线</Option>
+                                    <Option value="dotted">点线</Option>
+                                </Select>
+                            </Form.Item>
+
+                            <Form.Item label="边框颜色">
+                                <ColorPicker
+                                    value={selectedComponentData.style?.borderColor || '#e8e8e8'}
+                                    onChange={(color) => handlePropertyChange('style', {
+                                        ...selectedComponentData.style,
+                                        borderColor: typeof color === 'string' ? color : color.toHexString()
+                                    })}
+                                    showText
+                                />
+                            </Form.Item>
+                        </>
+                    )}
+                </>
+            );
+        }
 
         // 倒计时组件有自己特殊的样式设置
         if (isCountdownComponent) {

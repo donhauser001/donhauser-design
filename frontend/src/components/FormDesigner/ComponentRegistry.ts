@@ -387,12 +387,19 @@ class ComponentRegistry {
             name: '报价单',
             icon: 'FileTextOutlined',
             category: 'project',
-            description: '报价单信息输入',
+            description: '报价单信息输入，从报价单表选择',
             defaultProps: {
                 label: '报价单',
-                placeholder: '请输入报价单号',
+                placeholder: '请在属性面板中选择报价单',
                 required: false,
                 disabled: false,
+                fromQuotationTable: true,
+                selectedQuotationId: '',
+                quotationDisplayMode: 'card',
+                quotationNameDisplay: 'show',
+                customQuotationName: '',
+                showPricingPolicy: false,
+                policyDetailMode: 'hover',
                 order: 0
             }
         });

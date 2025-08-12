@@ -1,6 +1,9 @@
-import React from 'react';
-import { Form, Switch } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Form, Switch, Select, Spin, ColorPicker, Input } from 'antd';
 import { FormComponent } from '../../../types/formDesigner';
+import { quotationService, QuotationItem } from '../services/quotationService';
+
+const { Option } = Select;
 
 interface ProjectComponentsProps {
     component: FormComponent;
@@ -211,6 +214,190 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
         </>
     );
 
+    // 报价单组件特有属性
+    const renderQuotationProperties = () => {
+        const [quotations, setQuotations] = useState<QuotationItem[]>([]);
+        const [loading, setLoading] = useState(false);
+
+        // 加载报价单列表
+        const loadQuotations = async () => {
+            setLoading(true);
+            try {
+                const quotationData = await quotationService.getAllQuotations();
+                setQuotations(quotationData);
+            } catch (error) {
+                console.error('加载报价单列表失败:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        // 组件加载时自动加载报价单数据，并选择默认报价单
+        useEffect(() => {
+            const initializeQuotations = async () => {
+                setLoading(true);
+                try {
+                    const quotationData = await quotationService.getAllQuotations();
+                    setQuotations(quotationData);
+
+                    // 如果当前没有选择报价单，则自动选择默认报价单
+                    if (!component.selectedQuotationId) {
+                        const defaultQuotation = quotationData.find(q => q.isDefault && q.status === 'active');
+                        if (defaultQuotation) {
+                            onPropertyChange('selectedQuotationId', defaultQuotation._id);
+                        }
+                    }
+                } catch (error) {
+                    console.error('加载报价单数据失败:', error);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            initializeQuotations();
+        }, []);
+
+        return (
+            <>
+                <Form.Item label="选择报价单">
+                    <Select
+                        style={{ width: '100%' }}
+                        placeholder="请选择报价单"
+                        value={component.selectedQuotationId || undefined}
+                        onChange={(value) => onPropertyChange('selectedQuotationId', value)}
+                        allowClear
+                        loading={loading}
+                        showSearch
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                            (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
+                        }
+                        notFoundContent={loading ? <Spin size="small" /> : '无数据'}
+                    >
+                        {quotations.map((quotation) => (
+                            <Option
+                                key={quotation._id}
+                                value={quotation._id}
+                                disabled={quotation.status === 'inactive'}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span>{quotation.name}</span>
+                                    <div>
+                                        {quotation.isDefault && (
+                                            <span style={{
+                                                backgroundColor: '#faad14',
+                                                color: '#fff',
+                                                padding: '0 4px',
+                                                borderRadius: '2px',
+                                                fontSize: '10px',
+                                                marginRight: '4px'
+                                            }}>
+                                                默认
+                                            </span>
+                                        )}
+                                        <span style={{
+                                            backgroundColor: quotation.status === 'active' ? '#52c41a' : '#f5222d',
+                                            color: '#fff',
+                                            padding: '0 4px',
+                                            borderRadius: '2px',
+                                            fontSize: '10px'
+                                        }}>
+                                            {quotation.status === 'active' ? '有效' : '停用'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </Option>
+                        ))}
+                    </Select>
+                </Form.Item>
+
+
+
+                <Form.Item label="报价单名称显示">
+                    <Select
+                        style={{ width: '100%' }}
+                        value={component.quotationNameDisplay || 'show'}
+                        onChange={(value) => onPropertyChange('quotationNameDisplay', value)}
+                    >
+                        <Option value="show">显示报价单名称</Option>
+                        <Option value="hide">隐藏报价单名称</Option>
+                        <Option value="custom">自定义名称</Option>
+                    </Select>
+                </Form.Item>
+
+                {component.quotationNameDisplay === 'custom' && (
+                    <Form.Item label="自定义名称">
+                        <Input
+                            placeholder="请输入自定义的报价单名称"
+                            value={component.customQuotationName || ''}
+                            onChange={(e) => onPropertyChange('customQuotationName', e.target.value)}
+                        />
+                    </Form.Item>
+                )}
+
+                <Form.Item label="显示价格政策">
+                    <Switch
+                        checked={component.showPricingPolicy || false}
+                        onChange={(checked) => onPropertyChange('showPricingPolicy', checked)}
+                    />
+                    <div style={{
+                        fontSize: '12px',
+                        color: '#8c8c8c',
+                        marginTop: '4px'
+                    }}>
+                        在卡片右上角显示价格政策标签
+                    </div>
+                </Form.Item>
+
+                {component.showPricingPolicy && (
+                    <Form.Item label="政策详情呈现">
+                        <Select
+                            style={{ width: '100%' }}
+                            value={component.policyDetailMode || 'hover'}
+                            onChange={(value) => onPropertyChange('policyDetailMode', value)}
+                        >
+                            <Option value="hover">鼠标悬停提示</Option>
+                            <Option value="modal">点击弹窗查看</Option>
+                            <Option value="append">附加到价格说明</Option>
+                        </Select>
+                        <div style={{
+                            fontSize: '12px',
+                            color: '#8c8c8c',
+                            marginTop: '4px'
+                        }}>
+                            选择用户查看政策详情的方式
+                        </div>
+                    </Form.Item>
+                )}
+
+                <Form.Item>
+                    <div style={{
+                        marginTop: '16px',
+                        padding: '12px',
+                        backgroundColor: 'rgb(248, 249, 250)',
+                        borderRadius: '4px',
+                        fontSize: '12px',
+                        color: 'rgb(102, 102, 102)'
+                    }}>
+                        <div style={{ fontWeight: 500, marginBottom: '6px' }}>
+                            报价单组件说明
+                        </div>
+                        <div style={{ lineHeight: '1.6' }}>
+                            • 数据来源：从 /api/quotations 获取真实报价单数据<br />
+                            • 报价单选择：在上方下拉菜单中选择具体的报价单<br />
+                            • 名称设置：可选择显示、隐藏或自定义报价单名称<br />
+                            • 状态处理：停用报价单在下拉菜单中显示为禁用状态<br />
+                            • 默认标识：默认报价单会显示"默认"标签<br />
+                            • 搜索功能：支持在下拉菜单中按报价单名称搜索<br />
+                            • 样式设置：切换到"样式设置"面板可配置显示模式和外观<br />
+                            • 实时更新：更改选择后画布内容会立即更新
+                        </div>
+                    </div>
+                </Form.Item>
+            </>
+        );
+    };
+
     // 根据组件类型渲染不同的属性
     const renderComponentProperties = () => {
         switch (component.type) {
@@ -221,6 +408,7 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
             case 'contact':
                 return renderContactProperties();
             case 'quotation':
+                return renderQuotationProperties();
             case 'order':
             case 'instruction':
             case 'taskList':

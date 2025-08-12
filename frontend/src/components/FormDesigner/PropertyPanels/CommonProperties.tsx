@@ -16,6 +16,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
     const isSpecialComponent = ['divider', 'pagination', 'steps', 'presetText', 'image', 'html', 'countdown'].includes(component.type);
     const isRadioComponent = component.type === 'radio';
     const isSliderComponent = component.type === 'slider';
+    const isQuotationComponent = component.type === 'quotation';
 
     return (
         <>
@@ -47,7 +48,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         />
                     </Form.Item>
 
-                    {component.type !== 'textarea' && !isRadioComponent && !isSliderComponent && (
+                    {component.type !== 'textarea' && !isRadioComponent && !isSliderComponent && !isQuotationComponent && (
                         <Form.Item label="图标">
                             <Select
                                 value={component.icon || ''}
@@ -176,7 +177,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         />
                     </Form.Item>
 
-                    {!isRadioComponent && (
+                    {!isRadioComponent && !isQuotationComponent && (
                         <Form.Item label="默认值">
                             <Input
                                 value={component.defaultValue || ''}
@@ -186,7 +187,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         </Form.Item>
                     )}
 
-                    {!isRadioComponent && !isSliderComponent && (
+                    {!isRadioComponent && !isSliderComponent && !isQuotationComponent && (
                         <Form.Item label="占位符">
                             <Input
                                 value={component.placeholder || ''}

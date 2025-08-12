@@ -154,6 +154,14 @@ export interface FormComponent {
     showContactPosition?: boolean; // 显示联系人职位
     enableCompanyFilter?: boolean; // 公司过滤（根据客户组件的选择过滤联系人）
     allowMultipleContacts?: boolean; // 允许多选联系人
+    // 报价单组件特有属性
+    fromQuotationTable?: boolean; // 来自报价单表（用于quotation组件）
+    selectedQuotationId?: string; // 选择的报价单ID（在属性面板中设置）
+    quotationDisplayMode?: 'card' | 'tabs' | 'list'; // 报价单显示模式：卡片列表、选项卡形式、列表形式
+    quotationNameDisplay?: 'show' | 'hide' | 'custom'; // 报价单名称显示模式：显示、隐藏、自定义
+    customQuotationName?: string; // 自定义报价单名称
+    showPricingPolicy?: boolean; // 显示价格政策标签
+    policyDetailMode?: 'hover' | 'modal' | 'append'; // 政策详情呈现方式：悬停、弹窗、附加到价格说明
     parentId?: string; // 父容器ID，null表示在根容器中
     order: number; // 排序
     columnIndex?: number; // 用于分栏容器，标识组件属于哪一列

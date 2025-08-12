@@ -57,7 +57,7 @@ export class ServicePricingService {
             // 如果没有价格政策名称，但有价格政策ID，则获取名称
             if (service.pricingPolicyIds && service.pricingPolicyIds.length > 0) {
                 const policies = await PricingPolicy.find({ _id: { $in: service.pricingPolicyIds } })
-                const pricingPolicyNames = policies.map(policy => policy.alias)
+                const pricingPolicyNames = policies.map(policy => policy.name)
 
                 // 更新服务定价的价格政策名称
                 await ServicePricing.findByIdAndUpdate(service._id, {
@@ -92,7 +92,7 @@ export class ServicePricingService {
                     // 如果没有价格政策名称，但有价格政策ID，则获取名称
                     if (service.pricingPolicyIds && service.pricingPolicyIds.length > 0) {
                         const policies = await PricingPolicy.find({ _id: { $in: service.pricingPolicyIds } })
-                        const pricingPolicyNames = policies.map(policy => policy.alias)
+                        const pricingPolicyNames = policies.map(policy => policy.name)
 
                         // 更新服务定价的价格政策名称
                         await ServicePricing.findByIdAndUpdate(service._id, {
@@ -127,7 +127,7 @@ export class ServicePricingService {
             let pricingPolicyNames: string[] = []
             if (data.pricingPolicyIds && data.pricingPolicyIds.length > 0) {
                 const policies = await PricingPolicy.find({ _id: { $in: data.pricingPolicyIds } })
-                pricingPolicyNames = policies.map(policy => policy.alias)
+                pricingPolicyNames = policies.map(policy => policy.name)
             }
 
             const servicePricing = new ServicePricing({
@@ -160,7 +160,7 @@ export class ServicePricingService {
             let pricingPolicyNames: string[] = []
             if (data.pricingPolicyIds && data.pricingPolicyIds.length > 0) {
                 const policies = await PricingPolicy.find({ _id: { $in: data.pricingPolicyIds } })
-                pricingPolicyNames = policies.map(policy => policy.alias)
+                pricingPolicyNames = policies.map(policy => policy.name)
             }
 
             const updateData = {
