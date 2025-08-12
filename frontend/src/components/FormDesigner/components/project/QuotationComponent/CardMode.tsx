@@ -26,7 +26,7 @@ export const CardMode: React.FC<RenderModeProps> = ({
                     cursor: hasOrderComponent ? 'pointer' : 'default',
                     transition: 'all 0.2s ease'
                 }}
-                bodyStyle={{ padding: '12px' }}
+                styles={{ body: { padding: '12px' } }}
                 hoverable={hasOrderComponent}
                 onClick={() => hasOrderComponent && onServiceSelect(service)}
             >

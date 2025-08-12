@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Typography, Empty, Spin, Divider } from 'antd';
 import { QuotationComponentProps } from './types';
 import { useQuotationData } from './hooks';
@@ -25,15 +25,20 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
     } = useQuotationData(component);
 
     const { components, addServiceToOrder } = useFormDesignerStore();
+    const [orderComponentState, setOrderComponentState] = useState<any>(null);
 
-    // 检查是否存在订单组件
-    const orderComponent = components.find(comp => comp.type === 'order');
-    const hasOrderComponent = !!orderComponent;
+    // 监听组件变化，检查是否存在订单组件
+    useEffect(() => {
+        const orderComponent = components.find(comp => comp.type === 'order');
+        setOrderComponentState(orderComponent || null);
+    }, [components]);
+
+    const hasOrderComponent = !!orderComponentState;
 
     // 处理服务选择
     const handleServiceSelect = (service: any) => {
-        if (hasOrderComponent && orderComponent) {
-            addServiceToOrder(component.id, orderComponent.id, service);
+        if (hasOrderComponent && orderComponentState) {
+            addServiceToOrder(component.id, orderComponentState.id, service);
         }
     };
 
