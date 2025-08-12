@@ -84,6 +84,7 @@ interface FormDesignerStore extends FormDesignerState {
     clearOrderItems: (orderComponentId: string) => void;
     loadPricingPolicies: () => Promise<void>;
     calculateItemPrice: (orderItem: OrderItem) => { originalPrice: number; discountedPrice: number; discountAmount: number; calculationDetails: string };
+    addOrderItems: (orderComponentId: string, items: OrderItem[]) => void;
 }
 
 export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
@@ -917,5 +918,14 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
             discountAmount,
             calculationDetails
         };
+    },
+
+    addOrderItems: (orderComponentId: string, items: OrderItem[]) => {
+        set(state => ({
+            orderItems: {
+                ...state.orderItems,
+                [orderComponentId]: [...(state.orderItems[orderComponentId] || []), ...items]
+            }
+        }));
     }
 })); 

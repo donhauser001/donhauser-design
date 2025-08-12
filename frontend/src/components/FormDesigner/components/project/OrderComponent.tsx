@@ -12,15 +12,17 @@ interface OrderComponentProps {
 }
 
 const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
-    const {
-        components,
-        getOrderItems,
+        const { 
+        components, 
+        getOrderItems, 
         getOrderTotal,
         updateOrderItemQuantity,
         updateOrderItemPolicies,
         removeServiceFromOrder,
         loadPricingPolicies,
-        pricingPolicies
+        pricingPolicies,
+        clearOrderItems,
+        addOrderItems
     } = useFormDesignerStore();
 
     // 检查画布上是否存在报价单组件或项目名称组件
@@ -38,6 +40,86 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
             loadPricingPolicies();
         }
     }, []);
+
+    // 获取选中的项目ID（从项目名称组件的componentValues中获取）
+    const getSelectedProjectId = (): string | null => {
+        const projectNameComponent = components.find(comp => comp.type === 'projectName');
+        if (!projectNameComponent) return null;
+        
+        const { getComponentValue } = useFormDesignerStore.getState();
+        const selectedProject = getComponentValue(projectNameComponent.id);
+        
+        // selectedProject可能是项目对象或项目ID字符串
+        if (typeof selectedProject === 'object' && selectedProject?._id) {
+            return selectedProject._id;
+        } else if (typeof selectedProject === 'string') {
+            return selectedProject;
+        }
+        
+        return null;
+    };
+
+    // 获取项目任务并转换为订单项目
+    const loadProjectTasks = async (projectId: string) => {
+        try {
+            const response = await fetch(`/api/tasks/project/${projectId}`);
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+                // 将任务转换为订单项目格式
+                const taskOrderItems: OrderItem[] = data.data.map((task: any) => ({
+                    id: task._id,
+                    serviceName: task.taskName,
+                    categoryName: '项目任务', // 统一分类
+                    unitPrice: task.subtotal / task.quantity, // 计算单价
+                    unit: task.unit,
+                    quantity: task.quantity,
+                    priceDescription: task.billingDescription || `${task.taskName}相关任务`,
+                    pricingPolicyIds: task.pricingPolicies?.map((p: any) => p.policyId) || [],
+                    pricingPolicyNames: task.pricingPolicies?.map((p: any) => p.policyName) || [],
+                    selectedPolicies: [],
+                    subtotal: task.subtotal,
+                    originalPrice: task.subtotal,
+                    discountAmount: 0,
+                    calculationDetails: task.billingDescription || `按${task.unit}计费`
+                }));
+
+                // 清空现有订单项目并添加任务项目
+                clearOrderItems(component.id);
+                addOrderItems(component.id, taskOrderItems);
+            }
+        } catch (error) {
+            console.error('获取项目任务失败:', error);
+        }
+    };
+
+    // 监听关联模式和项目选择变化
+    useEffect(() => {
+        if (component.associationMode === 'project') {
+            const projectId = getSelectedProjectId();
+            if (projectId) {
+                loadProjectTasks(projectId);
+            } else {
+                // 如果没有选中项目，清空订单
+                clearOrderItems(component.id);
+            }
+        }
+    }, [component.associationMode, components]);
+
+    // 监听项目名称组件的值变化
+    useEffect(() => {
+        if (component.associationMode === 'project') {
+            const projectNameComponent = components.find(comp => comp.type === 'projectName');
+            if (projectNameComponent) {
+                const projectId = getSelectedProjectId();
+                if (projectId) {
+                    loadProjectTasks(projectId);
+                } else {
+                    clearOrderItems(component.id);
+                }
+            }
+        }
+    }, [components.find(comp => comp.type === 'projectName')?.id]);
 
     // 如果没有报价单组件或项目名称组件，显示提示信息
     if (!canUseOrderComponent) {
