@@ -415,6 +415,8 @@ class ComponentRegistry {
                 placeholder: '请输入订单号',
                 required: false,
                 disabled: false,
+                titleDisplay: 'show', // 'show' | 'hide' | 'custom'
+                customTitle: '订单详情',
                 order: 0
             }
         });

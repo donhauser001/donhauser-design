@@ -162,6 +162,9 @@ export interface FormComponent {
     customQuotationName?: string; // 自定义报价单名称
     showPricingPolicy?: boolean; // 显示价格政策标签
     policyDetailMode?: 'hover' | 'modal' | 'append'; // 政策详情呈现方式：悬停、弹窗、附加到价格说明
+    // 订单组件特有属性
+    titleDisplay?: 'show' | 'hide' | 'custom'; // 标题显示模式：显示、隐藏、自定义
+    customTitle?: string; // 自定义标题文本
     parentId?: string; // 父容器ID，null表示在根容器中
     order: number; // 排序
     columnIndex?: number; // 用于分栏容器，标识组件属于哪一列

@@ -398,6 +398,33 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
         );
     };
 
+    // 订单组件特有属性
+    const renderOrderProperties = () => (
+        <>
+            <Form.Item label="标题显示">
+                <Select
+                    value={component.titleDisplay || 'show'}
+                    onChange={(value) => onPropertyChange('titleDisplay', value)}
+                    style={{ width: '100%' }}
+                >
+                    <Option value="show">显示标题</Option>
+                    <Option value="hide">隐藏标题</Option>
+                    <Option value="custom">自定义标题</Option>
+                </Select>
+            </Form.Item>
+
+            {component.titleDisplay === 'custom' && (
+                <Form.Item label="自定义标题">
+                    <Input
+                        value={component.customTitle || ''}
+                        onChange={(e) => onPropertyChange('customTitle', e.target.value)}
+                        placeholder="请输入自定义标题"
+                    />
+                </Form.Item>
+            )}
+        </>
+    );
+
     // 根据组件类型渲染不同的属性
     const renderComponentProperties = () => {
         switch (component.type) {
@@ -410,6 +437,7 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
             case 'quotation':
                 return renderQuotationProperties();
             case 'order':
+                return renderOrderProperties();
             case 'instruction':
             case 'taskList':
                 return (

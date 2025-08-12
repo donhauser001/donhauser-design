@@ -200,10 +200,23 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         }
     ];
 
+    // 获取标题显示内容
+    const getCardTitle = () => {
+        const { titleDisplay = 'show', customTitle = '订单详情' } = component;
+        
+        if (titleDisplay === 'hide') {
+            return undefined; // 不显示标题
+        } else if (titleDisplay === 'custom') {
+            return customTitle || '订单详情'; // 显示自定义标题
+        } else {
+            return '订单详情'; // 显示默认标题
+        }
+    };
+
     return (
         <div style={{ width: '100%' }}>
             <Card
-                title="订单详情"
+                title={getCardTitle()}
                 size="small"
                 style={{ width: '100%' }}
                 extra={
