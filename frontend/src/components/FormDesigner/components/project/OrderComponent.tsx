@@ -319,28 +319,26 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                 );
             }
         },
-        {
+
+    ];
+
+    // 根据模式动态添加操作列（只有报价单模式才显示）
+    if (!isProjectTaskMode) {
+        (columns as any).push({
             title: '操作',
             key: 'action',
             width: '8%',
-            render: (_: any, record: OrderItem) => 
-                isProjectTaskMode ? (
-                    // 项目任务模式：只读，无操作
-                    <Text type="secondary" style={{ fontSize: '12px' }}>
-                        只读
-                    </Text>
-                ) : (
-                    // 报价单模式：可删除
-                    <Button
-                        type="text"
-                        danger
-                        size="small"
-                        icon={<DeleteOutlined />}
-                        onClick={() => handleRemoveItem(record.id)}
-                    />
-                )
-        }
-    ];
+            render: (_: any, record: OrderItem) => (
+                <Button
+                    type="text"
+                    danger
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    onClick={() => handleRemoveItem(record.id)}
+                />
+            )
+        });
+    }
 
     // 获取标题显示内容
     const getCardTitle = () => {
