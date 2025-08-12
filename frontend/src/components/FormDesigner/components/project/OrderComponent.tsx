@@ -219,14 +219,14 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
 
                 return (
                     <Radio.Group
-                        value={record.selectedPolicies?.[0] || null}
+                        value={record.selectedPolicies?.[0] || ''}
                         onChange={(e) => {
                             const selectedValue = e.target.value;
-                            handlePolicyChange(record.id, selectedValue ? [selectedValue] : []);
+                            handlePolicyChange(record.id, selectedValue && selectedValue !== '' ? [selectedValue] : []);
                         }}
                     >
                         <div style={{ marginBottom: '4px' }}>
-                            <Radio value={null} style={{ fontSize: '12px' }}>
+                            <Radio value="" style={{ fontSize: '12px' }}>
                                 不使用政策
                             </Radio>
                         </div>
