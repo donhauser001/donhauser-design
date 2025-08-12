@@ -625,8 +625,18 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
 
     // 订单相关方法实现
     addServiceToOrder: (_quotationComponentId: string, orderComponentId: string, service: any) => {
+        console.log('Store: addServiceToOrder调用', {
+            orderComponentId,
+            serviceName: service.serviceName,
+            serviceId: service._id
+        });
+        
         set(state => {
             const currentOrderItems = state.orderItems[orderComponentId] || [];
+            console.log('Store: 当前订单项目', {
+                orderComponentId,
+                currentItemCount: currentOrderItems.length
+            });
             
             // 检查是否已存在该服务
             const existingIndex = currentOrderItems.findIndex(item => item.id === service._id);

@@ -13,6 +13,10 @@ export const CardMode: React.FC<RenderModeProps> = ({
     hasOrderComponent,
     onServiceSelect
 }) => {
+    console.log('CardMode: 接收到的props', {
+        hasOrderComponent,
+        serviceCount: Object.values(groupedServices).flat().length
+    });
     // 渲染服务卡片
     const renderServiceCard = (service: any) => (
         <Col key={service._id} span={6} style={{ marginBottom: '12px' }}>
@@ -28,7 +32,14 @@ export const CardMode: React.FC<RenderModeProps> = ({
                 }}
                 styles={{ body: { padding: '12px' } }}
                 hoverable={hasOrderComponent}
-                onClick={() => hasOrderComponent && onServiceSelect(service)}
+                onClick={() => {
+                    console.log('CardMode: 卡片点击', {
+                        serviceName: service.serviceName,
+                        hasOrderComponent,
+                        clickable: hasOrderComponent
+                    });
+                    hasOrderComponent && onServiceSelect(service);
+                }}
             >
                 {/* 价格政策标签 */}
                 {component.showPricingPolicy && service.pricingPolicyNames && service.pricingPolicyNames.length > 0 && (
