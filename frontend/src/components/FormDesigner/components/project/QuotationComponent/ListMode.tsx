@@ -142,20 +142,17 @@ export const ListMode: React.FC<RenderModeProps> = ({
                             borderRadius: component.style?.borderRadius || '8px',
                             overflow: 'hidden'
                         }}
-                        rowClassName={(record, index) =>
-                            index % 2 === 0 ? 'table-row-even' : 'table-row-odd'
-                        }
-                        onRow={(record) => {
+                        rowClassName={(record, index) => {
                             const isSelected = isServiceSelected(record._id);
-                            return {
-                                onClick: () => hasOrderComponent && onServiceSelect(record),
-                                style: {
-                                    cursor: hasOrderComponent ? 'pointer' : 'default',
-                                    backgroundColor: isSelected ? '#f0f8ff' : undefined,
-                                    border: isSelected ? '2px solid #1890ff' : undefined
-                                }
-                            };
+                            const baseClass = index % 2 === 0 ? 'table-row-even' : 'table-row-odd';
+                            return isSelected ? `${baseClass} table-row-selected` : baseClass;
                         }}
+                        onRow={(record) => ({
+                            onClick: () => hasOrderComponent && onServiceSelect(record),
+                            style: {
+                                cursor: hasOrderComponent ? 'pointer' : 'default'
+                            }
+                        })}
                     />
 
                     {categoryIndex < sortedCategories.length - 1 && (
@@ -190,8 +187,35 @@ export const ListMode: React.FC<RenderModeProps> = ({
                     background-color: #fafafa !important;
                 }
                 
-                .quotation-table .ant-table-tbody > tr:hover > td {
+                .quotation-table .table-row-selected > td {
+                    background-color: #f0f8ff !important;
+                    border-left: none !important;
+                    border-right: none !important;
+                    border-top: none !important;
+                    border-bottom: none !important;
+                    position: relative !important;
+                }
+                
+                .quotation-table .table-row-selected > td:first-child {
+                    border-left: 3px solid #1890ff !important;
+                }
+                
+                .quotation-table .table-row-selected > td:last-child {
+                    border-right: 3px solid #1890ff !important;
+                }
+                
+                .quotation-table .table-row-selected {
+                    border-top: 3px solid #1890ff !important;
+                    border-bottom: 3px solid #1890ff !important;
+                    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15) !important;
+                }
+                
+                .quotation-table .ant-table-tbody > tr:hover:not(.table-row-selected) > td {
                     background-color: #e6f7ff !important;
+                }
+                
+                .quotation-table .table-row-selected:hover > td {
+                    background-color: #f0f8ff !important;
                 }
                 
                 .quotation-table .ant-table {
