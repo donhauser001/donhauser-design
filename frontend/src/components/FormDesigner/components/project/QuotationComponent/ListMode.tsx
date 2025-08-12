@@ -11,7 +11,8 @@ export const ListMode: React.FC<RenderModeProps> = ({
     renderPolicyTag,
     renderPriceDescriptionWithPolicy,
     hasOrderComponent,
-    onServiceSelect
+    onServiceSelect,
+    isServiceSelected
 }) => {
     const columns = [
         {
@@ -144,12 +145,17 @@ export const ListMode: React.FC<RenderModeProps> = ({
                         rowClassName={(record, index) =>
                             index % 2 === 0 ? 'table-row-even' : 'table-row-odd'
                         }
-                        onRow={(record) => ({
-                            onClick: () => hasOrderComponent && onServiceSelect(record),
-                            style: {
-                                cursor: hasOrderComponent ? 'pointer' : 'default'
-                            }
-                        })}
+                        onRow={(record) => {
+                            const isSelected = isServiceSelected(record._id);
+                            return {
+                                onClick: () => hasOrderComponent && onServiceSelect(record),
+                                style: {
+                                    cursor: hasOrderComponent ? 'pointer' : 'default',
+                                    backgroundColor: isSelected ? '#f0f8ff' : undefined,
+                                    border: isSelected ? '2px solid #1890ff' : undefined
+                                }
+                            };
+                        }}
                     />
 
                     {categoryIndex < sortedCategories.length - 1 && (

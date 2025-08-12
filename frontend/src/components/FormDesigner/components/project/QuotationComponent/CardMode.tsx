@@ -11,36 +11,35 @@ export const CardMode: React.FC<RenderModeProps> = ({
     renderPolicyTag,
     renderPriceDescriptionWithPolicy,
     hasOrderComponent,
-    onServiceSelect
+    onServiceSelect,
+    isServiceSelected
 }) => {
-    console.log('CardMode: 接收到的props', {
-        hasOrderComponent,
-        serviceCount: Object.values(groupedServices).flat().length
-    });
     // 渲染服务卡片
-    const renderServiceCard = (service: any) => (
-        <Col key={service._id} span={6} style={{ marginBottom: '12px' }}>
-            <Card
-                size="small"
-                style={{
-                    height: '100%',
-                    border: '1px solid #f0f0f0',
-                    borderRadius: component.style?.borderRadius || '8px',
-                    position: 'relative',
-                    cursor: hasOrderComponent ? 'pointer' : 'default',
-                    transition: 'all 0.2s ease'
-                }}
-                styles={{ body: { padding: '12px' } }}
-                hoverable={hasOrderComponent}
-                onClick={() => {
-                    console.log('CardMode: 卡片点击', {
-                        serviceName: service.serviceName,
-                        hasOrderComponent,
-                        clickable: hasOrderComponent
-                    });
-                    hasOrderComponent && onServiceSelect(service);
-                }}
-            >
+    const renderServiceCard = (service: any) => {
+        const isSelected = isServiceSelected(service._id);
+        
+        return (
+            <Col key={service._id} span={6} style={{ marginBottom: '12px' }}>
+                <Card
+                    size="small"
+                    style={{
+                        height: '100%',
+                        border: isSelected 
+                            ? '2px solid #1890ff' 
+                            : '1px solid #f0f0f0',
+                        borderRadius: component.style?.borderRadius || '8px',
+                        position: 'relative',
+                        cursor: hasOrderComponent ? 'pointer' : 'default',
+                        transition: 'all 0.2s ease',
+                        backgroundColor: isSelected ? '#f0f8ff' : 'white',
+                        boxShadow: isSelected 
+                            ? '0 4px 12px rgba(24, 144, 255, 0.15)' 
+                            : undefined
+                    }}
+                    styles={{ body: { padding: '12px' } }}
+                    hoverable={hasOrderComponent}
+                    onClick={() => hasOrderComponent && onServiceSelect(service)}
+                >
                 {/* 价格政策标签 */}
                 {component.showPricingPolicy && service.pricingPolicyNames && service.pricingPolicyNames.length > 0 && (
                     <div style={{
@@ -97,7 +96,8 @@ export const CardMode: React.FC<RenderModeProps> = ({
                 )}
             </Card>
         </Col>
-    );
+        );
+    };
 
     return (
         <>

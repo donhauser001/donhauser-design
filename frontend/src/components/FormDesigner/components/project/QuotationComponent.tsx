@@ -23,42 +23,21 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
         handlePolicyClick
     } = useQuotationData(component);
 
-    const { components, addServiceToOrder } = useFormDesignerStore();
+    const { components, addServiceToOrder, isServiceSelected } = useFormDesignerStore();
     const [orderComponentState, setOrderComponentState] = useState<any>(null);
 
     // 监听组件变化，检查是否存在订单组件
     useEffect(() => {
         const orderComponent = components.find(comp => comp.type === 'order');
-        console.log('QuotationComponent: 检查订单组件', {
-            totalComponents: components.length,
-            componentTypes: components.map(c => c.type),
-            orderComponent: orderComponent ? orderComponent.id : null
-        });
         setOrderComponentState(orderComponent || null);
     }, [components]);
 
     const hasOrderComponent = !!orderComponentState;
 
-    console.log('QuotationComponent: 当前状态', {
-        componentId: component.id,
-        hasOrderComponent,
-        orderComponentId: orderComponentState?.id
-    });
-
     // 处理服务选择
     const handleServiceSelect = (service: any) => {
-        console.log('QuotationComponent: handleServiceSelect调用', {
-            serviceName: service.serviceName,
-            hasOrderComponent,
-            orderComponentId: orderComponentState?.id,
-            quotationComponentId: component.id
-        });
-
         if (hasOrderComponent && orderComponentState) {
-            console.log('QuotationComponent: 调用addServiceToOrder');
             addServiceToOrder(component.id, orderComponentState.id, service);
-        } else {
-            console.log('QuotationComponent: 条件不满足，无法添加服务');
         }
     };
 
@@ -110,6 +89,12 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
         const wrappedRenderPriceDescriptionWithPolicy = (originalDescription: string, service: any) =>
             renderPriceDescriptionWithPolicy(originalDescription, service, component, getPolicyById);
 
+        // 检查服务是否已选中
+        const checkServiceSelected = (serviceId: string) => {
+            return hasOrderComponent && orderComponentState ? 
+                isServiceSelected(orderComponentState.id, serviceId) : false;
+        };
+
         // 共同的props
         const renderProps = {
             groupedServices,
@@ -118,7 +103,8 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
             renderPolicyTag: wrappedRenderPolicyTag,
             renderPriceDescriptionWithPolicy: wrappedRenderPriceDescriptionWithPolicy,
             hasOrderComponent,
-            onServiceSelect: handleServiceSelect
+            onServiceSelect: handleServiceSelect,
+            isServiceSelected: checkServiceSelected
         };
 
         // 渲染内容

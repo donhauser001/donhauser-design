@@ -21,6 +21,7 @@ export interface RenderModeProps {
     renderPriceDescriptionWithPolicy: (originalDescription: string, service: any) => JSX.Element | string;
     hasOrderComponent: boolean;
     onServiceSelect: (service: any) => void;
+    isServiceSelected: (serviceId: string) => boolean;
 }
 
 export interface QuotationState {

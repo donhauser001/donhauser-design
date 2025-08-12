@@ -37,7 +37,7 @@ export interface OrderItem {
 interface FormDesignerStore extends FormDesignerState {
     // 存储组件的运行时选择值（仅在设计模式下使用）
     componentValues: Record<string, any>;
-    
+
     // 订单相关状态
     selectedServices: Record<string, any[]>; // 按报价单组件ID存储选中的服务
     orderItems: Record<string, OrderItem[]>; // 按订单组件ID存储订单项
@@ -68,7 +68,7 @@ interface FormDesignerStore extends FormDesignerState {
 
     // Helper methods
     getComponentsByParent: (parentId?: string) => FormComponent[];
-    
+
     // 订单相关方法
     addServiceToOrder: (quotationComponentId: string, orderComponentId: string, service: any) => void;
     removeServiceFromOrder: (orderComponentId: string, serviceId: string) => void;
@@ -76,6 +76,7 @@ interface FormDesignerStore extends FormDesignerState {
     updateOrderItemPolicies: (orderComponentId: string, serviceId: string, selectedPolicies: string[]) => void;
     getOrderItems: (orderComponentId: string) => OrderItem[];
     getOrderTotal: (orderComponentId: string) => number;
+    isServiceSelected: (orderComponentId: string, serviceId: string) => boolean;
 }
 
 export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
@@ -625,32 +626,20 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
 
     // 订单相关方法实现
     addServiceToOrder: (_quotationComponentId: string, orderComponentId: string, service: any) => {
-        console.log('Store: addServiceToOrder调用', {
-            orderComponentId,
-            serviceName: service.serviceName,
-            serviceId: service._id
-        });
-        
         set(state => {
             const currentOrderItems = state.orderItems[orderComponentId] || [];
-            console.log('Store: 当前订单项目', {
-                orderComponentId,
-                currentItemCount: currentOrderItems.length
-            });
-            
+
             // 检查是否已存在该服务
             const existingIndex = currentOrderItems.findIndex(item => item.id === service._id);
-            
+
             if (existingIndex >= 0) {
-                // 如果已存在，增加数量
-                const updatedItems = [...currentOrderItems];
-                updatedItems[existingIndex].quantity += 1;
-                updatedItems[existingIndex].subtotal = updatedItems[existingIndex].unitPrice * updatedItems[existingIndex].quantity;
-                
+                // 如果已存在，从订单中移除（切换功能）
+                const filteredItems = currentOrderItems.filter(item => item.id !== service._id);
+
                 return {
                     orderItems: {
                         ...state.orderItems,
-                        [orderComponentId]: updatedItems
+                        [orderComponentId]: filteredItems
                     }
                 };
             } else {
@@ -668,7 +657,7 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
                     selectedPolicies: [], // 默认不选择任何政策
                     subtotal: service.unitPrice
                 };
-                
+
                 return {
                     orderItems: {
                         ...state.orderItems,
@@ -683,7 +672,7 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
         set(state => {
             const currentOrderItems = state.orderItems[orderComponentId] || [];
             const filteredItems = currentOrderItems.filter(item => item.id !== serviceId);
-            
+
             return {
                 orderItems: {
                     ...state.orderItems,
@@ -706,7 +695,7 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
                 }
                 return item;
             });
-            
+
             return {
                 orderItems: {
                     ...state.orderItems,
@@ -728,7 +717,7 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
                 }
                 return item;
             });
-            
+
             return {
                 orderItems: {
                     ...state.orderItems,
@@ -745,5 +734,10 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
     getOrderTotal: (orderComponentId: string) => {
         const orderItems = get().orderItems[orderComponentId] || [];
         return orderItems.reduce((total, item) => total + item.subtotal, 0);
+    },
+
+    isServiceSelected: (orderComponentId: string, serviceId: string) => {
+        const orderItems = get().orderItems[orderComponentId] || [];
+        return orderItems.some(item => item.id === serviceId);
     }
 })); 
