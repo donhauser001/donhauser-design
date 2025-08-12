@@ -74,30 +74,34 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
     }, [component.fromProjectTable]);
 
     // 渲染输入框模式
-    const renderInputMode = () => (
-        <Input
-            placeholder={component.placeholder}
-            value={component.defaultValue || ''}
-            prefix={getPrefix()}
-            style={component.style}
-            readOnly={true}
-        />
-    );
+    const renderInputMode = () => {
+        const { textAlign, ...restStyle } = component.style || {};
+        return (
+            <Input
+                placeholder={component.placeholder}
+                value={component.defaultValue || ''}
+                prefix={getPrefix()}
+                style={restStyle}
+                readOnly={true}
+            />
+        );
+    };
 
     // 渲染下拉框模式
     const renderSelectMode = () => {
+        const { textAlign, ...restStyle } = component.style || {};
         const selectComponent = (
             <Select
                 showSearch
                 placeholder={component.placeholder || '请选择项目'}
                 value={component.defaultValue || undefined}
-                style={{ width: '100%', ...component.style }}
+                style={{ width: '100%', ...restStyle }}
                 styles={{
                     popup: { root: { minWidth: '300px' } }
                 }}
                 loading={loading || searchLoading}
                 onSearch={handleSearch}
-                onSelect={(value) => {
+                onSelect={() => {
                     // 选择完成后，清空搜索词，恢复显示所有项目
                     handleSearch('');
                 }}
