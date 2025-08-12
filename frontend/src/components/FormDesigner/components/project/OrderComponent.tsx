@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Table, Alert, Typography, Checkbox, InputNumber, Button, Card, Divider } from 'antd';
+import { Table, Alert, Typography, Radio, InputNumber, Button, Card, Divider } from 'antd';
 import { ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore, OrderItem } from '../../../../stores/formDesignerStore';
@@ -132,21 +132,29 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                 }
 
                 return (
-                    <Checkbox.Group
-                        value={record.selectedPolicies || []}
-                        onChange={(values) => handlePolicyChange(record.id, values as string[])}
+                    <Radio.Group
+                        value={record.selectedPolicies?.[0] || null}
+                        onChange={(e) => {
+                            const selectedValue = e.target.value;
+                            handlePolicyChange(record.id, selectedValue ? [selectedValue] : []);
+                        }}
                     >
+                        <div style={{ marginBottom: '4px' }}>
+                            <Radio value={null} style={{ fontSize: '12px' }}>
+                                不使用政策
+                            </Radio>
+                        </div>
                         {policyNames.map((policyName, index) => {
                             const policyId = record.pricingPolicyIds?.[index] || '';
                             return (
                                 <div key={policyId} style={{ marginBottom: '4px' }}>
-                                    <Checkbox value={policyId} style={{ fontSize: '12px' }}>
+                                    <Radio value={policyId} style={{ fontSize: '12px' }}>
                                         {policyName}
-                                    </Checkbox>
+                                    </Radio>
                                 </div>
                             );
                         })}
-                    </Checkbox.Group>
+                    </Radio.Group>
                 );
             }
         },
