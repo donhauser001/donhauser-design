@@ -12,9 +12,9 @@ interface OrderComponentProps {
 }
 
 const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
-        const { 
-        components, 
-        getOrderItems, 
+    const {
+        components,
+        getOrderItems,
         getOrderTotal,
         updateOrderItemQuantity,
         updateOrderItemPolicies,
@@ -34,6 +34,9 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
     // 获取当前订单项目
     const orderItems = getOrderItems(component.id);
     const orderTotal = getOrderTotal(component.id);
+    
+    // 判断是否为项目任务模式（只读模式）
+    const isProjectTaskMode = component.associationMode === 'project' && hasProjectNameComponent;
 
     // 加载价格政策数据
     useEffect(() => {
@@ -46,14 +49,14 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
     const getSelectedProjectId = (): string | null => {
         const projectNameComponent = components.find(comp => comp.type === 'projectName');
         if (!projectNameComponent) return null;
-        
+
         const selectedProject = getComponentValue(projectNameComponent.id);
-        
+
         // selectedProject现在应该是项目对象
         if (typeof selectedProject === 'object' && selectedProject?._id) {
             return selectedProject._id;
         }
-        
+
         return null;
     };
 
@@ -66,25 +69,40 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         try {
             const response = await fetch(`/api/tasks/project/${projectId}`);
             const data = await response.json();
-            
+
             if (data.success && data.data) {
                 // 将任务转换为订单项目格式
-                const taskOrderItems: OrderItem[] = data.data.map((task: any) => ({
-                    id: task._id,
-                    serviceName: task.taskName,
-                    categoryName: '项目任务', // 统一分类
-                    unitPrice: task.subtotal / task.quantity, // 计算单价
-                    unit: task.unit,
-                    quantity: task.quantity,
-                    priceDescription: task.billingDescription || `${task.taskName}相关任务`,
-                    pricingPolicyIds: task.pricingPolicies?.map((p: any) => p.policyId) || [],
-                    pricingPolicyNames: task.pricingPolicies?.map((p: any) => p.policyName) || [],
-                    selectedPolicies: [],
-                    subtotal: task.subtotal,
-                    originalPrice: task.subtotal,
-                    discountAmount: 0,
-                    calculationDetails: task.billingDescription || `按${task.unit}计费`
-                }));
+                const taskOrderItems: OrderItem[] = data.data.map((task: any) => {
+                    const basePrice = task.subtotal / task.quantity; // 基础单价
+                    
+                    // 构建计算详情（显示任务原始信息和应用的政策）
+                    let calculationDetails = task.billingDescription || `${task.taskName}相关任务`;
+                    
+                    // 如果有价格政策，显示政策信息
+                    if (task.pricingPolicies && task.pricingPolicies.length > 0) {
+                        const policyDetails = task.pricingPolicies.map((p: any) => 
+                            `应用政策：${p.policyName}（${p.policyType === 'uniform_discount' ? '统一折扣' : '阶梯折扣'}）`
+                        ).join('\n');
+                        calculationDetails += `\n\n${policyDetails}`;
+                    }
+                    
+                    return {
+                        id: task._id,
+                        serviceName: task.taskName,
+                        categoryName: '项目任务', // 统一分类
+                        unitPrice: basePrice,
+                        unit: task.unit,
+                        quantity: task.quantity,
+                        priceDescription: task.billingDescription || `${task.taskName}相关任务`,
+                        pricingPolicyIds: task.pricingPolicies?.map((p: any) => p.policyId) || [],
+                        pricingPolicyNames: task.pricingPolicies?.map((p: any) => p.policyName) || [],
+                        selectedPolicies: task.pricingPolicies?.map((p: any) => p.policyId) || [], // 项目任务预选政策
+                        subtotal: task.subtotal, // 使用任务的实际小计
+                        originalPrice: task.quantity * basePrice, // 原价计算
+                        discountAmount: Math.max(0, (task.quantity * basePrice) - task.subtotal), // 优惠金额
+                        calculationDetails: calculationDetails
+                    };
+                });
 
                 // 清空现有订单项目并添加任务项目
                 clearOrderItems(component.id);
@@ -197,15 +215,22 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
             dataIndex: 'quantity',
             key: 'quantity',
             width: '10%',
-            render: (quantity: number, record: OrderItem) => (
-                <InputNumber
-                    min={1}
-                    value={quantity}
-                    onChange={(value) => handleQuantityChange(record.id, value || 1)}
-                    size="small"
-                    style={{ width: '80px' }}
-                />
-            )
+            render: (quantity: number, record: OrderItem) => 
+                isProjectTaskMode ? (
+                    // 项目任务模式：只读显示
+                    <Text strong style={{ color: '#1890ff' }}>
+                        {quantity} {record.unit}
+                    </Text>
+                ) : (
+                    // 报价单模式：可编辑
+                    <InputNumber
+                        min={1}
+                        value={quantity}
+                        onChange={(value) => handleQuantityChange(record.id, value || 1)}
+                        size="small"
+                        style={{ width: '80px' }}
+                    />
+                )
         },
         {
             title: '价格政策',
@@ -214,9 +239,34 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
             width: '15%',
             render: (policyNames: string[], record: OrderItem) => {
                 if (!policyNames || policyNames.length === 0) {
-                    return <Text type="secondary">无</Text>;
+                    return <Text type="secondary">无政策</Text>;
                 }
 
+                if (isProjectTaskMode) {
+                    // 项目任务模式：只读显示已应用的政策
+                    return (
+                        <div>
+                            {policyNames.map((policyName, index) => (
+                                <div key={index} style={{ marginBottom: '4px' }}>
+                                    <Text 
+                                        style={{ 
+                                            fontSize: '12px',
+                                            padding: '2px 6px',
+                                            backgroundColor: '#fff2f0',
+                                            border: '1px solid #ffccc7',
+                                            borderRadius: '4px',
+                                            color: '#cf1322'
+                                        }}
+                                    >
+                                        {policyName}
+                                    </Text>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                }
+
+                // 报价单模式：可选择政策
                 return (
                     <Radio.Group
                         value={record.selectedPolicies?.[0] || ''}
@@ -273,15 +323,22 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
             title: '操作',
             key: 'action',
             width: '8%',
-            render: (_: any, record: OrderItem) => (
-                <Button
-                    type="text"
-                    danger
-                    size="small"
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleRemoveItem(record.id)}
-                />
-            )
+            render: (_: any, record: OrderItem) => 
+                isProjectTaskMode ? (
+                    // 项目任务模式：只读，无操作
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                        只读
+                    </Text>
+                ) : (
+                    // 报价单模式：可删除
+                    <Button
+                        type="text"
+                        danger
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        onClick={() => handleRemoveItem(record.id)}
+                    />
+                )
         }
     ];
 
@@ -289,19 +346,43 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
     const getCardTitle = () => {
         const { titleDisplay = 'show', customTitle = '订单详情' } = component;
         
+        let baseTitle = '';
         if (titleDisplay === 'hide') {
             return undefined; // 不显示标题
         } else if (titleDisplay === 'custom') {
-            return customTitle || '订单详情'; // 显示自定义标题
+            baseTitle = customTitle || '订单详情'; // 显示自定义标题
         } else {
-            return '订单详情'; // 显示默认标题
+            baseTitle = '订单详情'; // 显示默认标题
         }
+        
+        // 在项目任务模式下添加只读提示
+        if (isProjectTaskMode) {
+            return (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{baseTitle}</span>
+                    <Text 
+                        style={{ 
+                            fontSize: '12px',
+                            padding: '2px 6px',
+                            backgroundColor: '#f6f6f6',
+                            border: '1px solid #d9d9d9',
+                            borderRadius: '4px',
+                            color: '#666'
+                        }}
+                    >
+                        项目任务（只读）
+                    </Text>
+                </div>
+            );
+        }
+        
+        return baseTitle;
     };
 
     // 获取空订单时的提示信息
     const getEmptyOrderMessage = () => {
         const { associationMode = 'auto' } = component;
-        
+
         // 根据关联模式返回不同的提示信息
         if (associationMode === 'project') {
             return '请在项目名称组件中选择一个项目';
@@ -368,16 +449,16 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                             borderRadius: '6px',
                             border: '1px solid #e9ecef'
                         }}>
-                            <div style={{ 
-                                fontSize: '16px', 
+                            <div style={{
+                                fontSize: '16px',
                                 fontWeight: 'bold',
                                 marginBottom: '8px',
                                 color: 'inherit'
                             }}>
                                 总计：¥{orderTotal.toLocaleString()}
                             </div>
-                            <div style={{ 
-                                fontSize: '14px', 
+                            <div style={{
+                                fontSize: '14px',
                                 color: '#666',
                                 fontWeight: 'normal'
                             }}>

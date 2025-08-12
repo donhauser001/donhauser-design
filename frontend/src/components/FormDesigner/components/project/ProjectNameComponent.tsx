@@ -15,7 +15,7 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
     const [projects, setProjects] = useState<ProjectItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchLoading, setSearchLoading] = useState(false);
-    
+
     // 使用store管理组件值
     const { setComponentValue, getComponentValue } = useFormDesignerStore();
 
@@ -93,7 +93,7 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
 
     // 获取当前选中的项目
     const selectedProject = getComponentValue(component.id);
-    
+
     // 渲染下拉框模式
     const renderSelectMode = () => {
         const { textAlign, ...restStyle } = component.style || {};
