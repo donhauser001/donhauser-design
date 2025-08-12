@@ -215,6 +215,31 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         }
     };
 
+    // 获取空订单时的提示信息
+    const getEmptyOrderMessage = () => {
+        const { associationMode = 'auto' } = component;
+        
+        // 根据关联模式返回不同的提示信息
+        if (associationMode === 'project') {
+            return '请在项目名称组件中选择一个项目';
+        } else if (associationMode === 'quotation') {
+            return '请在报价单中选择服务项目';
+        } else if (associationMode === 'select') {
+            return '请先在组件属性中选择关联模式';
+        } else {
+            // 自动模式或其他情况，根据画布上的组件情况决定
+            if (hasQuotationComponent && !hasProjectNameComponent) {
+                return '请在报价单中选择服务项目';
+            } else if (!hasQuotationComponent && hasProjectNameComponent) {
+                return '请在项目名称组件中选择一个项目';
+            } else if (hasQuotationComponent && hasProjectNameComponent) {
+                return '请先在组件属性中选择关联模式';
+            } else {
+                return '请添加报价单或项目名称组件';
+            }
+        }
+    };
+
     return (
         <div style={{ width: '100%' }}>
             <Card
@@ -238,7 +263,7 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                         borderRadius: '6px'
                     }}>
                         <Text type="secondary">
-                            请在报价单中选择服务项目
+                            {getEmptyOrderMessage()}
                         </Text>
                     </div>
                 ) : (
