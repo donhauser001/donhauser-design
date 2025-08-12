@@ -165,6 +165,7 @@ export interface FormComponent {
     // 订单组件特有属性
     titleDisplay?: 'show' | 'hide' | 'custom'; // 标题显示模式：显示、隐藏、自定义
     customTitle?: string; // 自定义标题文本
+    associationMode?: 'quotation' | 'project' | 'auto' | 'select'; // 关联模式：关联报价单、关联项目、自动、请选择关联
     parentId?: string; // 父容器ID，null表示在根容器中
     order: number; // 排序
     columnIndex?: number; // 用于分栏容器，标识组件属于哪一列

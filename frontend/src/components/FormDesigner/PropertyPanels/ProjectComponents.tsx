@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Form, Switch, Select, Spin, ColorPicker, Input } from 'antd';
 import { FormComponent } from '../../../types/formDesigner';
 import { quotationService, QuotationItem } from '../services/quotationService';
+import { useFormDesignerStore } from '../../../stores/formDesignerStore';
 
 const { Option } = Select;
 
@@ -399,31 +400,102 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
     };
 
     // 订单组件特有属性
-    const renderOrderProperties = () => (
-        <>
-            <Form.Item label="标题显示">
-                <Select
-                    value={component.titleDisplay || 'show'}
-                    onChange={(value) => onPropertyChange('titleDisplay', value)}
-                    style={{ width: '100%' }}
-                >
-                    <Option value="show">显示标题</Option>
-                    <Option value="hide">隐藏标题</Option>
-                    <Option value="custom">自定义标题</Option>
-                </Select>
-            </Form.Item>
+    const renderOrderProperties = () => {
+        const { components } = useFormDesignerStore();
 
-            {component.titleDisplay === 'custom' && (
-                <Form.Item label="自定义标题">
-                    <Input
-                        value={component.customTitle || ''}
-                        onChange={(e) => onPropertyChange('customTitle', e.target.value)}
-                        placeholder="请输入自定义标题"
-                    />
+        const hasQuotationComponent = components.some(comp => comp.type === 'quotation');
+        const hasProjectNameComponent = components.some(comp => comp.type === 'projectName');
+        
+        // 动态确定关联模式的选项和值
+        const getAssociationOptions = () => {
+            if (!hasQuotationComponent && !hasProjectNameComponent) {
+                // 没有任何依赖组件，冻结设置
+                return {
+                    options: [{ value: 'none', label: '无可关联组件' }],
+                    value: 'none',
+                    disabled: true
+                };
+            } else if (hasQuotationComponent && !hasProjectNameComponent) {
+                // 只有报价单，自动关联报价单
+                return {
+                    options: [{ value: 'quotation', label: '关联报价单' }],
+                    value: 'quotation',
+                    disabled: false
+                };
+            } else if (!hasQuotationComponent && hasProjectNameComponent) {
+                // 只有项目名称，自动关联项目
+                return {
+                    options: [{ value: 'project', label: '关联项目' }],
+                    value: 'project',
+                    disabled: false
+                };
+            } else {
+                // 两者都有，提供选择
+                return {
+                    options: [
+                        { value: 'select', label: '请选择关联' },
+                        { value: 'quotation', label: '关联报价单' },
+                        { value: 'project', label: '关联项目' }
+                    ],
+                    value: component.associationMode === 'quotation' || component.associationMode === 'project' 
+                        ? component.associationMode 
+                        : 'select',
+                    disabled: false
+                };
+            }
+        };
+
+        const associationConfig = getAssociationOptions();
+
+        // 自动更新关联模式
+        useEffect(() => {
+            const newValue = associationConfig.value;
+            if (component.associationMode !== newValue) {
+                onPropertyChange('associationMode', newValue);
+            }
+        }, [hasQuotationComponent, hasProjectNameComponent]);
+
+        return (
+            <>
+                <Form.Item label="标题显示">
+                    <Select
+                        value={component.titleDisplay || 'show'}
+                        onChange={(value) => onPropertyChange('titleDisplay', value)}
+                        style={{ width: '100%' }}
+                    >
+                        <Option value="show">显示标题</Option>
+                        <Option value="hide">隐藏标题</Option>
+                        <Option value="custom">自定义标题</Option>
+                    </Select>
                 </Form.Item>
-            )}
-        </>
-    );
+
+                {component.titleDisplay === 'custom' && (
+                    <Form.Item label="自定义标题">
+                        <Input
+                            value={component.customTitle || ''}
+                            onChange={(e) => onPropertyChange('customTitle', e.target.value)}
+                            placeholder="请输入自定义标题"
+                        />
+                    </Form.Item>
+                )}
+
+                <Form.Item label="关联模式">
+                    <Select
+                        value={component.associationMode || associationConfig.value}
+                        onChange={(value) => onPropertyChange('associationMode', value)}
+                        disabled={associationConfig.disabled}
+                        style={{ width: '100%' }}
+                    >
+                        {associationConfig.options.map(option => (
+                            <Option key={option.value} value={option.value}>
+                                {option.label}
+                            </Option>
+                        ))}
+                    </Select>
+                </Form.Item>
+            </>
+        );
+    };
 
     // 根据组件类型渲染不同的属性
     const renderComponentProperties = () => {

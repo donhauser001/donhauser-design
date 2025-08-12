@@ -417,6 +417,7 @@ class ComponentRegistry {
                 disabled: false,
                 titleDisplay: 'show', // 'show' | 'hide' | 'custom'
                 customTitle: '订单详情',
+                associationMode: 'auto', // 'quotation' | 'project' | 'auto' | 'select'
                 order: 0
             }
         });
