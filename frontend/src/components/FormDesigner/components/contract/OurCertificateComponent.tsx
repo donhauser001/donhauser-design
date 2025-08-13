@@ -73,25 +73,16 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
 
     return (
         <div style={{ width: '100%' }}>
-                        <Card 
-                size="small" 
-                style={{ 
+            <Card
+                size="small"
+                style={{
                     border: '1px solid #d9d9d9',
                     borderRadius: '8px',
-                    ...component.style 
+                    ...component.style
                 }}
             >
-                {selectedEnterprise ? (
-                    <div style={{ textAlign: 'center', padding: '20px' }}>
-                        <div style={{
-                            fontSize: '16px',
-                            fontWeight: 500,
-                            color: '#262626',
-                            marginBottom: '16px'
-                        }}>
-                            {selectedEnterprise.enterpriseName}证照
-                        </div>
-
+                                {selectedEnterprise ? (
+                    <div style={{ padding: '20px' }}>
                         <Space direction="vertical" style={{ width: '100%' }} size="large">
                             {/* 营业执照 */}
                             {component.showBusinessLicense !== false && (

@@ -163,7 +163,7 @@ const FormComponentRenderer: React.FC<FormComponentRendererProps> = ({ component
     return (
         <div style={{ width: '100%' }}>
             {/* 布局组件不显示外部标签，支持隐藏标签功能 */}
-            {!['group', 'columnContainer', 'divider', 'pagination', 'steps', 'presetText', 'image', 'html', 'countdown'].includes(component.type) &&
+            {!['group', 'columnContainer', 'divider', 'pagination', 'steps', 'presetText', 'image', 'html', 'countdown', 'ourCertificate'].includes(component.type) &&
                 !component.hideLabel && (
                     <div style={{ marginBottom: '8px' }}>
                         <span style={{ fontWeight: 500, fontSize: '14px' }}>
