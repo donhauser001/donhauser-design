@@ -21,6 +21,7 @@ import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 
 import ComponentRegistry from './ComponentRegistry';
+import { getLinearIcon } from './utils/iconUtils';
 
 // 使用 items API，避免 Panel 直接使用
 
@@ -99,7 +100,7 @@ const DraggableComponentItem: React.FC<DraggableComponentItemProps> = ({ compone
             >
                 <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                     <span style={{ fontSize: '16px', marginRight: '8px' }}>
-                        {iconMap[component.icon] || component.icon}
+                        {iconMap[component.icon] || getLinearIcon(component.icon) || component.icon}
                     </span>
                     <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 500, fontSize: '13px' }}>
