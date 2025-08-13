@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Space, Image, Modal, Button } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
+import { Card, Space, Image } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { getOrganizationEnterprises, Enterprise } from '../../../../api/enterprises';
 
@@ -11,9 +10,6 @@ interface OurCertificateComponentProps {
 const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ component }) => {
     const [enterprises, setEnterprises] = useState<Enterprise[]>([]);
     const [selectedEnterprise, setSelectedEnterprise] = useState<Enterprise | null>(null);
-    const [previewVisible, setPreviewVisible] = useState(false);
-    const [previewImage, setPreviewImage] = useState('');
-    const [previewTitle, setPreviewTitle] = useState('');
 
     // 获取企业数据
     useEffect(() => {
@@ -36,13 +32,6 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
         };
         fetchEnterprises();
     }, [component.selectedEnterprise]);
-
-    // 图片预览
-    const handlePreview = (imageUrl: string, title: string) => {
-        setPreviewImage(imageUrl);
-        setPreviewTitle(title);
-        setPreviewVisible(true);
-    };
 
     // 获取图片URL
     const getImageUrl = (filename: string) => {
@@ -108,64 +97,45 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                             {selectedEnterprise.enterpriseName}证照
                         </div>
 
-                                                <Space direction="vertical" style={{ width: '100%' }} size="large">
+                        <Space direction="vertical" style={{ width: '100%' }} size="large">
                             {/* 营业执照 */}
                             {component.showBusinessLicense !== false && (
                                 <div>
-                                    <div style={{ 
-                                        fontSize: '14px', 
-                                        fontWeight: 500, 
+                                    <div style={{
+                                        fontSize: '14px',
+                                        fontWeight: 500,
                                         marginBottom: '8px',
                                         color: '#262626'
                                     }}>
                                         营业执照
                                     </div>
-                                    
-                                    {/* 营业执照图片 */}
+
+                                                                        {/* 营业执照图片 */}
                                     {getBusinessLicenseInfo().hasImage ? (
                                         <div style={{ 
-                                            display: 'flex', 
-                                            justifyContent: 'center',
+                                            width: '100%',
                                             marginBottom: '8px'
                                         }}>
-                                            <div style={{ position: 'relative' }}>
-                                                <Image 
-                                                    src={getBusinessLicenseInfo().image}
-                                                    width={200}
-                                                    height={120}
-                                                    style={{ 
-                                                        objectFit: 'cover', 
-                                                        borderRadius: '6px',
-                                                        border: '1px solid #d9d9d9'
-                                                    }}
-                                                    preview={false}
-                                                />
-                                                <Button 
-                                                    icon={<EyeOutlined />} 
-                                                    size="small"
-                                                    style={{
-                                                        position: 'absolute',
-                                                        top: '8px',
-                                                        right: '8px',
-                                                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                                                        borderColor: 'transparent',
-                                                        color: 'white'
-                                                    }}
-                                                    onClick={() => handlePreview(getBusinessLicenseInfo().image!, '营业执照')}
-                                                >
-                                                    预览
-                                                </Button>
-                                            </div>
+                                            <Image 
+                                                src={getBusinessLicenseInfo().image}
+                                                width="100%"
+                                                style={{ 
+                                                    borderRadius: '6px',
+                                                    border: '1px solid #d9d9d9',
+                                                    maxHeight: '300px',
+                                                    objectFit: 'contain'
+                                                }}
+                                                preview={false}
+                                            />
                                         </div>
                                     ) : (
-                                        <div style={{ 
-                                            display: 'flex', 
-                                            justifyContent: 'center',
+                                                                                <div style={{ 
+                                            width: '100%',
                                             marginBottom: '8px'
                                         }}>
                                             <div style={{ 
-                                                width: 200,
-                                                height: 120,
+                                                width: '100%',
+                                                height: '120px',
                                                 borderRadius: '6px',
                                                 border: '2px dashed #d9d9d9',
                                                 display: 'flex',
@@ -184,10 +154,10 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                                             </div>
                                         </div>
                                     )}
-                                    
-                                    <div style={{ 
-                                        fontSize: '12px', 
-                                        color: '#8c8c8c', 
+
+                                    <div style={{
+                                        fontSize: '12px',
+                                        color: '#8c8c8c',
                                         textAlign: 'center',
                                         padding: '8px',
                                         backgroundColor: '#f5f5f5',
@@ -201,24 +171,23 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                             {/* 开户许可证 */}
                             {component.showBankPermit === true && (
                                 <div>
-                                    <div style={{ 
-                                        fontSize: '14px', 
-                                        fontWeight: 500, 
+                                    <div style={{
+                                        fontSize: '14px',
+                                        fontWeight: 500,
                                         marginBottom: '8px',
                                         color: '#262626'
                                     }}>
                                         开户许可证
                                     </div>
-                                    
-                                    {/* 开户许可证暂无图片 */}
+
+                                                                        {/* 开户许可证暂无图片 */}
                                     <div style={{ 
-                                        display: 'flex', 
-                                        justifyContent: 'center',
+                                        width: '100%',
                                         marginBottom: '8px'
                                     }}>
                                         <div style={{ 
-                                            width: 200,
-                                            height: 120,
+                                            width: '100%',
+                                            height: '120px',
                                             borderRadius: '6px',
                                             border: '2px dashed #d9d9d9',
                                             display: 'flex',
@@ -236,10 +205,10 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <div style={{ 
-                                        fontSize: '12px', 
-                                        color: '#8c8c8c', 
+
+                                    <div style={{
+                                        fontSize: '12px',
+                                        color: '#8c8c8c',
                                         textAlign: 'center',
                                         padding: '8px',
                                         backgroundColor: '#f5f5f5',
@@ -279,20 +248,7 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                 </div>
             )}
 
-            {/* 图片预览模态框 */}
-            <Modal
-                open={previewVisible}
-                title={`${previewTitle} - 预览`}
-                footer={null}
-                onCancel={() => setPreviewVisible(false)}
-                width={600}
-            >
-                <img 
-                    alt={previewTitle} 
-                    style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} 
-                    src={previewImage} 
-                />
-            </Modal>
+            
         </div>
     );
 };
