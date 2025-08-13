@@ -141,42 +141,50 @@ class TaskService {
                     }
                 }
 
-                // 获取流程信息
+                // 获取服务信息和流程信息
+                let categoryName = '默认类别';
+                let serviceName = '';
                 try {
                     // 获取服务定价信息
                     const servicePricing = await ServicePricingService.getServicePricingById(task.serviceId);
-                    if (servicePricing && servicePricing.serviceProcessId) {
-                        // 获取服务流程
-                        const serviceProcess = await this.serviceProcessService.getProcessById(servicePricing.serviceProcessId);
-                        if (serviceProcess && serviceProcess.steps) {
-                            processSteps = serviceProcess.steps.map((step: any) => ({
-                                id: step.id,
-                                name: step.name,
-                                description: step.description,
-                                order: step.order,
-                                progressRatio: step.progressRatio,
-                                cycle: step.cycle
-                            }));
+                    if (servicePricing) {
+                        // 获取服务类别名称
+                        categoryName = servicePricing.categoryName || '默认类别';
+                        serviceName = servicePricing.serviceName || '';
 
-                            // 如果任务没有设置流程节点，默认选择第一个
-                            if (!task.processStepId && processSteps.length > 0) {
-                                const firstStep = processSteps[0];
-                                currentProcessStep = firstStep;
+                        if (servicePricing.serviceProcessId) {
+                            // 获取服务流程
+                            const serviceProcess = await this.serviceProcessService.getProcessById(servicePricing.serviceProcessId);
+                            if (serviceProcess && serviceProcess.steps) {
+                                processSteps = serviceProcess.steps.map((step: any) => ({
+                                    id: step.id,
+                                    name: step.name,
+                                    description: step.description,
+                                    order: step.order,
+                                    progressRatio: step.progressRatio,
+                                    cycle: step.cycle
+                                }));
 
-                                // 更新任务的流程节点信息
-                                await Task.findByIdAndUpdate(task._id, {
-                                    processStepId: firstStep.id,
-                                    processStepName: firstStep.name
-                                });
-                            } else if (task.processStepId) {
-                                // 找到当前流程节点
-                                const foundStep = processSteps.find((step: any) => step.id === task.processStepId);
-                                currentProcessStep = foundStep || null;
+                                // 如果任务没有设置流程节点，默认选择第一个
+                                if (!task.processStepId && processSteps.length > 0) {
+                                    const firstStep = processSteps[0];
+                                    currentProcessStep = firstStep;
+
+                                    // 更新任务的流程节点信息
+                                    await Task.findByIdAndUpdate(task._id, {
+                                        processStepId: firstStep.id,
+                                        processStepName: firstStep.name
+                                    });
+                                } else if (task.processStepId) {
+                                    // 找到当前流程节点
+                                    const foundStep = processSteps.find((step: any) => step.id === task.processStepId);
+                                    currentProcessStep = foundStep || null;
+                                }
                             }
                         }
                     }
                 } catch (error) {
-                    console.error('获取流程信息失败:', error);
+                    console.error('获取服务信息失败:', error);
                 }
 
                 return {
@@ -185,7 +193,9 @@ class TaskService {
                     assistantDesignerNames,
                     specification,
                     processSteps,
-                    currentProcessStep
+                    currentProcessStep,
+                    categoryName,     // 添加真实的服务类别名称
+                    serviceName       // 添加服务名称
                 };
             })
         );

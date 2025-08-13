@@ -117,6 +117,11 @@ export interface FormComponent {
     imageAlt?: string; // 图片描述
     imageList?: Array<{ url: string; name: string; id: string }>; // 多图列表
     imageMode?: 'single' | 'multiple' | 'slideshow'; // 图片模式
+    // 嘱托组件特有属性
+    showCharCount?: boolean; // 显示字符统计
+    maxLength?: number; // 最大字符数
+    enableRichText?: boolean; // 启用富文本编辑器
+    richTextHeight?: number; // 富文本编辑器高度
     showImageName?: boolean; // 显示图片名称
     maxImageCount?: number; // 最大图片数量
     slideshowInterval?: number; // 幻灯片切换间隔（秒）
@@ -166,6 +171,8 @@ export interface FormComponent {
     titleDisplay?: 'show' | 'hide' | 'custom'; // 标题显示模式：显示、隐藏、自定义
     customTitle?: string; // 自定义标题文本
     associationMode?: 'quotation' | 'project' | 'auto' | 'select'; // 关联模式：关联报价单、关联项目、自动、请选择关联
+    // 任务列表组件特有属性
+    displayMode?: 'list' | 'text'; // 显示模式：列表模式、静态文本模式
     parentId?: string; // 父容器ID，null表示在根容器中
     order: number; // 排序
     columnIndex?: number; // 用于分栏容器，标识组件属于哪一列

@@ -285,4 +285,15 @@ export class UserService {
             throw new Error('检查邮箱失败');
         }
     }
+
+    // 更新最后登录时间
+    async updateLastLogin(id: string): Promise<void> {
+        try {
+            await User.findByIdAndUpdate(id, {
+                lastLogin: new Date().toISOString().split('T')[0]
+            });
+        } catch (error) {
+            throw new Error('更新最后登录时间失败');
+        }
+    }
 } 

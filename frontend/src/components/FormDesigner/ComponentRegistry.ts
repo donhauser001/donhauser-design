@@ -51,6 +51,10 @@ class ComponentRegistry {
                 placeholder: '请输入内容',
                 required: false,
                 disabled: false,
+                maxLength: 500,
+                showCharCount: true,
+                enableRichText: false,
+                richTextHeight: 300,
                 order: 0
             }
         });
@@ -158,7 +162,6 @@ class ComponentRegistry {
             description: '将相关字段分组显示',
             defaultProps: {
                 label: '分组',
-                children: [],
                 order: 0
             }
         });
@@ -184,7 +187,6 @@ class ComponentRegistry {
             description: '创建多列布局容器',
             defaultProps: {
                 label: '分栏容器',
-                children: [],
                 columns: 2,
                 order: 0
             }
@@ -425,14 +427,18 @@ class ComponentRegistry {
         this.register('instruction', {
             type: 'instruction',
             name: '嘱托',
-            icon: 'FileTextOutlined',
+            icon: 'BulbOutlined',
             category: 'project',
-            description: '项目嘱托多行文本',
+            description: '多行文本输入，用于项目嘱托和特殊要求',
             defaultProps: {
                 label: '嘱托',
-                placeholder: '请输入项目嘱托',
+                placeholder: '请输入嘱托内容',
                 required: false,
                 disabled: false,
+                maxLength: 500,
+                showCharCount: true,
+                enableRichText: false,
+                richTextHeight: 300,
                 order: 0
             }
         });
@@ -442,18 +448,14 @@ class ComponentRegistry {
             name: '任务列表',
             icon: 'CheckSquareOutlined',
             category: 'project',
-            description: '项目任务列表',
+            description: '项目任务列表展示',
             defaultProps: {
                 label: '任务列表',
                 required: false,
                 disabled: false,
-                options: [
-                    { label: '需求分析', value: 'requirement_analysis' },
-                    { label: '方案设计', value: 'solution_design' },
-                    { label: '开发实施', value: 'development' },
-                    { label: '测试验收', value: 'testing' },
-                    { label: '项目交付', value: 'delivery' }
-                ],
+                titleDisplay: 'show', // 'show' | 'hide' | 'custom'
+                customTitle: '任务列表',
+                displayMode: 'list', // 'list' | 'text' - 默认为列表模式
                 order: 0
             }
         });

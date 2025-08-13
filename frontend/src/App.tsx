@@ -3,6 +3,10 @@ import { Routes, Route } from 'react-router-dom'
 import { ConfigProvider } from 'antd'
 import zhCN from 'antd/locale/zh_CN'
 import Layout from './components/Layout'
+import LoginPage from './components/LoginPage'
+import HomePage from './components/HomePage'
+import ProtectedRoute from './components/ProtectedRoute'
+import { AuthProvider } from './contexts/AuthContext'
 
 // 页面导入
 import Dashboard from './pages/Dashboard'
@@ -77,86 +81,386 @@ import Projects from './pages/Projects'
 function App() {
   return (
     <ConfigProvider locale={zhCN}>
-      <Layout>
+      <AuthProvider>
         <Routes>
-          {/* 仪表盘 */}
-          <Route path="/" element={<Dashboard />} />
+          {/* 网站主页 */}
+          <Route path="/" element={<HomePage />} />
+
+          {/* 登录页面 */}
+          <Route path="/login" element={<LoginPage />} />
+
+          {/* 后台首页 - 仪表盘 */}
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <Layout>
+                <Dashboard />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 文件上传测试 */}
-          <Route path="/test-upload" element={<FileUploadTest />} />
+          <Route path="/test-upload" element={
+            <ProtectedRoute>
+              <Layout>
+                <FileUploadTest />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 富文本编辑器测试 */}
-          <Route path="/test-editor" element={<RichTextEditorTest />} />
-          <Route path="/test-basic-editor" element={<BasicEditorTest />} />
-          <Route path="/test-cropper" element={<ImageCropperTest />} />
+          <Route path="/test-editor" element={
+            <ProtectedRoute>
+              <Layout>
+                <RichTextEditorTest />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/test-basic-editor" element={
+            <ProtectedRoute>
+              <Layout>
+                <BasicEditorTest />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/test-cropper" element={
+            <ProtectedRoute>
+              <Layout>
+                <ImageCropperTest />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 项目管理 */}
-          <Route path="/projects/*" element={<Projects />} />
+          <Route path="/projects/*" element={
+            <ProtectedRoute>
+              <Layout>
+                <Projects />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 客户管理 */}
-          <Route path="/clients" element={<ClientList />} />
-          <Route path="/clients/contacts" element={<Contacts />} />
-          <Route path="/clients/client-list" element={<ClientList />} />
-          <Route path="/clients/categories" element={<ClientCategories />} />
+          <Route path="/clients" element={
+            <ProtectedRoute>
+              <Layout>
+                <ClientList />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/clients/contacts" element={
+            <ProtectedRoute>
+              <Layout>
+                <Contacts />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/clients/client-list" element={
+            <ProtectedRoute>
+              <Layout>
+                <ClientList />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/clients/categories" element={
+            <ProtectedRoute>
+              <Layout>
+                <ClientCategories />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 财务管理 */}
-          <Route path="/finance/settlements" element={<Settlements />} />
-          <Route path="/finance/invoices" element={<Invoices />} />
-          <Route path="/finance/income" element={<Income />} />
+          <Route path="/finance/settlements" element={
+            <ProtectedRoute>
+              <Layout>
+                <Settlements />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/finance/invoices" element={
+            <ProtectedRoute>
+              <Layout>
+                <Invoices />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/finance/income" element={
+            <ProtectedRoute>
+              <Layout>
+                <Income />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 价格管理 */}
-          <Route path="/pricing/service-pricing" element={<ServicePricing />} />
-          <Route path="/pricing/service-process" element={<ServiceProcess />} />
-          <Route path="/pricing/additional-config" element={<AdditionalConfig />} />
-          <Route path="/pricing/categories" element={<PricingCategories />} />
-          <Route path="/pricing/quotations" element={<Quotations />} />
-          <Route path="/pricing/policy" element={<PricingPolicy />} />
+          <Route path="/pricing/service-pricing" element={
+            <ProtectedRoute>
+              <Layout>
+                <ServicePricing />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/pricing/service-process" element={
+            <ProtectedRoute>
+              <Layout>
+                <ServiceProcess />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/pricing/additional-config" element={
+            <ProtectedRoute>
+              <Layout>
+                <AdditionalConfig />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/pricing/categories" element={
+            <ProtectedRoute>
+              <Layout>
+                <PricingCategories />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/pricing/quotations" element={
+            <ProtectedRoute>
+              <Layout>
+                <Quotations />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/pricing/policy" element={
+            <ProtectedRoute>
+              <Layout>
+                <PricingPolicy />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 合同管理 */}
-          <Route path="/contracts/list" element={<ContractList />} />
-          <Route path="/contracts/templates" element={<ContractTemplates />} />
-          <Route path="/contracts/elements" element={<ContractElements />} />
+          <Route path="/contracts/list" element={
+            <ProtectedRoute>
+              <Layout>
+                <ContractList />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/contracts/templates" element={
+            <ProtectedRoute>
+              <Layout>
+                <ContractTemplates />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/contracts/elements" element={
+            <ProtectedRoute>
+              <Layout>
+                <ContractElements />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 表单系统 */}
-          <Route path="/forms" element={<Forms />} />
-          <Route path="/forms/list" element={<FormList />} />
-          <Route path="/forms/new" element={<FormEditor />} />
-          <Route path="/forms/edit/:id" element={<FormEditor />} />
-          <Route path="/forms/categories" element={<FormCategories />} />
-          <Route path="/forms/settings" element={<FormSettings />} />
+          <Route path="/forms" element={
+            <ProtectedRoute>
+              <Layout>
+                <Forms />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/forms/list" element={
+            <ProtectedRoute>
+              <Layout>
+                <FormList />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/forms/new" element={
+            <ProtectedRoute>
+              <Layout>
+                <FormEditor />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/forms/edit/:id" element={
+            <ProtectedRoute>
+              <Layout>
+                <FormEditor />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/forms/categories" element={
+            <ProtectedRoute>
+              <Layout>
+                <FormCategories />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/forms/settings" element={
+            <ProtectedRoute>
+              <Layout>
+                <FormSettings />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 内容中心 */}
-          <Route path="/content/pages" element={<Pages />} />
-          <Route path="/content/articles" element={<Articles />} />
-          <Route path="/content/articles/new" element={<ArticleEditor />} />
-          <Route path="/content/articles/edit/:id" element={<ArticleEditor />} />
-          <Route path="/content/articles/preview/:id" element={<ArticlePreview />} />
-          <Route path="/content/categories" element={<ArticleCategories />} />
-          <Route path="/content/tags" element={<ArticleTags />} />
-          <Route path="/content/menus" element={<Menus />} />
-          <Route path="/content/website-settings" element={<WebsiteSettings />} />
+          <Route path="/content/pages" element={
+            <ProtectedRoute>
+              <Layout>
+                <Pages />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/content/articles" element={
+            <ProtectedRoute>
+              <Layout>
+                <Articles />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/content/articles/new" element={
+            <ProtectedRoute>
+              <Layout>
+                <ArticleEditor />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/content/articles/edit/:id" element={
+            <ProtectedRoute>
+              <Layout>
+                <ArticleEditor />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/content/articles/preview/:id" element={
+            <ProtectedRoute>
+              <Layout>
+                <ArticlePreview />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/content/categories" element={
+            <ProtectedRoute>
+              <Layout>
+                <ArticleCategories />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/content/tags" element={
+            <ProtectedRoute>
+              <Layout>
+                <ArticleTags />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/content/menus" element={
+            <ProtectedRoute>
+              <Layout>
+                <Menus />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/content/website-settings" element={
+            <ProtectedRoute>
+              <Layout>
+                <WebsiteSettings />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 其他功能 */}
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/file-center" element={<FileCenter />} />
+          <Route path="/messages" element={
+            <ProtectedRoute>
+              <Layout>
+                <Messages />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/file-center" element={
+            <ProtectedRoute>
+              <Layout>
+                <FileCenter />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 用户管理 */}
-          <Route path="/users" element={<UserList />} />
-          <Route path="/users/user-list" element={<UserList />} />
-          <Route path="/users/role-settings" element={<RoleSettings />} />
-          <Route path="/users/permission-settings" element={<PermissionSettings />} />
+          <Route path="/users" element={
+            <ProtectedRoute>
+              <Layout>
+                <UserList />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/users/user-list" element={
+            <ProtectedRoute>
+              <Layout>
+                <UserList />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/users/role-settings" element={
+            <ProtectedRoute>
+              <Layout>
+                <RoleSettings />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/users/permission-settings" element={
+            <ProtectedRoute>
+              <Layout>
+                <PermissionSettings />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 组织架构 */}
-          <Route path="/organization/enterprise" element={<Enterprise />} />
-          <Route path="/organization/department" element={<Department />} />
-          <Route path="/organization/employee" element={<Employee />} />
+          <Route path="/organization/enterprise" element={
+            <ProtectedRoute>
+              <Layout>
+                <Enterprise />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/organization/department" element={
+            <ProtectedRoute>
+              <Layout>
+                <Department />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/organization/employee" element={
+            <ProtectedRoute>
+              <Layout>
+                <Employee />
+              </Layout>
+            </ProtectedRoute>
+          } />
 
           {/* 系统设置 */}
-          <Route path="/settings/general" element={<GeneralSettings />} />
-          <Route path="/settings/advanced" element={<AdvancedSettings />} />
-          <Route path="/settings/login" element={<LoginSettings />} />
+          <Route path="/settings/general" element={
+            <ProtectedRoute>
+              <Layout>
+                <GeneralSettings />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/settings/advanced" element={
+            <ProtectedRoute>
+              <Layout>
+                <AdvancedSettings />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/settings/login" element={
+            <ProtectedRoute>
+              <Layout>
+                <LoginSettings />
+              </Layout>
+            </ProtectedRoute>
+          } />
         </Routes>
-      </Layout>
+      </AuthProvider>
     </ConfigProvider>
   )
 }

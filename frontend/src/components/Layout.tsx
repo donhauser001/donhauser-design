@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import { Layout as AntLayout, Menu, theme } from 'antd'
+import { Layout as AntLayout, Menu, theme, Dropdown, Button, Avatar, Space } from 'antd'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import {
   DashboardOutlined,
   ProjectOutlined,
@@ -18,6 +19,7 @@ import {
   ReadOutlined,
   BankOutlined,
   FormOutlined,
+  LogoutOutlined,
 } from '@ant-design/icons'
 
 const { Header, Sider, Content } = AntLayout
@@ -31,10 +33,25 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [openKeys, setOpenKeys] = useState<string[]>([])
   const navigate = useNavigate()
   const location = useLocation()
+  const { userInfo, logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/')
+  }
+
+  const userMenuItems = [
+    {
+      key: 'logout',
+      icon: <LogoutOutlined />,
+      label: '退出登录',
+      onClick: handleLogout
+    }
+  ]
 
   const menuItems = [
     {
-      key: '/',
+      key: '/admin',
       icon: <DashboardOutlined />,
       label: '仪表盘',
     },
@@ -376,15 +393,29 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937' }}>
             设计业务管理系统
           </div>
-          {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined, {
-            className: 'trigger',
-            onClick: () => setCollapsed(!collapsed),
-            style: {
-              fontSize: '18px',
-              cursor: 'pointer',
-              color: '#6b7280'
-            },
-          })}
+          <Space>
+            {React.createElement(collapsed ? MenuUnfoldOutlined : MenuUnfoldOutlined, {
+              className: 'trigger',
+              onClick: () => setCollapsed(!collapsed),
+              style: {
+                fontSize: '18px',
+                cursor: 'pointer',
+                color: '#6b7280'
+              },
+            })}
+            <Dropdown
+              menu={{ items: userMenuItems }}
+              placement="bottomRight"
+              trigger={['click']}
+            >
+              <Button type="text" style={{ height: 'auto', padding: '4px 8px' }}>
+                <Space>
+                  <Avatar size="small" icon={<UserOutlined />} />
+                  <span>{userInfo?.username || '用户'}</span>
+                </Space>
+              </Button>
+            </Dropdown>
+          </Space>
         </Header>
         <Content
           style={{

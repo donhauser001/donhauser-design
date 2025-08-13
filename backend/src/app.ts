@@ -30,6 +30,7 @@ import articleCategoryRoutes from './routes/articleCategories';
 import articleTagRoutes from './routes/articleTags';
 import formCategoryRoutes from './routes/formCategories';
 import formRoutes from './routes/forms';
+import authRoutes from './routes/auth';
 
 // 加载环境变量
 dotenv.config();
@@ -76,6 +77,7 @@ app.get('/', (req, res) => {
     version: '1.0.0',
     status: 'running',
     endpoints: {
+      auth: '/api/auth',
       users: '/api/users',
       enterprises: '/api/enterprises',
       departments: '/api/departments',
@@ -108,6 +110,7 @@ app.get('/health', (req, res) => {
 });
 
 // API 路由
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/enterprises', enterpriseRoutes);
 app.use('/api/departments', departmentRoutes);

@@ -14,7 +14,8 @@ import {
     UploadOutlined,
     PictureOutlined,
     SlidersOutlined,
-    CodeOutlined
+    CodeOutlined,
+    BulbOutlined
 } from '@ant-design/icons';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
@@ -38,7 +39,8 @@ const iconMap: { [key: string]: React.ReactElement } = {
     UploadOutlined: <UploadOutlined />,
     PictureOutlined: <PictureOutlined />,
     SlidersOutlined: <SlidersOutlined />,
-    CodeOutlined: <CodeOutlined />
+    CodeOutlined: <CodeOutlined />,
+    BulbOutlined: <BulbOutlined />
 };
 
 // 可拖拽的组件项

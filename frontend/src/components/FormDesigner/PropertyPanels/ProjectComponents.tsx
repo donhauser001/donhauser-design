@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Form, Switch, Select, Spin, Input } from 'antd';
+import { Form, Switch, Select, Spin, Input, InputNumber } from 'antd';
 import { FormComponent } from '../../../types/formDesigner';
 import { quotationService, QuotationItem } from '../services/quotationService';
 import { useFormDesignerStore } from '../../../stores/formDesignerStore';
@@ -412,6 +412,80 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
         );
     };
 
+    // 嘱托组件特有属性
+    const renderInstructionProperties = () => {
+        return (
+            <>
+                <Form.Item label="最大字符数">
+                    <InputNumber
+                        value={component.maxLength || 500}
+                        onChange={(value) => onPropertyChange('maxLength', value)}
+                        min={50}
+                        max={2000}
+                        step={50}
+                        style={{ width: '100%' }}
+                        addonAfter="字符"
+                    />
+                </Form.Item>
+
+                <Form.Item label="显示字符统计" style={{ marginBottom: 8 }}>
+                    <Switch
+                        checked={component.showCharCount !== false}
+                        onChange={(checked) => onPropertyChange('showCharCount', checked)}
+                        size="small"
+                    />
+                </Form.Item>
+
+                <Form.Item label="启用富文本编辑器" style={{ marginBottom: 8 }}>
+                    <Switch
+                        checked={component.enableRichText === true}
+                        onChange={(checked) => onPropertyChange('enableRichText', checked)}
+                        size="small"
+                    />
+                </Form.Item>
+
+                {component.enableRichText && (
+                    <Form.Item label="富文本编辑器高度">
+                        <InputNumber
+                            value={component.richTextHeight || 400}
+                            onChange={(value) => onPropertyChange('richTextHeight', value)}
+                            min={200}
+                            max={800}
+                            step={50}
+                            style={{ width: '100%' }}
+                            addonAfter="px"
+                        />
+                    </Form.Item>
+                )}
+
+                <Form.Item label="使用说明" style={{ marginBottom: 0 }}>
+                    <div style={{
+                        padding: '12px',
+                        backgroundColor: '#f6f8fa',
+                        border: '1px solid #e1e4e8',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        lineHeight: '1.5',
+                        color: '#586069'
+                    }}>
+                        <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#24292e' }}>
+                            嘱托组件说明
+                        </div>
+                        <div>
+                            • 用途：用于填写项目嘱托、特殊要求、注意事项等多行文本内容<br />
+                            • 字符限制：可设置最大字符数，防止内容过长<br />
+                            • 字符统计：显示当前输入的字符数和剩余字符数<br />
+                            • 支持换行：用户可以输入多行文本内容<br />
+                            • 可调整大小：用户可以拖拽调整输入框高度<br />
+                            • 富文本编辑器：启用后支持文字格式化、表格、链接等丰富内容<br />
+                            • 高度设置：富文本模式下可自定义编辑器高度（200-800px）
+                        </div>
+                    </div>
+                </Form.Item>
+            </>
+        );
+    };
+
     // 订单组件特有属性
     const renderOrderProperties = () => {
 
@@ -501,6 +575,69 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
         );
     };
 
+    // 任务列表组件特有属性
+    const renderTaskListProperties = () => {
+        return (
+            <>
+                <Form.Item label="标题显示">
+                    <Select
+                        value={component.titleDisplay || 'show'}
+                        onChange={(value) => onPropertyChange('titleDisplay', value)}
+                        style={{ width: '100%' }}
+                    >
+                        <Option value="show">显示标题</Option>
+                        <Option value="hide">隐藏标题</Option>
+                        <Option value="custom">自定义标题</Option>
+                    </Select>
+                </Form.Item>
+
+                {component.titleDisplay === 'custom' && (
+                    <Form.Item label="自定义标题">
+                        <Input
+                            value={component.customTitle || ''}
+                            onChange={(e) => onPropertyChange('customTitle', e.target.value)}
+                            placeholder="请输入自定义标题"
+                        />
+                    </Form.Item>
+                )}
+
+                <Form.Item label="显示模式">
+                    <Select
+                        value={component.displayMode || 'list'}
+                        onChange={(value) => onPropertyChange('displayMode', value)}
+                        style={{ width: '100%' }}
+                    >
+                        <Option value="list">列表模式</Option>
+                        <Option value="text">静态文本模式</Option>
+                    </Select>
+                </Form.Item>
+
+                <Form.Item label="使用说明" style={{ marginBottom: 0 }}>
+                    <div style={{
+                        padding: '12px',
+                        backgroundColor: '#f6f8fa',
+                        border: '1px solid #e1e4e8',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        lineHeight: '1.5',
+                        color: '#586069'
+                    }}>
+                        <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#24292e' }}>
+                            任务列表组件说明
+                        </div>
+                        <div>
+                            • 任务列表组件需要配合项目名称组件使用<br />
+                            • 选择项目后将自动加载该项目的所有任务<br />
+                            • <strong>列表模式</strong>：显示任务名称、类别、规格和数量的表格<br />
+                            • <strong>静态文本模式</strong>：仅显示任务名称的纯文本，无标题、容器等元素<br />
+                            • 支持统计任务总数和总数量
+                        </div>
+                    </div>
+                </Form.Item>
+            </>
+        );
+    };
+
     // 根据组件类型渲染不同的属性
     const renderComponentProperties = () => {
         switch (component.type) {
@@ -515,19 +652,9 @@ const ProjectComponents: React.FC<ProjectComponentsProps> = ({ component, onProp
             case 'order':
                 return renderOrderProperties();
             case 'instruction':
+                return renderInstructionProperties();
             case 'taskList':
-                return (
-                    <div style={{
-                        padding: '12px',
-                        backgroundColor: '#f5f5f5',
-                        borderRadius: '6px',
-                        fontSize: '14px',
-                        color: '#666',
-                        textAlign: 'center'
-                    }}>
-                        该组件暂无特殊属性设置
-                    </div>
-                );
+                return renderTaskListProperties();
             default:
                 return null;
         }

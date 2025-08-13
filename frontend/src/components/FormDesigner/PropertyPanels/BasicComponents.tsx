@@ -44,8 +44,80 @@ const BasicComponents: React.FC<BasicComponentsProps> = ({ component, onProperty
         </>
     );
 
-    // 多行文本和数字组件的通用属性
-    const renderTextareaNumberProperties = () => (
+    // 多行文本组件专有属性
+    const renderTextareaProperties = () => (
+        <>
+            <Form.Item label="最大字符数">
+                <InputNumber
+                    value={component.maxLength || 500}
+                    onChange={(value) => onPropertyChange('maxLength', value)}
+                    min={50}
+                    max={2000}
+                    step={50}
+                    style={{ width: '100%' }}
+                    addonAfter="字符"
+                />
+            </Form.Item>
+
+            <Form.Item label="显示字符统计" style={{ marginBottom: 8 }}>
+                <Switch
+                    checked={component.showCharCount !== false}
+                    onChange={(checked) => onPropertyChange('showCharCount', checked)}
+                    size="small"
+                />
+            </Form.Item>
+
+            <Form.Item label="启用富文本编辑器" style={{ marginBottom: 8 }}>
+                <Switch
+                    checked={component.enableRichText === true}
+                    onChange={(checked) => onPropertyChange('enableRichText', checked)}
+                    size="small"
+                />
+            </Form.Item>
+
+            {component.enableRichText && (
+                <Form.Item label="富文本编辑器高度">
+                    <InputNumber
+                        value={component.richTextHeight || 300}
+                        onChange={(value) => onPropertyChange('richTextHeight', value)}
+                        min={200}
+                        max={800}
+                        step={50}
+                        style={{ width: '100%' }}
+                        addonAfter="px"
+                    />
+                </Form.Item>
+            )}
+
+            <Form.Item label="使用说明" style={{ marginBottom: 0 }}>
+                <div style={{
+                    padding: '12px',
+                    backgroundColor: '#f6f8fa',
+                    border: '1px solid #e1e4e8',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    lineHeight: '1.5',
+                    color: '#586069'
+                }}>
+                    <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#24292e' }}>
+                        多行文本组件说明
+                    </div>
+                    <div>
+                        • 用途：用于输入多行文本内容，支持换行和长文本输入<br />
+                        • 字符限制：可设置最大字符数，防止内容过长<br />
+                        • 字符统计：显示当前输入的字符数和剩余字符数<br />
+                        • 支持换行：用户可以输入多行文本内容<br />
+                        • 可调整大小：用户可以拖拽调整输入框高度<br />
+                        • 富文本编辑器：启用后支持文字格式化、表格、链接等丰富内容<br />
+                        • 高度设置：富文本模式下可自定义编辑器高度（200-800px）
+                    </div>
+                </div>
+            </Form.Item>
+        </>
+    );
+
+    // 数字组件基础属性（保留默认值）
+    const renderNumberBasicProperties = () => (
         <>
             <Form.Item label="占位符">
                 <Input
@@ -66,7 +138,7 @@ const BasicComponents: React.FC<BasicComponentsProps> = ({ component, onProperty
     );
 
     // 数字组件特定属性
-    const renderNumberProperties = () => (
+    const renderNumberSpecificProperties = () => (
         <>
             <Form.Item label="显示千分号">
                 <Switch
@@ -163,8 +235,9 @@ const BasicComponents: React.FC<BasicComponentsProps> = ({ component, onProperty
     return (
         <>
             {component.type === 'input' && renderInputProperties()}
-            {['textarea', 'number'].includes(component.type) && renderTextareaNumberProperties()}
-            {component.type === 'number' && renderNumberProperties()}
+            {component.type === 'textarea' && renderTextareaProperties()}
+            {component.type === 'number' && renderNumberBasicProperties()}
+            {component.type === 'number' && renderNumberSpecificProperties()}
             {component.type === 'date' && renderDateProperties()}
         </>
     );
