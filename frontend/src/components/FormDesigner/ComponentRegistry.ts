@@ -506,7 +506,7 @@ class ComponentRegistry {
         this.register('ourCertificate', {
             type: 'ourCertificate',
             name: '我方证照',
-            icon: '',
+            icon: 'certificate',
             category: 'contract',
             description: '我方企业证照信息',
             defaultProps: {
