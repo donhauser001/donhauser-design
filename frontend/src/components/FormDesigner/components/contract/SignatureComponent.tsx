@@ -27,6 +27,15 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
     };
     
     const partyNames = getPartyNames(partyCount);
+    
+    // 获取合作方公司名称
+    const getPartyCompanyName = (partyIndex: number): string => {
+        if (!contractPartyComponent) return '';
+        
+        // 从合同方组件中获取公司名称数据
+        const companyName = (contractPartyComponent as any)[`party${partyIndex}CompanyName`];
+        return companyName || '';
+    };
 
     // 如果没有合同方组件，显示提示信息
     if (!hasContractPartyComponent) {
@@ -66,25 +75,29 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                 }}
             >
                 <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(partyCount, 2)}, 1fr)`, gap: '24px' }}>
-                    {partyNames.map((partyName, index) => (
-                        <div key={index} style={{ 
-                            padding: '16px',
-                            border: '1px solid #f0f0f0',
-                            borderRadius: '6px',
-                            backgroundColor: '#fafafa'
-                        }}>
-                            {/* 合作方标题 */}
-                            <div style={{
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                color: '#262626',
-                                marginBottom: '12px',
-                                textAlign: 'center',
-                                borderBottom: '1px solid #e8e8e8',
-                                paddingBottom: '8px'
+                    {partyNames.map((partyName, index) => {
+                        const companyName = getPartyCompanyName(index);
+                        const displayTitle = companyName ? `${partyName}：${companyName}` : partyName;
+                        
+                        return (
+                            <div key={index} style={{ 
+                                padding: '16px',
+                                border: '1px solid #f0f0f0',
+                                borderRadius: '6px',
+                                backgroundColor: '#fafafa'
                             }}>
-                                {partyName}
-                            </div>
+                                {/* 合作方标题 */}
+                                <div style={{
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    color: '#262626',
+                                    marginBottom: '12px',
+                                    textAlign: 'center',
+                                    borderBottom: '1px solid #e8e8e8',
+                                    paddingBottom: '8px'
+                                }}>
+                                    {displayTitle}
+                                </div>
                             
                             <Space direction="vertical" style={{ width: '100%' }} size="middle">
                                 {/* 联系人签字 */}
@@ -134,7 +147,8 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                                 </div>
                             </Space>
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
                 
                 {/* 如果合作方超过2个，显示额外的签章区域 */}
@@ -142,25 +156,30 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                     <>
                         <Divider style={{ margin: '16px 0' }} />
                         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(partyCount - 2, 2)}, 1fr)`, gap: '24px' }}>
-                            {partyNames.slice(2).map((partyName, index) => (
-                                <div key={index + 2} style={{ 
-                                    padding: '16px',
-                                    border: '1px solid #f0f0f0',
-                                    borderRadius: '6px',
-                                    backgroundColor: '#fafafa'
-                                }}>
-                                    {/* 合作方标题 */}
-                                    <div style={{
-                                        fontSize: '14px',
-                                        fontWeight: 600,
-                                        color: '#262626',
-                                        marginBottom: '12px',
-                                        textAlign: 'center',
-                                        borderBottom: '1px solid #e8e8e8',
-                                        paddingBottom: '8px'
+                            {partyNames.slice(2).map((partyName, index) => {
+                                const partyIndex = index + 2;
+                                const companyName = getPartyCompanyName(partyIndex);
+                                const displayTitle = companyName ? `${partyName}：${companyName}` : partyName;
+                                
+                                return (
+                                    <div key={partyIndex} style={{ 
+                                        padding: '16px',
+                                        border: '1px solid #f0f0f0',
+                                        borderRadius: '6px',
+                                        backgroundColor: '#fafafa'
                                     }}>
-                                        {partyName}
-                                    </div>
+                                        {/* 合作方标题 */}
+                                        <div style={{
+                                            fontSize: '14px',
+                                            fontWeight: 600,
+                                            color: '#262626',
+                                            marginBottom: '12px',
+                                            textAlign: 'center',
+                                            borderBottom: '1px solid #e8e8e8',
+                                            paddingBottom: '8px'
+                                        }}>
+                                            {displayTitle}
+                                        </div>
                                     
                                     <Space direction="vertical" style={{ width: '100%' }} size="middle">
                                         {/* 联系人签字 */}
@@ -210,7 +229,8 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                                         </div>
                                     </Space>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </>
                 )}
