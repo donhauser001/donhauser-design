@@ -31,32 +31,32 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
     // 获取合作方公司名称
     const getPartyCompanyName = (partyIndex: number): string => {
         if (!contractPartyComponent) return '';
-        
+
         // 获取我方在合同中的位置索引
         const getOurPartyIndex = (): number => {
             const orders = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
             return orders.indexOf(contractPartyComponent.ourParty || '甲');
         };
-        
+
         const isOurParty = partyIndex === getOurPartyIndex();
-        
+
         // 优先使用手动输入或自动填充的公司名称（统一字段）
         const companyName = (contractPartyComponent as any)[`party${partyIndex}CompanyName`];
         if (companyName) {
             return companyName;
         }
-        
+
         // 如果是我方且有企业团队信息，使用企业名称
         if (isOurParty && contractPartyComponent.ourTeam) {
             return contractPartyComponent.ourTeam;
         }
-        
+
         // 如果启用了客户数据，使用客户名称
         const clientName = (contractPartyComponent as any)[`party${partyIndex}ClientName`];
         if (clientName) {
             return clientName;
         }
-        
+
         return '';
     };
 
@@ -89,12 +89,11 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
     return (
         <div style={{ width: '100%' }}>
             <Card
-                title="签字盖章"
+                title="签章区域"
                 size="small"
                 style={{
                     border: '1px solid #e8e8e8',
-                    borderRadius: '8px',
-                    ...component.style
+                    borderRadius: '8px'
                 }}
             >
                 <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(partyCount, 2)}, 1fr)`, gap: '24px' }}>

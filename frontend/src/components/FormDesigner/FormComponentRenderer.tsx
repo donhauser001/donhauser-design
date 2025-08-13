@@ -41,9 +41,9 @@ import {
 import {
     ContractNameComponent,
     ContractPartyComponent,
-    OurCertificateComponent,
     SignatureComponent
 } from './components/contract';
+import OurCertificateComponent from './components/contract/OurCertificateComponent';
 
 // 导入文章组件
 import {
