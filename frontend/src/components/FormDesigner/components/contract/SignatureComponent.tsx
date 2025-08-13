@@ -19,8 +19,6 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
     
     // 获取合作方数量（默认为2）
     const partyCount = contractPartyComponent?.partyCount || 2;
-    console.log('SignatureComponent: partyCount =', partyCount);
-    console.log('SignatureComponent: contractPartyComponent =', contractPartyComponent);
     
     // 生成合作方名称数组（甲方、乙方、丙方...）
     const getPartyNames = (count: number): string[] => {
@@ -29,19 +27,13 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
     };
     
     const partyNames = getPartyNames(partyCount);
-    console.log('SignatureComponent: partyNames =', partyNames);
     
     // 获取合作方公司名称
     const getPartyCompanyName = (partyIndex: number): string => {
-        if (!contractPartyComponent) {
-            console.log('SignatureComponent: 没有找到合同方组件');
-            return '';
-        }
+        if (!contractPartyComponent) return '';
         
         // 从合同方组件中获取公司名称数据
         const companyName = (contractPartyComponent as any)[`party${partyIndex}CompanyName`];
-        console.log(`SignatureComponent: party${partyIndex}CompanyName =`, companyName);
-        console.log('SignatureComponent: 合同方组件完整数据 =', contractPartyComponent);
         return companyName || '';
     };
 
