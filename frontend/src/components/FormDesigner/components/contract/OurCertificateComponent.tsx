@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Space, Image, Modal, Button } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
+import { Card, Space } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { getOrganizationEnterprises, Enterprise } from '../../../../api/enterprises';
 
@@ -11,9 +10,6 @@ interface OurCertificateComponentProps {
 const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ component }) => {
     const [enterprises, setEnterprises] = useState<Enterprise[]>([]);
     const [selectedEnterprise, setSelectedEnterprise] = useState<Enterprise | null>(null);
-    const [previewVisible, setPreviewVisible] = useState(false);
-    const [previewImage, setPreviewImage] = useState('');
-    const [previewTitle, setPreviewTitle] = useState('');
 
     // 获取企业数据
     useEffect(() => {
@@ -37,71 +33,15 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
         fetchEnterprises();
     }, [component.selectedEnterprise]);
 
-    // 图片预览
-    const handlePreview = (imageUrl: string, title: string) => {
-        setPreviewImage(imageUrl);
-        setPreviewTitle(title);
-        setPreviewVisible(true);
-    };
 
-    // 渲染证照图片
-    const renderCertificateImage = (title: string, imageUrl?: string) => {
-        // 模拟企业证照图片（实际应该从企业数据中获取）
-        const mockImageUrl = imageUrl || `https://via.placeholder.com/300x200?text=${encodeURIComponent(title)}`;
-        
-        return (
-            <div style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center',
-                marginBottom: '16px'
-            }}>
-                <div style={{ 
-                    fontSize: '14px', 
-                    fontWeight: 500, 
-                    marginBottom: '8px',
-                    color: '#262626'
-                }}>
-                    {title}
-                </div>
-                <div style={{ position: 'relative' }}>
-                    <Image 
-                        src={mockImageUrl}
-                        width={200}
-                        height={120}
-                        style={{ 
-                            objectFit: 'cover', 
-                            borderRadius: '6px',
-                            border: '1px solid #d9d9d9'
-                        }}
-                        preview={false}
-                    />
-                    <Button 
-                        icon={<EyeOutlined />} 
-                        size="small"
-                        style={{
-                            position: 'absolute',
-                            top: '8px',
-                            right: '8px',
-                            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                            borderColor: 'transparent',
-                            color: 'white'
-                        }}
-                        onClick={() => handlePreview(mockImageUrl, title)}
-                    >
-                        预览
-                    </Button>
-                </div>
-            </div>
-        );
-    };
+
 
     // 获取企业营业执照信息
     const getBusinessLicenseInfo = () => {
         if (selectedEnterprise) {
             return {
                 number: selectedEnterprise.businessLicense || component.manualBusinessLicense || '统一社会信用代码：91XXXXXXXXXXXXXXXXX',
-                image: selectedEnterprise.businessLicenseImage
+                image: undefined // 暂时不显示图片，等待企业数据中添加图片字段
             };
         }
         return {
@@ -114,8 +54,8 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
     const getBankPermitInfo = () => {
         if (selectedEnterprise) {
             return {
-                number: selectedEnterprise.bankPermit || component.manualBankPermit || '开户许可证核准号：J1XXXXXXXXXXXXXXXX',
-                image: selectedEnterprise.bankPermitImage
+                number: component.manualBankPermit || '开户许可证核准号：J1XXXXXXXXXXXXXXXX',
+                image: undefined // 暂时不显示图片，等待企业数据中添加图片字段
             };
         }
         return {
@@ -139,49 +79,81 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                     ...component.style 
                 }}
             >
-                <Space direction="vertical" style={{ width: '100%' }} size="large">
-                    {/* 营业执照 */}
-                    {component.showBusinessLicense !== false && (
-                        <div>
-                            {renderCertificateImage('营业执照', getBusinessLicenseInfo().image)}
-                            <div style={{ 
-                                fontSize: '12px', 
-                                color: '#8c8c8c', 
-                                textAlign: 'center',
-                                marginTop: '4px'
-                            }}>
-                                {getBusinessLicenseInfo().number}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 开户许可证 */}
-                    {component.showBankPermit === true && (
-                        <div>
-                            {renderCertificateImage('开户许可证', getBankPermitInfo().image)}
-                            <div style={{ 
-                                fontSize: '12px', 
-                                color: '#8c8c8c', 
-                                textAlign: 'center',
-                                marginTop: '4px'
-                            }}>
-                                {getBankPermitInfo().number}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 如果没有选择企业，显示提示 */}
-                    {!selectedEnterprise && (
-                        <div style={{
-                            textAlign: 'center',
-                            padding: '20px',
-                            color: '#8c8c8c',
-                            fontSize: '14px'
+                {selectedEnterprise ? (
+                    <div style={{ textAlign: 'center', padding: '20px' }}>
+                        <div style={{ 
+                            fontSize: '16px', 
+                            fontWeight: 500, 
+                            color: '#262626',
+                            marginBottom: '16px'
                         }}>
-                            请在属性面板中选择企业以显示证照信息
+                            {selectedEnterprise.enterpriseName}证照
                         </div>
-                    )}
-                </Space>
+                        
+                        <Space direction="vertical" style={{ width: '100%' }} size="large">
+                            {/* 营业执照 */}
+                            {component.showBusinessLicense !== false && (
+                                <div>
+                                    <div style={{ 
+                                        fontSize: '14px', 
+                                        fontWeight: 500, 
+                                        marginBottom: '8px',
+                                        color: '#262626'
+                                    }}>
+                                        营业执照
+                                    </div>
+                                    <div style={{ 
+                                        fontSize: '12px', 
+                                        color: '#8c8c8c', 
+                                        textAlign: 'center',
+                                        padding: '8px',
+                                        backgroundColor: '#f5f5f5',
+                                        borderRadius: '4px'
+                                    }}>
+                                        {getBusinessLicenseInfo().number}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* 开户许可证 */}
+                            {component.showBankPermit === true && (
+                                <div>
+                                    <div style={{ 
+                                        fontSize: '14px', 
+                                        fontWeight: 500, 
+                                        marginBottom: '8px',
+                                        color: '#262626'
+                                    }}>
+                                        开户许可证
+                                    </div>
+                                    <div style={{ 
+                                        fontSize: '12px', 
+                                        color: '#8c8c8c', 
+                                        textAlign: 'center',
+                                        padding: '8px',
+                                        backgroundColor: '#f5f5f5',
+                                        borderRadius: '4px'
+                                    }}>
+                                        {getBankPermitInfo().number}
+                                    </div>
+                                </div>
+                            )}
+                        </Space>
+                    </div>
+                ) : (
+                    <div style={{
+                        textAlign: 'center',
+                        padding: '40px 20px',
+                        color: '#8c8c8c',
+                        fontSize: '14px'
+                    }}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>📄</div>
+                        <div>请在属性面板中选择企业</div>
+                        <div style={{ fontSize: '12px', marginTop: '4px' }}>
+                            选择后将显示企业证照信息
+                        </div>
+                    </div>
+                )}
             </Card>
 
             {/* 字段说明 */}
@@ -196,20 +168,7 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                 </div>
             )}
 
-            {/* 图片预览模态框 */}
-            <Modal
-                open={previewVisible}
-                title={`${previewTitle} - 预览`}
-                footer={null}
-                onCancel={() => setPreviewVisible(false)}
-                width={600}
-            >
-                <img 
-                    alt={previewTitle} 
-                    style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} 
-                    src={previewImage} 
-                />
-            </Modal>
+
         </div>
     );
 };
