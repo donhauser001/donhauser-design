@@ -222,30 +222,70 @@ const ContractComponents: React.FC<ContractComponentsProps> = ({ component, onPr
         );
     };
 
-    // 合同条款组件属性
-    const renderContractTermsProperties = () => {
+    // 我方证照组件属性
+    const renderOurCertificateProperties = () => {
         return (
-            <Form.Item label="使用说明" style={{ marginBottom: 0 }}>
-                <div style={{
-                    padding: '12px',
-                    backgroundColor: '#f6f8fa',
-                    border: '1px solid #e1e4e8',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    lineHeight: '1.5',
-                    color: '#586069'
-                }}>
-                    <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#24292e' }}>
-                        合同条款组件说明
+            <>
+                <Form.Item label="包含证照" style={{ marginBottom: 8 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '12px' }}>营业执照</span>
+                            <Switch 
+                                size="small"
+                                checked={component.showBusinessLicense !== false} 
+                                onChange={(checked) => onPropertyChange('showBusinessLicense', checked)} 
+                            />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '12px' }}>组织机构代码证</span>
+                            <Switch 
+                                size="small"
+                                checked={component.showOrganizationCode !== false} 
+                                onChange={(checked) => onPropertyChange('showOrganizationCode', checked)} 
+                            />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '12px' }}>税务登记证</span>
+                            <Switch 
+                                size="small"
+                                checked={component.showTaxRegistration !== false} 
+                                onChange={(checked) => onPropertyChange('showTaxRegistration', checked)} 
+                            />
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '12px' }}>开户许可证</span>
+                            <Switch 
+                                size="small"
+                                checked={component.showBankPermit || false} 
+                                onChange={(checked) => onPropertyChange('showBankPermit', checked)} 
+                            />
+                        </div>
                     </div>
-                    <div>
-                        • 用于显示合同的具体条款内容<br />
-                        • 使用预设文本模式，可以预先配置常用条款<br />
-                        • 支持多行文本和格式化显示<br />
-                        • 可以作为合同模板的一部分使用
+                </Form.Item>
+                <Form.Item label="使用说明" style={{ marginBottom: 0 }}>
+                    <div style={{
+                        padding: '12px',
+                        backgroundColor: '#f6f8fa',
+                        border: '1px solid #e1e4e8',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        lineHeight: '1.5',
+                        color: '#586069'
+                    }}>
+                        <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#24292e' }}>
+                            我方证照组件使用说明
+                        </div>
+                        <div>
+                            • 用于展示我方企业的相关证照信息<br />
+                            • 支持选择企业自动填充证照数据<br />
+                            • 可以手动编辑覆盖自动填充的数据<br />
+                            • 支持上传证照扫描件图片<br />
+                            • 绿色背景表示自动填充的数据<br />
+                            • 可配置显示哪些证照类型
+                        </div>
                     </div>
-                </div>
-            </Form.Item>
+                </Form.Item>
+            </>
         );
     };
 
@@ -283,8 +323,8 @@ const ContractComponents: React.FC<ContractComponentsProps> = ({ component, onPr
                 return renderContractNameProperties();
             case 'contractParty':
                 return renderContractPartyProperties();
-            case 'contractTerms':
-                return renderContractTermsProperties();
+            case 'ourCertificate':
+                return renderOurCertificateProperties();
             case 'signature':
                 return renderSignatureProperties();
             default:

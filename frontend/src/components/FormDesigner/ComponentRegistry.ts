@@ -503,18 +503,22 @@ class ComponentRegistry {
             }
         });
 
-        this.register('contractTerms', {
-            type: 'contractTerms',
-            name: '合同条款',
-            icon: 'FileTextOutlined',
+        this.register('ourCertificate', {
+            type: 'ourCertificate',
+            name: '我方证照',
+            icon: 'SafetyCertificateOutlined',
             category: 'contract',
-            description: '合同条款预设文本',
+            description: '我方企业证照信息',
             defaultProps: {
-                label: '合同条款',
-                content: '1. 甲方责任：\n2. 乙方责任：\n3. 付款方式：\n4. 违约责任：',
-                required: false,
+                label: '我方证照',
+                required: true,
                 disabled: false,
-                order: 0
+                order: 0,
+                selectedEnterprise: '',
+                showBusinessLicense: true,
+                showOrganizationCode: true,
+                showTaxRegistration: true,
+                showBankPermit: false
             }
         });
 

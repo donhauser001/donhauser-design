@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Form, Tabs, Collapse, ColorPicker, Select, Switch } from 'antd';
+import { Card, Form, Tabs, Collapse, ColorPicker, Select, Switch, Input, InputNumber } from 'antd';
 import { SettingOutlined, AppstoreOutlined, FormatPainterOutlined } from '@ant-design/icons';
 import { useFormDesignerStore } from '../../stores/formDesignerStore';
 
@@ -11,6 +11,7 @@ import OptionComponents from './PropertyPanels/OptionComponents';
 import MediaComponents from './PropertyPanels/MediaComponents';
 import ContentComponents from './PropertyPanels/ContentComponents';
 import ProjectComponents from './PropertyPanels/ProjectComponents';
+import ContractComponents from './PropertyPanels/ContractComponents';
 
 const { Option } = Select;
 
@@ -50,6 +51,7 @@ const PropertyPanel: React.FC = () => {
             const mediaTypes = ['upload', 'image'];
             const contentTypes = ['presetText', 'html', 'countdown', 'slider'];
             const projectTypes = ['projectName', 'client', 'contact', 'quotation', 'order', 'instruction', 'taskList'];
+            const contractTypes = ['contractName', 'contractParty', 'ourCertificate', 'signature'];
 
             if (basicTypes.includes(selectedComponentData.type)) return 'basic';
             if (layoutTypes.includes(selectedComponentData.type)) return 'layout';
@@ -57,6 +59,7 @@ const PropertyPanel: React.FC = () => {
             if (mediaTypes.includes(selectedComponentData.type)) return 'media';
             if (contentTypes.includes(selectedComponentData.type)) return 'content';
             if (projectTypes.includes(selectedComponentData.type)) return 'project';
+            if (contractTypes.includes(selectedComponentData.type)) return 'contract';
             return 'basic';
         };
 
@@ -157,6 +160,12 @@ const PropertyPanel: React.FC = () => {
                             )}
                             {category === 'project' && (
                                 <ProjectComponents
+                                    component={selectedComponentData}
+                                    onPropertyChange={handlePropertyChange}
+                                />
+                            )}
+                            {category === 'contract' && (
+                                <ContractComponents
                                     component={selectedComponentData}
                                     onPropertyChange={handlePropertyChange}
                                 />
@@ -676,6 +685,240 @@ const PropertyPanel: React.FC = () => {
                         <Option value="4px">4px</Option>
                         <Option value="8px">8px</Option>
                         <Option value="12px">12px</Option>
+                        <Option value="50%">圆形</Option>
+                    </Select>
+                </Form.Item>
+            </>
+        );
+
+        // 图片组件的样式设置
+        if (selectedComponentData.type === 'image') {
+            return (
+                <>
+                    <Form.Item label="背景颜色">
+                        <ColorPicker
+                            value={selectedComponentData.style?.backgroundColor || 'transparent'}
+                            onChange={(color) => handlePropertyChange('style', {
+                                ...selectedComponentData.style,
+                                backgroundColor: typeof color === 'string' ? color : color.toHexString()
+                            })}
+                            showText
+                            allowClear
+                            presets={[
+                                { label: '推荐颜色', colors: ['#f0f8ff', '#f5f5f5', '#ffffff', '#000000', '#1890ff'] }
+                            ]}
+                        />
+                    </Form.Item>
+
+                    <Form.Item label="内边距">
+                        <Input
+                            value={selectedComponentData.style?.padding || '0'}
+                            onChange={(e) => handlePropertyChange('style', {
+                                ...selectedComponentData.style,
+                                padding: e.target.value
+                            })}
+                            placeholder="如：8px, 10px 15px"
+                        />
+                    </Form.Item>
+
+                    <Form.Item label="外边距">
+                        <Input
+                            value={selectedComponentData.style?.margin || '0'}
+                            onChange={(e) => handlePropertyChange('style', {
+                                ...selectedComponentData.style,
+                                margin: e.target.value
+                            })}
+                            placeholder="如：8px, 10px 15px"
+                        />
+                    </Form.Item>
+
+                    <Form.Item label="边框宽度">
+                        <Select
+                            value={selectedComponentData.style?.borderWidth || '1px'}
+                            onChange={(value) => handlePropertyChange('style', {
+                                ...selectedComponentData.style,
+                                borderWidth: value
+                            })}
+                            style={{ width: '100%' }}
+                        >
+                            <Option value="0">无边框</Option>
+                            <Option value="1px">1px</Option>
+                            <Option value="2px">2px</Option>
+                            <Option value="3px">3px</Option>
+                            <Option value="4px">4px</Option>
+                            <Option value="5px">5px</Option>
+                        </Select>
+                    </Form.Item>
+
+                    {selectedComponentData.style?.borderWidth !== '0' && (
+                        <>
+                            <Form.Item label="边框样式">
+                                <Select
+                                    value={selectedComponentData.style?.borderStyle || 'solid'}
+                                    onChange={(value) => handlePropertyChange('style', {
+                                        ...selectedComponentData.style,
+                                        borderStyle: value
+                                    })}
+                                    style={{ width: '100%' }}
+                                >
+                                    <Option value="solid">实线</Option>
+                                    <Option value="dashed">虚线</Option>
+                                    <Option value="dotted">点线</Option>
+                                    <Option value="double">双线</Option>
+                                </Select>
+                            </Form.Item>
+
+                            <Form.Item label="边框颜色">
+                                <ColorPicker
+                                    value={selectedComponentData.style?.borderColor || '#d9d9d9'}
+                                    onChange={(color) => handlePropertyChange('style', {
+                                        ...selectedComponentData.style,
+                                        borderColor: typeof color === 'string' ? color : color.toHexString()
+                                    })}
+                                    showText
+                                    presets={[
+                                        { label: '推荐颜色', colors: ['#d9d9d9', '#f0f0f0', '#bfbfbf', '#8c8c8c', '#595959'] }
+                                    ]}
+                                />
+                            </Form.Item>
+                        </>
+                    )}
+
+                    <Form.Item label="圆角">
+                        <Select
+                            value={selectedComponentData.style?.borderRadius || '4px'}
+                            onChange={(value) => handlePropertyChange('style', {
+                                ...selectedComponentData.style,
+                                borderRadius: value
+                            })}
+                            style={{ width: '100%' }}
+                        >
+                            <Option value="0">无圆角</Option>
+                            <Option value="2px">小圆角</Option>
+                            <Option value="4px">中圆角</Option>
+                            <Option value="8px">大圆角</Option>
+                            <Option value="16px">超大圆角</Option>
+                            <Option value="50%">圆形</Option>
+                        </Select>
+                    </Form.Item>
+                </>
+            );
+        }
+
+        // 其他组件的通用样式设置
+        return (
+            <>
+                {/* 背景色 */}
+                <Form.Item label="背景颜色">
+                    <ColorPicker
+                        value={selectedComponentData.style?.backgroundColor || 'transparent'}
+                        onChange={(color) => handlePropertyChange('style', {
+                            ...selectedComponentData.style,
+                            backgroundColor: color.toHexString()
+                        })}
+                        showText
+                        allowClear
+                    />
+                </Form.Item>
+
+                {/* 内边距 */}
+                <Form.Item label="内边距">
+                    <Select
+                        value={selectedComponentData.style?.padding || '0'}
+                        onChange={(value) => handlePropertyChange('style', {
+                            ...selectedComponentData.style,
+                            padding: value
+                        })}
+                    >
+                        <Option value="0">0px</Option>
+                        <Option value="4px">4px</Option>
+                        <Option value="8px">8px</Option>
+                        <Option value="12px">12px</Option>
+                        <Option value="16px">16px</Option>
+                        <Option value="20px">20px</Option>
+                    </Select>
+                </Form.Item>
+
+                {/* 外边距 */}
+                <Form.Item label="外边距">
+                    <Select
+                        value={selectedComponentData.style?.margin || '0'}
+                        onChange={(value) => handlePropertyChange('style', {
+                            ...selectedComponentData.style,
+                            margin: value
+                        })}
+                    >
+                        <Option value="0">0px</Option>
+                        <Option value="4px">4px</Option>
+                        <Option value="8px">8px</Option>
+                        <Option value="12px">12px</Option>
+                        <Option value="16px">16px</Option>
+                        <Option value="20px">20px</Option>
+                    </Select>
+                </Form.Item>
+
+                {/* 边框设置 */}
+                <Form.Item label="边框宽度">
+                    <Select
+                        value={selectedComponentData.style?.borderWidth || '0'}
+                        onChange={(value) => handlePropertyChange('style', {
+                            ...selectedComponentData.style,
+                            borderWidth: value
+                        })}
+                    >
+                        <Option value="0">无边框</Option>
+                        <Option value="1px">1px</Option>
+                        <Option value="2px">2px</Option>
+                        <Option value="3px">3px</Option>
+                        <Option value="4px">4px</Option>
+                    </Select>
+                </Form.Item>
+
+                {showBorderSettings && (
+                    <>
+                        <Form.Item label="边框样式">
+                            <Select
+                                value={selectedComponentData.style?.borderStyle || 'solid'}
+                                onChange={(value) => handlePropertyChange('style', {
+                                    ...selectedComponentData.style,
+                                    borderStyle: value
+                                })}
+                            >
+                                <Option value="solid">实线</Option>
+                                <Option value="dashed">虚线</Option>
+                                <Option value="dotted">点线</Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item label="边框颜色">
+                            <ColorPicker
+                                value={selectedComponentData.style?.borderColor || '#d9d9d9'}
+                                onChange={(color) => handlePropertyChange('style', {
+                                    ...selectedComponentData.style,
+                                    borderColor: color.toHexString()
+                                })}
+                                showText
+                            />
+                        </Form.Item>
+                    </>
+                )}
+
+                {/* 圆角 */}
+                <Form.Item label="圆角">
+                    <Select
+                        value={selectedComponentData.style?.borderRadius || '4px'}
+                        onChange={(value) => handlePropertyChange('style', {
+                            ...selectedComponentData.style,
+                            borderRadius: value
+                        })}
+                    >
+                        <Option value="0">无圆角</Option>
+                        <Option value="2px">2px</Option>
+                        <Option value="4px">4px</Option>
+                        <Option value="6px">6px</Option>
+                        <Option value="8px">8px</Option>
+                        <Option value="12px">12px</Option>
+                        <Option value="16px">16px</Option>
                         <Option value="50%">圆形</Option>
                     </Select>
                 </Form.Item>

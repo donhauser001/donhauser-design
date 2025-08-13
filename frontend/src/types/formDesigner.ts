@@ -28,7 +28,7 @@ export type ComponentType =
     // 合同组件
     | 'contractName'
     | 'contractParty'
-    | 'contractTerms'
+    | 'ourCertificate'
     | 'signature'
     // 文章组件
     | 'author'
@@ -188,6 +188,22 @@ export interface FormComponent {
     ourTeam?: string; // 我方承接团队
     selectedContactId?: string; // 选中的联系人用户ID（仅我方）
     enableClientData?: boolean; // 启用客户数据开关
+    // 我方证照组件特有属性
+    selectedEnterprise?: string; // 选择的企业
+    showBusinessLicense?: boolean; // 显示营业执照
+    showOrganizationCode?: boolean; // 显示组织机构代码证
+    showTaxRegistration?: boolean; // 显示税务登记证
+    showBankPermit?: boolean; // 显示开户许可证
+    // 手动编辑的证照信息（优先级高于企业数据）
+    manualBusinessLicense?: string; // 手动输入的营业执照号
+    manualOrganizationCode?: string; // 手动输入的组织机构代码
+    manualTaxRegistration?: string; // 手动输入的税务登记证号
+    manualBankPermit?: string; // 手动输入的开户许可证号
+    // 证照图片
+    BusinessLicenseImage?: string; // 营业执照图片URL
+    OrganizationCodeImage?: string; // 组织机构代码证图片URL
+    TaxRegistrationImage?: string; // 税务登记证图片URL
+    BankPermitImage?: string; // 开户许可证图片URL
     parentId?: string; // 父容器ID，null表示在根容器中
     order: number; // 排序
     columnIndex?: number; // 用于分栏容器，标识组件属于哪一列

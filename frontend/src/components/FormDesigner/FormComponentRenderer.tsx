@@ -41,7 +41,7 @@ import {
 import {
     ContractNameComponent,
     ContractPartyComponent,
-    ContractTermsComponent,
+    OurCertificateComponent,
     SignatureComponent
 } from './components/contract';
 
@@ -128,8 +128,8 @@ const FormComponentRenderer: React.FC<FormComponentRendererProps> = ({ component
                 return <ContractNameComponent component={component} />;
             case 'contractParty':
                 return <ContractPartyComponent component={component} />;
-            case 'contractTerms':
-                return <ContractTermsComponent component={component} />;
+            case 'ourCertificate':
+                return <OurCertificateComponent component={component} />;
             case 'signature':
                 return <SignatureComponent component={component} />;
 
