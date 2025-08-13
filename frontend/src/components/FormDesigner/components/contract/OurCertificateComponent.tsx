@@ -73,17 +73,12 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
 
     return (
         <div style={{ width: '100%' }}>
-            <Card
-                title={
-                    <span style={{ fontSize: '16px', fontWeight: 600 }}>
-                        {selectedEnterprise ? `${selectedEnterprise.enterpriseName}证照` : '企业证照'}
-                    </span>
-                }
-                size="small"
-                style={{
+                        <Card 
+                size="small" 
+                style={{ 
                     border: '1px solid #d9d9d9',
                     borderRadius: '8px',
-                    ...component.style
+                    ...component.style 
                 }}
             >
                 {selectedEnterprise ? (
@@ -122,8 +117,8 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                                                 style={{
                                                     borderRadius: '6px',
                                                     border: '1px solid #d9d9d9',
-                                                    maxHeight: '300px',
-                                                    objectFit: 'contain'
+                                                    width: '100%',
+                                                    height: 'auto'
                                                 }}
                                                 preview={false}
                                             />

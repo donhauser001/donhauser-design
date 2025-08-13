@@ -1,7 +1,8 @@
 import React from 'react';
-import { Form, Input, Switch, Select } from 'antd';
+import { Form, Input, Switch, Select, DatePicker } from 'antd';
 import { FormComponent } from '../../../types/formDesigner';
 import { getLinearIcon } from '../utils/iconUtils';
+import dayjs from 'dayjs';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -21,11 +22,19 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
     const isInstructionComponent = component.type === 'instruction';
     const isTextAreaComponent = component.type === 'textarea';
     const isTaskListComponent = component.type === 'taskList';
+    // 数字组件有自己的特殊默认值/占位符处理逻辑，日期组件使用基础属性但不需要图标
+    const isNumberComponent = component.type === 'number';
+    const isDateComponent = component.type === 'date';
+    // 合同方组件不需要图标、默认值和占位符
+    const isContractPartyComponent = component.type === 'contractParty';
+    // 我方证照组件只保留字段说明
+    const isOurCertificateComponent = component.type === 'ourCertificate';
+
 
     return (
         <>
             {/* 基础属性 */}
-            {!isLayoutComponent && (
+            {!isLayoutComponent && !isOurCertificateComponent && (
                 <Form.Item label="标签">
                     <Input
                         value={component.label}
@@ -36,7 +45,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
             )}
 
             {/* 通用属性（非布局组件和特殊组件） */}
-            {!isLayoutComponent && !isSpecialComponent && (
+            {!isLayoutComponent && !isSpecialComponent && !isOurCertificateComponent && (
                 <>
                     <Form.Item label="隐藏标签">
                         <Switch
@@ -54,7 +63,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         </Form.Item>
                     )}
 
-                    {!isTextAreaComponent && !isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTaskListComponent && (
+                    {!isTextAreaComponent && !isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTaskListComponent && !isDateComponent && !isContractPartyComponent && (
                         <Form.Item label="图标">
                             <Select
                                 value={component.icon || ''}
@@ -183,7 +192,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         />
                     </Form.Item>
 
-                    {!isRadioComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTextAreaComponent && !isTaskListComponent && (
+                    {!isRadioComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTextAreaComponent && !isTaskListComponent && !isNumberComponent && !isDateComponent && !isContractPartyComponent && (
                         <Form.Item label="默认值">
                             <Input
                                 value={component.defaultValue || ''}
@@ -193,7 +202,43 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         </Form.Item>
                     )}
 
-                    {!isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && !isTaskListComponent && (
+                    {isDateComponent && (
+                        <Form.Item label="默认值">
+                            {component.autoCurrentTime ? (
+                                <Input
+                                    value="自动抓取填表时间"
+                                    disabled={true}
+                                    style={{
+                                        width: '100%',
+                                        backgroundColor: '#f0f2f5',
+                                        color: '#8c8c8c',
+                                        fontStyle: 'italic'
+                                    }}
+                                />
+                            ) : component.showTimePicker ? (
+                                <DatePicker
+                                    showTime={{
+                                        format: 'HH:mm:ss'
+                                    }}
+                                    format="YYYY-MM-DD HH:mm:ss"
+                                    placeholder="选择默认日期时间"
+                                    value={component.defaultValue ? dayjs(component.defaultValue) : null}
+                                    onChange={(date) => onPropertyChange('defaultValue', date ? date.format('YYYY-MM-DD HH:mm:ss') : '')}
+                                    style={{ width: '100%' }}
+                                />
+                            ) : (
+                                <DatePicker
+                                    format="YYYY-MM-DD"
+                                    placeholder="选择默认日期"
+                                    value={component.defaultValue ? dayjs(component.defaultValue) : null}
+                                    onChange={(date) => onPropertyChange('defaultValue', date ? date.format('YYYY-MM-DD') : '')}
+                                    style={{ width: '100%' }}
+                                />
+                            )}
+                        </Form.Item>
+                    )}
+
+                    {!isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && !isTaskListComponent && !isNumberComponent && !isContractPartyComponent && (
                         <Form.Item label="占位符">
                             <Input
                                 value={component.placeholder || ''}
@@ -203,6 +248,18 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         </Form.Item>
                     )}
                 </>
+            )}
+
+            {/* 我方证照组件只显示字段说明 */}
+            {isOurCertificateComponent && (
+                <Form.Item label="字段说明">
+                    <TextArea
+                        value={component.fieldDescription || ''}
+                        onChange={(e) => onPropertyChange('fieldDescription', e.target.value)}
+                        placeholder="请输入字段说明"
+                        rows={2}
+                    />
+                </Form.Item>
             )}
         </>
     );
