@@ -59,8 +59,9 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
     const getBankPermitInfo = () => {
         if (selectedEnterprise) {
             const bankPermit = selectedEnterprise.bankPermit;
+            const bankPermitNumber = selectedEnterprise.bankPermitNumber;
             return {
-                number: component.manualBankPermit || '开户许可证核准号：J1XXXXXXXXXXXXXXXX',
+                number: component.manualBankPermit || bankPermitNumber || '开户许可证核准号：J1XXXXXXXXXXXXXXXX',
                 image: bankPermit ? getImageUrl(bankPermit) : undefined,
                 hasImage: !!bankPermit
             };

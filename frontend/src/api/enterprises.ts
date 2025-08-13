@@ -8,6 +8,7 @@ export interface Enterprise {
     creditCode: string
     businessLicense: string
     bankPermit?: string
+    bankPermitNumber?: string
     legalRepresentative: string
     legalRepresentativeId: string
     companyAddress: string

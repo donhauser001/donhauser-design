@@ -6,6 +6,7 @@ export interface IEnterprise extends Document {
     creditCode: string;
     businessLicense: string;
     bankPermit?: string; // 开户许可证
+    bankPermitNumber?: string; // 开户许可证核准号
     legalRepresentative: string;
     legalRepresentativeId: string;
     companyAddress: string;
@@ -44,6 +45,10 @@ const EnterpriseSchema = new Schema<IEnterprise>({
         trim: true
     },
     bankPermit: {
+        type: String,
+        trim: true
+    },
+    bankPermitNumber: {
         type: String,
         trim: true
     },
@@ -116,6 +121,7 @@ export interface Enterprise {
     creditCode: string;
     businessLicense: string;
     bankPermit?: string;
+    bankPermitNumber?: string;
     legalRepresentative: string;
     legalRepresentativeId: string;
     companyAddress: string;
@@ -136,6 +142,7 @@ export interface CreateEnterpriseRequest {
     creditCode: string;
     businessLicense: string;
     bankPermit?: string;
+    bankPermitNumber?: string;
     legalRepresentative: string;
     legalRepresentativeId: string;
     companyAddress: string;
@@ -155,6 +162,7 @@ export interface UpdateEnterpriseRequest {
     creditCode?: string;
     businessLicense?: string;
     bankPermit?: string;
+    bankPermitNumber?: string;
     legalRepresentative?: string;
     legalRepresentativeId?: string;
     companyAddress?: string;

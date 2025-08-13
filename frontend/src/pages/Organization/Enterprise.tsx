@@ -15,6 +15,7 @@ interface EnterpriseData {
     creditCode: string
     businessLicense: string
     bankPermit?: string
+    bankPermitNumber?: string
     legalRepresentative: string
     legalRepresentativeId: string
     companyAddress: string
@@ -112,6 +113,7 @@ const Enterprise: React.FC = () => {
             creditCode: enterprise.creditCode,
             businessLicense: enterprise.businessLicense,
             bankPermit: enterprise.bankPermit,
+            bankPermitNumber: enterprise.bankPermitNumber,
             legalRepresentative: enterprise.legalRepresentative,
             legalRepresentativeId: enterprise.legalRepresentativeId,
             companyAddress: enterprise.companyAddress,
@@ -654,6 +656,18 @@ const Enterprise: React.FC = () => {
                                 >
                                     <Button icon={<UploadOutlined />}>上传开户许可证</Button>
                                 </Upload>
+                            </Form.Item>
+
+                            <Form.Item
+                                name="bankPermitNumber"
+                                label="开户许可证核准号"
+                                extra={
+                                    <span style={{ color: '#8c8c8c', fontSize: '12px' }}>
+                                        请输入开户许可证核准号，如：J1000000000000000000
+                                    </span>
+                                }
+                            >
+                                <Input placeholder="请输入开户许可证核准号" />
                             </Form.Item>
 
                             <Form.Item
