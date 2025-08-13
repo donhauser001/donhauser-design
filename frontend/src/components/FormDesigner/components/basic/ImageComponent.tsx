@@ -94,10 +94,11 @@ const ImageComponent: React.FC<ImageComponentProps> = ({ component }) => {
 
     // 渲染多图网格
     const renderMultipleImages = () => {
+        const columns = component.imageColumns || 3;
         return (
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+                gridTemplateColumns: `repeat(${columns}, 1fr)`,
                 gap: '12px',
                 width: '100%'
             }}>

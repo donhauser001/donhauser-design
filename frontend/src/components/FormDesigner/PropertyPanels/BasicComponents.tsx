@@ -1,7 +1,6 @@
 import React from 'react';
-import { Form, Input, Switch, Select, InputNumber, DatePicker } from 'antd';
+import { Form, Input, Switch, Select, InputNumber } from 'antd';
 import { FormComponent } from '../../../types/formDesigner';
-import dayjs from 'dayjs';
 
 const { Option } = Select;
 
@@ -24,22 +23,6 @@ const BasicComponents: React.FC<BasicComponentsProps> = ({ component, onProperty
                     <Option value="name">姓名</Option>
                     <Option value="phone">电话</Option>
                 </Select>
-            </Form.Item>
-
-            <Form.Item label="占位符">
-                <Input
-                    value={component.placeholder}
-                    onChange={(e) => onPropertyChange('placeholder', e.target.value)}
-                    placeholder="请输入占位符"
-                />
-            </Form.Item>
-
-            <Form.Item label="默认值">
-                <Input
-                    value={component.defaultValue}
-                    onChange={(e) => onPropertyChange('defaultValue', e.target.value)}
-                    placeholder="请输入默认值"
-                />
             </Form.Item>
         </>
     );
@@ -116,12 +99,12 @@ const BasicComponents: React.FC<BasicComponentsProps> = ({ component, onProperty
         </>
     );
 
-    // 数字组件基础属性（保留默认值）
+    // 数字组件基础属性
     const renderNumberBasicProperties = () => (
         <>
             <Form.Item label="占位符">
                 <Input
-                    value={component.placeholder}
+                    value={component.placeholder || ''}
                     onChange={(e) => onPropertyChange('placeholder', e.target.value)}
                     placeholder="请输入占位符"
                 />
@@ -129,7 +112,7 @@ const BasicComponents: React.FC<BasicComponentsProps> = ({ component, onProperty
 
             <Form.Item label="默认值">
                 <Input
-                    value={component.defaultValue}
+                    value={component.defaultValue || ''}
                     onChange={(e) => onPropertyChange('defaultValue', e.target.value)}
                     placeholder="请输入默认值"
                 />
@@ -188,47 +171,7 @@ const BasicComponents: React.FC<BasicComponentsProps> = ({ component, onProperty
                 />
             </Form.Item>
 
-            <Form.Item label="占位符">
-                <Input
-                    value={component.placeholder}
-                    onChange={(e) => onPropertyChange('placeholder', e.target.value)}
-                    placeholder={component.showTimePicker ? "请选择日期时间" : "请选择日期"}
-                />
-            </Form.Item>
 
-            <Form.Item label="默认值">
-                {component.autoCurrentTime ? (
-                    <Input
-                        value="自动抓取填表时间"
-                        disabled={true}
-                        style={{
-                            width: '100%',
-                            backgroundColor: '#f0f2f5',
-                            color: '#8c8c8c',
-                            fontStyle: 'italic'
-                        }}
-                    />
-                ) : component.showTimePicker ? (
-                    <DatePicker
-                        showTime={{
-                            format: 'HH:mm:ss'
-                        }}
-                        format="YYYY-MM-DD HH:mm:ss"
-                        placeholder="选择默认日期时间"
-                        value={component.defaultValue ? dayjs(component.defaultValue) : null}
-                        onChange={(date) => onPropertyChange('defaultValue', date ? date.format('YYYY-MM-DD HH:mm:ss') : '')}
-                        style={{ width: '100%' }}
-                    />
-                ) : (
-                    <DatePicker
-                        format="YYYY-MM-DD"
-                        placeholder="选择默认日期"
-                        value={component.defaultValue ? dayjs(component.defaultValue) : null}
-                        onChange={(date) => onPropertyChange('defaultValue', date ? date.format('YYYY-MM-DD') : '')}
-                        style={{ width: '100%' }}
-                    />
-                )}
-            </Form.Item>
         </>
     );
 

@@ -58,10 +58,11 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
     // 获取开户许可证信息
     const getBankPermitInfo = () => {
         if (selectedEnterprise) {
+            const bankPermit = selectedEnterprise.bankPermit;
             return {
                 number: component.manualBankPermit || '开户许可证核准号：J1XXXXXXXXXXXXXXXX',
-                image: undefined, // 开户许可证暂时没有图片字段
-                hasImage: false
+                image: bankPermit ? getImageUrl(bankPermit) : undefined,
+                hasImage: !!bankPermit
             };
         }
         return {
@@ -166,31 +167,50 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                                         {selectedEnterprise.enterpriseName}开户许可证
                                     </div>
 
-                                    {/* 开户许可证暂无图片 */}
-                                    <div style={{
-                                        width: '100%',
-                                        marginBottom: '8px'
-                                    }}>
+                                    {/* 开户许可证图片 */}
+                                    {getBankPermitInfo().hasImage ? (
                                         <div style={{
                                             width: '100%',
-                                            height: '120px',
-                                            borderRadius: '6px',
-                                            border: '2px dashed #d9d9d9',
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            backgroundColor: '#fafafa',
-                                            color: '#8c8c8c',
-                                            fontSize: '12px'
+                                            marginBottom: '8px'
                                         }}>
-                                            <div style={{ marginBottom: '4px' }}>📄</div>
-                                            <div>开户许可证</div>
-                                            <div style={{ fontSize: '10px', marginTop: '4px' }}>
-                                                暂无图片
+                                            <Image
+                                                src={getBankPermitInfo().image}
+                                                width="100%"
+                                                style={{
+                                                    borderRadius: '6px',
+                                                    border: '1px solid #d9d9d9',
+                                                    width: '100%',
+                                                    height: 'auto'
+                                                }}
+                                                preview={false}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div style={{
+                                            width: '100%',
+                                            marginBottom: '8px'
+                                        }}>
+                                            <div style={{
+                                                width: '100%',
+                                                height: '120px',
+                                                borderRadius: '6px',
+                                                border: '2px dashed #d9d9d9',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                backgroundColor: '#fafafa',
+                                                color: '#8c8c8c',
+                                                fontSize: '12px'
+                                            }}>
+                                                <div style={{ marginBottom: '4px' }}>📄</div>
+                                                <div>开户许可证</div>
+                                                <div style={{ fontSize: '10px', marginTop: '4px' }}>
+                                                    暂无图片
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
 
                                     <div style={{
                                         fontSize: '12px',

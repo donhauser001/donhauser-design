@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Switch, Select, InputNumber, Button, ColorPicker } from 'antd';
+import { Form, Input, Switch, Select, InputNumber, Button } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../types/formDesigner';
 
@@ -155,6 +155,17 @@ const MediaComponents: React.FC<MediaComponentsProps> = ({ component, onProperty
                                             onPropertyChange('imageList', newList);
                                         }}
                                         placeholder="图片URL"
+                                        style={{ marginRight: '8px', flex: 2 }}
+                                    />
+                                    <Input
+                                        size="small"
+                                        value={image.alt || ''}
+                                        onChange={(e) => {
+                                            const newList = [...(component.imageList || [])];
+                                            newList[index] = { ...image, alt: e.target.value };
+                                            onPropertyChange('imageList', newList);
+                                        }}
+                                        placeholder="图片描述"
                                         style={{ marginRight: '8px', flex: 1 }}
                                     />
                                     <Button
@@ -178,27 +189,35 @@ const MediaComponents: React.FC<MediaComponentsProps> = ({ component, onProperty
                                     newList.push({
                                         url: '',
                                         name: `图片${newList.length + 1}`,
+                                        alt: '',
                                         id: Date.now().toString()
                                     });
                                     onPropertyChange('imageList', newList);
                                 }}
                                 style={{ width: '100%' }}
-                                disabled={(component.imageList || []).length >= (component.maxImageCount || 9)}
                             >
-                                添加图片 ({(component.imageList || []).length}/{component.maxImageCount || 9})
+                                添加图片 ({(component.imageList || []).length})
                             </Button>
                         </div>
                     </Form.Item>
 
-                    <Form.Item label="最大图片数量">
-                        <InputNumber
-                            value={component.maxImageCount || 9}
-                            onChange={(value) => onPropertyChange('maxImageCount', value || 9)}
-                            min={1}
-                            max={20}
-                            style={{ width: '100%' }}
-                        />
-                    </Form.Item>
+
+
+                    {component.imageMode === 'multiple' && (
+                        <Form.Item label="列数">
+                            <Select
+                                value={component.imageColumns || 3}
+                                onChange={(value) => onPropertyChange('imageColumns', value)}
+                                style={{ width: '100%' }}
+                            >
+                                <Option value={1}>1列</Option>
+                                <Option value={2}>2列</Option>
+                                <Option value={3}>3列</Option>
+                                <Option value={4}>4列</Option>
+                                <Option value={5}>5列</Option>
+                            </Select>
+                        </Form.Item>
+                    )}
                 </>
             )}
 
@@ -247,120 +266,17 @@ const MediaComponents: React.FC<MediaComponentsProps> = ({ component, onProperty
                 />
             </Form.Item>
 
-            <Form.Item label="图片描述">
-                <Input
-                    value={component.imageAlt || ''}
-                    onChange={(e) => onPropertyChange('imageAlt', e.target.value)}
-                    placeholder="用于屏幕阅读器和SEO"
-                />
-            </Form.Item>
-
-            <Form.Item label="背景颜色">
-                <ColorPicker
-                    value={component.style?.backgroundColor || 'transparent'}
-                    onChange={(color) => onPropertyChange('style', {
-                        ...component.style,
-                        backgroundColor: typeof color === 'string' ? color : color.toHexString()
-                    })}
-                    showText
-                    allowClear
-                    presets={[
-                        { label: '推荐颜色', colors: ['#f0f8ff', '#f5f5f5', '#ffffff', '#000000', '#1890ff'] }
-                    ]}
-                />
-            </Form.Item>
-
-            <Form.Item label="内边距">
-                <Input
-                    value={component.style?.padding || '0'}
-                    onChange={(e) => onPropertyChange('style', {
-                        ...component.style,
-                        padding: e.target.value
-                    })}
-                    placeholder="如：8px, 10px 15px"
-                />
-            </Form.Item>
-
-            <Form.Item label="外边距">
-                <Input
-                    value={component.style?.margin || '0'}
-                    onChange={(e) => onPropertyChange('style', {
-                        ...component.style,
-                        margin: e.target.value
-                    })}
-                    placeholder="如：8px, 10px 15px"
-                />
-            </Form.Item>
-
-            <Form.Item label="边框宽度">
-                <Select
-                    value={component.style?.borderWidth || '1px'}
-                    onChange={(value) => onPropertyChange('style', {
-                        ...component.style,
-                        borderWidth: value
-                    })}
-                    style={{ width: '100%' }}
-                >
-                    <Option value="0">无边框</Option>
-                    <Option value="1px">1px</Option>
-                    <Option value="2px">2px</Option>
-                    <Option value="3px">3px</Option>
-                    <Option value="4px">4px</Option>
-                    <Option value="5px">5px</Option>
-                </Select>
-            </Form.Item>
-
-            {component.style?.borderWidth !== '0' && (
-                <>
-                    <Form.Item label="边框样式">
-                        <Select
-                            value={component.style?.borderStyle || 'solid'}
-                            onChange={(value) => onPropertyChange('style', {
-                                ...component.style,
-                                borderStyle: value
-                            })}
-                            style={{ width: '100%' }}
-                        >
-                            <Option value="solid">实线</Option>
-                            <Option value="dashed">虚线</Option>
-                            <Option value="dotted">点线</Option>
-                            <Option value="double">双线</Option>
-                        </Select>
-                    </Form.Item>
-
-                    <Form.Item label="边框颜色">
-                        <ColorPicker
-                            value={component.style?.borderColor || '#d9d9d9'}
-                            onChange={(color) => onPropertyChange('style', {
-                                ...component.style,
-                                borderColor: typeof color === 'string' ? color : color.toHexString()
-                            })}
-                            showText
-                            presets={[
-                                { label: '推荐颜色', colors: ['#d9d9d9', '#f0f0f0', '#bfbfbf', '#8c8c8c', '#595959'] }
-                            ]}
-                        />
-                    </Form.Item>
-                </>
+            {component.imageMode === 'single' && (
+                <Form.Item label="图片描述">
+                    <Input
+                        value={component.imageAlt || ''}
+                        onChange={(e) => onPropertyChange('imageAlt', e.target.value)}
+                        placeholder="用于屏幕阅读器和SEO"
+                    />
+                </Form.Item>
             )}
 
-            <Form.Item label="圆角">
-                <Select
-                    value={component.style?.borderRadius || '4px'}
-                    onChange={(value) => onPropertyChange('style', {
-                        ...component.style,
-                        borderRadius: value
-                    })}
-                    style={{ width: '100%' }}
-                >
-                    <Option value="0">无圆角</Option>
-                    <Option value="2px">小圆角</Option>
-                    <Option value="4px">中圆角</Option>
-                    <Option value="8px">大圆角</Option>
-                    <Option value="16px">超大圆角</Option>
-                    <Option value="50%">圆形</Option>
-                </Select>
-            </Form.Item>
+
         </>
     );
 

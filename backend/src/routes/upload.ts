@@ -122,6 +122,35 @@ router.post('/business-license', createUpload('enterprises').single('businessLic
   }
 });
 
+// 上传开户许可证（企业板块）
+router.post('/bank-permit', createUpload('enterprises').single('bankPermit'), (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: '没有上传开户许可证文件'
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: '开户许可证上传成功',
+      data: {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        size: req.file.size,
+        url: `/uploads/enterprises/${req.file.filename}`
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: '开户许可证上传失败',
+      error: error instanceof Error ? error.message : '未知错误'
+    });
+  }
+});
+
 // 上传头像（用户板块）
 router.post('/avatar', createUpload('avatars').single('avatar'), (req: Request, res: Response) => {
   try {

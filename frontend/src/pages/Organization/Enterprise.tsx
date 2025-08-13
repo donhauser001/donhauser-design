@@ -14,6 +14,7 @@ interface EnterpriseData {
     enterpriseAlias?: string
     creditCode: string
     businessLicense: string
+    bankPermit?: string
     legalRepresentative: string
     legalRepresentativeId: string
     companyAddress: string
@@ -36,6 +37,7 @@ const Enterprise: React.FC = () => {
     const [enterprises, setEnterprises] = useState<EnterpriseData[]>([])
     const [tableLoading, setTableLoading] = useState(false)
     const [fileList, setFileList] = useState<UploadFile[]>([])
+    const [bankPermitFileList, setBankPermitFileList] = useState<UploadFile[]>([])
 
     // 生成文件URL的辅助函数
     const getFileUrl = (filename: string) => {
@@ -90,11 +92,26 @@ const Enterprise: React.FC = () => {
             setFileList([])
         }
 
+        // 设置开户许可证文件列表
+        if (enterprise.bankPermit) {
+            setBankPermitFileList([
+                {
+                    uid: '-2',
+                    name: enterprise.bankPermit,
+                    status: 'done',
+                    url: getFileUrl(enterprise.bankPermit),
+                }
+            ])
+        } else {
+            setBankPermitFileList([])
+        }
+
         form.setFieldsValue({
             enterpriseName: enterprise.enterpriseName,
             enterpriseAlias: enterprise.enterpriseAlias,
             creditCode: enterprise.creditCode,
             businessLicense: enterprise.businessLicense,
+            bankPermit: enterprise.bankPermit,
             legalRepresentative: enterprise.legalRepresentative,
             legalRepresentativeId: enterprise.legalRepresentativeId,
             companyAddress: enterprise.companyAddress,
@@ -134,6 +151,33 @@ const Enterprise: React.FC = () => {
             }
         } else {
             form.setFieldsValue({ businessLicense: '' })
+        }
+    }
+
+    // 处理开户许可证文件上传
+    const handleBankPermitUpload = (info: any) => {
+        setBankPermitFileList(info.fileList)
+
+        // 更新表单中的bankPermit字段
+        if (info.fileList.length > 0) {
+            const fileName = info.fileList[0].name || info.fileList[0].originFileObj?.name
+            form.setFieldsValue({ bankPermit: fileName })
+
+            // 为新上传的文件设置预览URL
+            if (info.fileList[0].originFileObj) {
+                const updatedFileList = info.fileList.map((file: any, index: number) => {
+                    if (index === 0 && file.originFileObj) {
+                        return {
+                            ...file,
+                            url: URL.createObjectURL(file.originFileObj)
+                        }
+                    }
+                    return file
+                })
+                setBankPermitFileList(updatedFileList)
+            }
+        } else {
+            form.setFieldsValue({ bankPermit: '' })
         }
     }
 
@@ -181,6 +225,44 @@ const Enterprise: React.FC = () => {
                 }
             }
 
+            // 处理开户许可证文件上传
+            if (bankPermitFileList.length > 0 && bankPermitFileList[0].originFileObj) {
+                try {
+                    const formData = new FormData()
+                    formData.append('bankPermit', bankPermitFileList[0].originFileObj)
+
+                    const uploadResponse = await axios.post('/api/upload/bank-permit', formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    })
+
+                    if (uploadResponse.data.success) {
+                        values.bankPermit = uploadResponse.data.data.filename
+
+                        // 更新文件列表中的URL，使其指向服务器文件
+                        const updatedFileList = bankPermitFileList.map((file, index) => {
+                            if (index === 0) {
+                                return {
+                                    ...file,
+                                    url: getFileUrl(uploadResponse.data.data.filename),
+                                    name: uploadResponse.data.data.filename
+                                }
+                            }
+                            return file
+                        })
+                        setBankPermitFileList(updatedFileList)
+                    } else {
+                        message.error('开户许可证上传失败')
+                        return
+                    }
+                } catch (uploadError) {
+                    console.error('开户许可证上传失败:', uploadError)
+                    message.error('开户许可证上传失败')
+                    return
+                }
+            }
+
             if (editingEnterprise) {
                 // 编辑企业
                 const response = await axios.put(`/api/enterprises/${editingEnterprise.id}`, values)
@@ -204,6 +286,7 @@ const Enterprise: React.FC = () => {
             setIsModalVisible(false)
             form.resetFields()
             setFileList([])
+            setBankPermitFileList([])
         } catch (error: any) {
             console.error('操作失败:', error)
             if (error.response?.data?.message) {
@@ -491,6 +574,85 @@ const Enterprise: React.FC = () => {
                                     }}
                                 >
                                     <Button icon={<UploadOutlined />}>上传营业执照</Button>
+                                </Upload>
+                            </Form.Item>
+
+                            <Form.Item
+                                name="bankPermit"
+                                label="开户许可证"
+                                extra={
+                                    <span style={{ color: '#8c8c8c', fontSize: '12px' }}>
+                                        支持 jpg、png、gif、pdf 格式，文件大小不超过 10MB
+                                    </span>
+                                }
+                            >
+                                <Upload
+                                    listType="picture"
+                                    maxCount={1}
+                                    fileList={bankPermitFileList}
+                                    onChange={handleBankPermitUpload}
+                                    beforeUpload={() => false}
+                                    onRemove={() => {
+                                        setBankPermitFileList([])
+                                        form.setFieldsValue({ bankPermit: '' })
+                                    }}
+                                    accept=".jpg,.jpeg,.png,.gif,.pdf"
+                                    showUploadList={{
+                                        showPreviewIcon: true,
+                                        showRemoveIcon: true,
+                                        showDownloadIcon: false
+                                    }}
+                                    itemRender={(originNode, file) => {
+                                        return (
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 8
+                                                }}
+                                                title={file.name}
+                                            >
+                                                <div style={{ flex: 1 }}>
+                                                    <img
+                                                        src={file.url || (file.originFileObj ? URL.createObjectURL(file.originFileObj) : '')}
+                                                        alt="开户许可证"
+                                                        style={{
+                                                            width: 80,
+                                                            height: 80,
+                                                            objectFit: 'cover',
+                                                            borderRadius: 4
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div style={{ display: 'flex', gap: 4 }}>
+                                                    <Button
+                                                        type="text"
+                                                        size="small"
+                                                        icon={<EyeOutlined />}
+                                                        onClick={() => {
+                                                            if (file.url) {
+                                                                window.open(file.url, '_blank')
+                                                            }
+                                                        }}
+                                                        title="预览"
+                                                    />
+                                                    <Button
+                                                        type="text"
+                                                        size="small"
+                                                        danger
+                                                        icon={<DeleteOutlined />}
+                                                        onClick={() => {
+                                                            setBankPermitFileList([])
+                                                            form.setFieldsValue({ bankPermit: '' })
+                                                        }}
+                                                        title="删除"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )
+                                    }}
+                                >
+                                    <Button icon={<UploadOutlined />}>上传开户许可证</Button>
                                 </Upload>
                             </Form.Item>
 
