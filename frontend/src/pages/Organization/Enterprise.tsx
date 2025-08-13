@@ -496,19 +496,6 @@ const Enterprise: React.FC = () => {
                             >
                                 <Input placeholder="请输入企业别名（选填）" size="large" />
                             </Form.Item>
-
-                            <Form.Item
-                                name="creditCode"
-                                label="统一社会信用代码"
-                                rules={[
-                                    { required: true, message: '请输入统一社会信用代码' },
-                                    { pattern: /^[0-9A-HJ-NPQRTUWXY]{2}\d{6}[0-9A-HJ-NPQRTUWXY]{10}$/, message: '请输入正确的统一社会信用代码格式' }
-                                ]}
-                                extra="统一社会信用代码为18位，包含数字和大写字母"
-                                style={{ gridColumn: '1 / -1' }}
-                            >
-                                <Input placeholder="请输入统一社会信用代码" size="large" />
-                            </Form.Item>
                         </div>
                     </div>
 
