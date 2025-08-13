@@ -53,7 +53,9 @@ const connectDB = async () => {
 connectDB();
 
 // 中间件
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(cors());
 app.use(morgan('combined'));
 app.use(express.json({ limit: '50mb' }));

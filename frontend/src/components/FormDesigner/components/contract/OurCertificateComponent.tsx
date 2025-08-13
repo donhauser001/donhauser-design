@@ -35,7 +35,7 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
 
     // 获取图片URL
     const getImageUrl = (filename: string) => {
-        return `http://localhost:3000/uploads/enterprises/${filename}`;
+        return `/uploads/enterprises/${filename}`;
     };
 
     // 获取企业营业执照信息
@@ -110,16 +110,16 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                                         营业执照
                                     </div>
 
-                                                                        {/* 营业执照图片 */}
+                                    {/* 营业执照图片 */}
                                     {getBusinessLicenseInfo().hasImage ? (
-                                        <div style={{ 
+                                        <div style={{
                                             width: '100%',
                                             marginBottom: '8px'
                                         }}>
-                                            <Image 
+                                            <Image
                                                 src={getBusinessLicenseInfo().image}
                                                 width="100%"
-                                                style={{ 
+                                                style={{
                                                     borderRadius: '6px',
                                                     border: '1px solid #d9d9d9',
                                                     maxHeight: '300px',
@@ -129,11 +129,11 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                                             />
                                         </div>
                                     ) : (
-                                                                                <div style={{ 
+                                        <div style={{
                                             width: '100%',
                                             marginBottom: '8px'
                                         }}>
-                                            <div style={{ 
+                                            <div style={{
                                                 width: '100%',
                                                 height: '120px',
                                                 borderRadius: '6px',
@@ -180,12 +180,12 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                                         开户许可证
                                     </div>
 
-                                                                        {/* 开户许可证暂无图片 */}
-                                    <div style={{ 
+                                    {/* 开户许可证暂无图片 */}
+                                    <div style={{
                                         width: '100%',
                                         marginBottom: '8px'
                                     }}>
-                                        <div style={{ 
+                                        <div style={{
                                             width: '100%',
                                             height: '120px',
                                             borderRadius: '6px',
@@ -248,7 +248,7 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                 </div>
             )}
 
-            
+
         </div>
     );
 };
