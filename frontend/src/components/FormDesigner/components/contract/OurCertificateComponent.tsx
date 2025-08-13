@@ -81,7 +81,7 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                     ...component.style
                 }}
             >
-                                {selectedEnterprise ? (
+                {selectedEnterprise ? (
                     <div style={{ padding: '20px' }}>
                         <Space direction="vertical" style={{ width: '100%' }} size="large">
                             {/* 营业执照 */}
@@ -93,7 +93,7 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                                         marginBottom: '8px',
                                         color: '#262626'
                                     }}>
-                                        营业执照
+                                        {selectedEnterprise.enterpriseName}营业执照
                                     </div>
 
                                     {/* 营业执照图片 */}
@@ -163,7 +163,7 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                                         marginBottom: '8px',
                                         color: '#262626'
                                     }}>
-                                        开户许可证
+                                        {selectedEnterprise.enterpriseName}开户许可证
                                     </div>
 
                                     {/* 开户许可证暂无图片 */}
