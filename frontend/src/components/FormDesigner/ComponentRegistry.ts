@@ -261,8 +261,8 @@ class ComponentRegistry {
                 imageAlt: '图片',
                 imageList: [],
                 imageMode: 'single',
+                imageColumns: 3,
                 showImageName: true,
-                maxImageCount: 9,
                 slideshowInterval: 3,
                 slideshowAutoplay: true,
                 fieldDescription: '',
@@ -484,10 +484,22 @@ class ComponentRegistry {
             description: '合同方信息输入',
             defaultProps: {
                 label: '合同方',
-                placeholder: '请输入合同方名称',
                 required: true,
                 disabled: false,
-                order: 0
+                order: 0,
+                partyCount: 2,
+                showCompanyName: true,
+                showShortName: false,
+                showCreditCode: false,
+                showAddress: false,
+                showContactPerson: true,
+                showPhone: false,
+                showEmail: false,
+                showLegalRepresentative: false,
+                showLegalRepresentativeId: false,
+                ourParty: '甲',
+                ourTeam: '',
+                enableClientData: false
             }
         });
 

@@ -40,6 +40,8 @@ export interface EnterpriseListResponse {
 
 // API基础URL
 const API_BASE_URL = 'http://localhost:3000/api'
+// 组织API基础URL
+const ORG_API_BASE_URL = 'http://localhost:5178'
 
 /**
  * 获取企业列表
@@ -68,6 +70,30 @@ export const getActiveEnterprises = async (): Promise<{ success: boolean; data: 
         return response.data
     } catch (error) {
         console.error('获取活跃企业列表失败:', error)
+        throw error
+    }
+}
+
+/**
+ * 获取组织企业列表（用于承接团队选择）
+ */
+export const getOrganizationEnterprises = async (): Promise<{ success: boolean; data: Enterprise[] }> => {
+    try {
+        // 使用现有的企业API，获取活跃企业列表
+        const response = await axios.get(`${API_BASE_URL}/enterprises`, {
+            params: {
+                status: 'active',
+                limit: 100
+            }
+        })
+
+        // 转换响应格式以匹配预期的数据结构
+        return {
+            success: true,
+            data: response.data.data || []
+        }
+    } catch (error) {
+        console.error('获取组织企业列表失败:', error)
         throw error
     }
 } 

@@ -22,9 +22,17 @@ export interface Client {
 }
 
 // 获取客户列表
-export const getClients = async () => {
-  const response = await axios.get('/api/clients')
-  return response.data
+export const getClients = async (): Promise<{ success: boolean; data: Client[] }> => {
+  try {
+    const response = await axios.get('http://localhost:3000/api/clients')
+    return {
+      success: true,
+      data: response.data.data || []
+    }
+  } catch (error) {
+    console.error('获取客户列表失败:', error)
+    throw error
+  }
 }
 
 // 获取客户详情

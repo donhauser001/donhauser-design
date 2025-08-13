@@ -75,4 +75,27 @@ export const getEmployees = async (): Promise<{ success: boolean; data: User[] }
     console.error('获取员工列表失败:', error)
     throw error
   }
+}
+
+/**
+ * 获取客户角色用户列表（联系人）
+ */
+export const getClientUsers = async (): Promise<{ success: boolean; data: User[] }> => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/users`, {
+      params: {
+        status: 'active',
+        limit: 200
+      }
+    })
+    // 在前端过滤出客户角色的用户
+    const clientUsers = response.data.data.filter((user: User) => user.role === '客户')
+    return {
+      success: true,
+      data: clientUsers || []
+    }
+  } catch (error) {
+    console.error('获取客户用户列表失败:', error)
+    throw error
+  }
 } 

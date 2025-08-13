@@ -115,15 +115,15 @@ export interface FormComponent {
     imageWidth?: string; // 图片宽度
     imageHeight?: string; // 图片高度
     imageAlt?: string; // 图片描述
-    imageList?: Array<{ url: string; name: string; id: string }>; // 多图列表
+    imageList?: Array<{ url: string; name: string; alt: string; id: string }>; // 多图列表
     imageMode?: 'single' | 'multiple' | 'slideshow'; // 图片模式
+    imageColumns?: number; // 多图模式的列数
     // 嘱托组件特有属性
     showCharCount?: boolean; // 显示字符统计
     maxLength?: number; // 最大字符数
     enableRichText?: boolean; // 启用富文本编辑器
     richTextHeight?: number; // 富文本编辑器高度
     showImageName?: boolean; // 显示图片名称
-    maxImageCount?: number; // 最大图片数量
     slideshowInterval?: number; // 幻灯片切换间隔（秒）
     slideshowAutoplay?: boolean; // 自动播放幻灯片
     // 滑块组件特有属性
@@ -173,6 +173,21 @@ export interface FormComponent {
     associationMode?: 'quotation' | 'project' | 'auto' | 'select'; // 关联模式：关联报价单、关联项目、自动、请选择关联
     // 任务列表组件特有属性
     displayMode?: 'list' | 'text'; // 显示模式：列表模式、静态文本模式
+    // 合同方组件特有属性
+    partyCount?: number; // 合作方数量，默认为2方，最小为2方
+    showCompanyName?: boolean; // 显示公司名称字段
+    showShortName?: boolean; // 显示简称字段
+    showCreditCode?: boolean; // 显示统一社会信用代码字段
+    showAddress?: boolean; // 显示地址字段
+    showContactPerson?: boolean; // 显示联系人字段
+    showPhone?: boolean; // 显示电话字段
+    showEmail?: boolean; // 显示邮箱字段
+    showLegalRepresentative?: boolean; // 显示法人代表字段
+    showLegalRepresentativeId?: boolean; // 显示法人代表证件号码字段
+    ourParty?: string; // 我方为哪一方（甲方、乙方等）
+    ourTeam?: string; // 我方承接团队
+    selectedContactId?: string; // 选中的联系人用户ID（仅我方）
+    enableClientData?: boolean; // 启用客户数据开关
     parentId?: string; // 父容器ID，null表示在根容器中
     order: number; // 排序
     columnIndex?: number; // 用于分栏容器，标识组件属于哪一列
