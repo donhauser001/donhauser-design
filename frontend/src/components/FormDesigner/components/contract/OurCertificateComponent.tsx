@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Space, Image } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { getOrganizationEnterprises, Enterprise } from '../../../../api/enterprises';
+import { getLinearIcon } from '../../utils/iconUtils';
 
 interface OurCertificateComponentProps {
     component: FormComponent;
@@ -134,7 +135,11 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                                                 color: '#8c8c8c',
                                                 fontSize: '12px'
                                             }}>
-                                                <div style={{ marginBottom: '4px' }}>📄</div>
+                                                <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'center' }}>
+                                                    <div style={{ width: '16px', height: '16px', color: '#8c8c8c' }}>
+                                                        {getLinearIcon('certificate')}
+                                                    </div>
+                                                </div>
                                                 <div>营业执照</div>
                                                 <div style={{ fontSize: '10px', marginTop: '4px' }}>
                                                     暂无图片
@@ -204,7 +209,11 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                                                 color: '#8c8c8c',
                                                 fontSize: '12px'
                                             }}>
-                                                <div style={{ marginBottom: '4px' }}>📄</div>
+                                                <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'center' }}>
+                                                    <div style={{ width: '16px', height: '16px', color: '#8c8c8c' }}>
+                                                        {getLinearIcon('certificate')}
+                                                    </div>
+                                                </div>
                                                 <div>开户许可证</div>
                                                 <div style={{ fontSize: '10px', marginTop: '4px' }}>
                                                     暂无图片
@@ -234,7 +243,11 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
                         color: '#8c8c8c',
                         fontSize: '14px'
                     }}>
-                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>📄</div>
+                        <div style={{ fontSize: '24px', marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+                            <div style={{ width: '24px', height: '24px', color: '#8c8c8c' }}>
+                                {getLinearIcon('certificate')}
+                            </div>
+                        </div>
                         <div>请在属性面板中选择企业</div>
                         <div style={{ fontSize: '12px', marginTop: '4px' }}>
                             选择后将显示企业证照信息
