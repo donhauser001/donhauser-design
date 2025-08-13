@@ -476,7 +476,7 @@ const Enterprise: React.FC = () => {
                             paddingBottom: 8,
                             display: 'inline-block'
                         }}>
-                            📋 基本信息
+                            基本信息
                         </h4>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                             <Form.Item
