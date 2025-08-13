@@ -99,7 +99,7 @@ const DraggableComponentItem: React.FC<DraggableComponentItemProps> = ({ compone
                 }}
             >
                 <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                    <span style={{ fontSize: '16px', marginRight: '8px' }}>
+                    <span style={{ fontSize: '16px', marginRight: '8px', display: 'flex', alignItems: 'center' }}>
                         {iconMap[component.icon] || getLinearIcon(component.icon) || component.icon}
                     </span>
                     <div style={{ flex: 1 }}>
