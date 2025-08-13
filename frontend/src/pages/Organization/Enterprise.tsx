@@ -442,12 +442,16 @@ const Enterprise: React.FC = () => {
                 onOk={handleModalOk}
                 onCancel={handleModalCancel}
                 confirmLoading={loading}
-                width={800}
+                width={1200}
                 okText="确认"
                 cancelText="取消"
+                style={{ top: 20 }}
+                bodyStyle={{ 
+                    maxHeight: '70vh', 
+                    overflowY: 'auto',
+                    padding: '24px'
+                }}
             >
-
-
                 <Form
                     form={form}
                     layout="vertical"
@@ -455,8 +459,78 @@ const Enterprise: React.FC = () => {
                         status: 'active'
                     }}
                 >
-                    <div style={{ display: 'flex', gap: 16 }}>
-                        <div style={{ flex: 1 }}>
+                    {/* 基本信息区域 */}
+                    <div style={{ 
+                        marginBottom: 24,
+                        padding: 20,
+                        border: '1px solid #e8e8e8',
+                        borderRadius: 8,
+                        backgroundColor: '#fafafa'
+                    }}>
+                        <h4 style={{ 
+                            marginBottom: 16, 
+                            fontSize: 16, 
+                            fontWeight: 600, 
+                            color: '#1890ff',
+                            borderBottom: '2px solid #1890ff',
+                            paddingBottom: 8,
+                            display: 'inline-block'
+                        }}>
+                            📋 基本信息
+                        </h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                            <Form.Item
+                                name="enterpriseName"
+                                label="企业名称"
+                                rules={[
+                                    { required: true, message: '请输入企业名称' }
+                                ]}
+                            >
+                                <Input placeholder="请输入企业名称" size="large" />
+                            </Form.Item>
+
+                            <Form.Item
+                                name="enterpriseAlias"
+                                label="企业别名"
+                                extra="用于项目承接团队显示，如：设计团队A、创意工作室等"
+                            >
+                                <Input placeholder="请输入企业别名（选填）" size="large" />
+                            </Form.Item>
+
+                            <Form.Item
+                                name="creditCode"
+                                label="统一社会信用代码"
+                                rules={[
+                                    { required: true, message: '请输入统一社会信用代码' },
+                                    { pattern: /^[0-9A-HJ-NPQRTUWXY]{2}\d{6}[0-9A-HJ-NPQRTUWXY]{10}$/, message: '请输入正确的统一社会信用代码格式' }
+                                ]}
+                                extra="统一社会信用代码为18位，包含数字和大写字母"
+                                style={{ gridColumn: '1 / -1' }}
+                            >
+                                <Input placeholder="请输入统一社会信用代码" size="large" />
+                            </Form.Item>
+                        </div>
+                    </div>
+
+                    {/* 证照信息区域 */}
+                    <div style={{ 
+                        marginBottom: 24,
+                        padding: 16,
+                        border: '1px solid #f0f0f0',
+                        borderRadius: 8,
+                        backgroundColor: '#fafafa'
+                    }}>
+                        <h4 style={{ 
+                            marginBottom: 16, 
+                            fontSize: 14, 
+                            fontWeight: 600, 
+                            color: '#262626',
+                            borderBottom: '1px solid #e8e8e8',
+                            paddingBottom: 8
+                        }}>
+                            证照信息
+                        </h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                             <Form.Item
                                 name="enterpriseName"
                                 label="企业名称"
