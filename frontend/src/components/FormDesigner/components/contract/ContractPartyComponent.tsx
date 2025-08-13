@@ -40,9 +40,11 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
     // 处理客户选择
     const handleClientSelect = (partyIndex: number, clientName: string) => {
         const clientData = clients.find(client => client.name === clientName);
+        console.log(`DEBUG: 选择客户 party${partyIndex} = ${clientName}`);
         updateComponent(component.id, {
             [`party${partyIndex}ClientName`]: clientName,
-            [`party${partyIndex}ClientData`]: clientData
+            [`party${partyIndex}ClientData`]: clientData,
+            [`party${partyIndex}CompanyName`]: clientName // 同时保存到CompanyName字段，确保签章组件能读取
         });
     };
 
@@ -57,9 +59,11 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
 
     // 处理字段手动编辑
     const handleFieldChange = (partyIndex: number, fieldName: string, value: string) => {
+        console.log(`DEBUG: 保存字段数据 party${partyIndex}${fieldName} =`, value);
         updateComponent(component.id, {
             [`party${partyIndex}${fieldName}`]: value
         });
+        console.log('DEBUG: 更新后的组件数据 =', component);
     };
 
     // 获取企业数据并找到我方承接团队的详细信息
@@ -117,6 +121,17 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
             setSelectedContact(null);
         }
     }, [component.selectedContactId, employees]);
+
+    // 处理我方承接团队变化，同时更新我方公司名称字段
+    useEffect(() => {
+        if (component.ourTeam && ourEnterpriseData) {
+            const ourPartyIndex = getOurPartyIndex();
+            console.log(`DEBUG: 更新我方公司名称 party${ourPartyIndex}CompanyName = ${component.ourTeam}`);
+            updateComponent(component.id, {
+                [`party${ourPartyIndex}CompanyName`]: component.ourTeam
+            });
+        }
+    }, [component.ourTeam, ourEnterpriseData]);
 
     // 生成每个合作方的输入字段
     const renderPartyFields = (partyIndex: number) => {
