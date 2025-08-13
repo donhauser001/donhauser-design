@@ -222,10 +222,32 @@ const ContractComponents: React.FC<ContractComponentsProps> = ({ component, onPr
         );
     };
 
-    // 我方证照组件属性
+        // 我方证照组件属性
     const renderOurCertificateProperties = () => {
         return (
             <>
+                <Form.Item label="选择企业">
+                    <Select
+                        placeholder="请选择企业"
+                        value={component.selectedEnterprise || undefined}
+                        onChange={(value) => onPropertyChange('selectedEnterprise', value)}
+                        style={{ width: '100%' }}
+                        allowClear
+                        showSearch
+                        loading={loading}
+                        notFoundContent={loading ? '加载中...' : '暂无数据'}
+                        filterOption={(input, option) => 
+                            (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
+                        }
+                    >
+                        {enterprises.map((enterprise) => (
+                            <Select.Option key={enterprise.id} value={enterprise.enterpriseName}>
+                                {enterprise.enterpriseName}
+                                {enterprise.enterpriseAlias && ` (${enterprise.enterpriseAlias})`}
+                            </Select.Option>
+                        ))}
+                    </Select>
+                </Form.Item>
                 <Form.Item label="包含证照" style={{ marginBottom: 8 }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -234,22 +256,6 @@ const ContractComponents: React.FC<ContractComponentsProps> = ({ component, onPr
                                 size="small"
                                 checked={component.showBusinessLicense !== false} 
                                 onChange={(checked) => onPropertyChange('showBusinessLicense', checked)} 
-                            />
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '12px' }}>组织机构代码证</span>
-                            <Switch 
-                                size="small"
-                                checked={component.showOrganizationCode !== false} 
-                                onChange={(checked) => onPropertyChange('showOrganizationCode', checked)} 
-                            />
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: '12px' }}>税务登记证</span>
-                            <Switch 
-                                size="small"
-                                checked={component.showTaxRegistration !== false} 
-                                onChange={(checked) => onPropertyChange('showTaxRegistration', checked)} 
                             />
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -276,12 +282,11 @@ const ContractComponents: React.FC<ContractComponentsProps> = ({ component, onPr
                             我方证照组件使用说明
                         </div>
                         <div>
-                            • 用于展示我方企业的相关证照信息<br />
-                            • 支持选择企业自动填充证照数据<br />
-                            • 可以手动编辑覆盖自动填充的数据<br />
-                            • 支持上传证照扫描件图片<br />
-                            • 绿色背景表示自动填充的数据<br />
-                            • 可配置显示哪些证照类型
+                            • 用于展示我方企业的证照信息<br />
+                            • 选择企业后在画布上显示"xxx公司证照"<br />
+                            • 营业执照已三证合一，包含组织机构代码和税务信息<br />
+                            • 证照图片将自动从企业资料中获取<br />
+                            • 可选择是否显示开户许可证
                         </div>
                     </div>
                 </Form.Item>

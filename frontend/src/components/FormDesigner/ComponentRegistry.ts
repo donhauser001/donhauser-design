@@ -516,8 +516,6 @@ class ComponentRegistry {
                 order: 0,
                 selectedEnterprise: '',
                 showBusinessLicense: true,
-                showOrganizationCode: true,
-                showTaxRegistration: true,
                 showBankPermit: false
             }
         });

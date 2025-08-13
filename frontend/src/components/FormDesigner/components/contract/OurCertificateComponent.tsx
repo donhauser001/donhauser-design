@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Space, Input, Select, Button, Upload, Image, Modal } from 'antd';
-import { UploadOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Card, Space, Image, Modal, Button } from 'antd';
+import { EyeOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
 import { getOrganizationEnterprises, Enterprise } from '../../../../api/enterprises';
-import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 interface OurCertificateComponentProps {
     component: FormComponent;
 }
 
 const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ component }) => {
-    const { updateComponent } = useFormDesignerStore();
     const [enterprises, setEnterprises] = useState<Enterprise[]>([]);
     const [selectedEnterprise, setSelectedEnterprise] = useState<Enterprise | null>(null);
     const [previewVisible, setPreviewVisible] = useState(false);
     const [previewImage, setPreviewImage] = useState('');
+    const [previewTitle, setPreviewTitle] = useState('');
 
     // 获取企业数据
     useEffect(() => {
@@ -38,204 +37,150 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
         fetchEnterprises();
     }, [component.selectedEnterprise]);
 
-    // 处理企业选择
-    const handleEnterpriseSelect = (enterpriseName: string) => {
-        const enterprise = enterprises.find(e => e.enterpriseName === enterpriseName);
-        setSelectedEnterprise(enterprise || null);
-        updateComponent(component.id, { 
-            selectedEnterprise: enterpriseName,
-            // 清除手动编辑的证照信息，重新使用企业数据
-            manualBusinessLicense: undefined,
-            manualOrganizationCode: undefined,
-            manualTaxRegistration: undefined,
-            manualBankPermit: undefined
-        });
-    };
-
-    // 处理手动编辑
-    const handleManualEdit = (field: string, value: string) => {
-        updateComponent(component.id, {
-            [`manual${field}`]: value
-        });
-    };
-
-    // 获取字段值（优先使用手动编辑值，否则使用企业数据）
-    const getFieldValue = (field: string, enterpriseField?: string) => {
-        const manualValue = (component as any)[`manual${field}`];
-        if (manualValue !== undefined) return manualValue;
-        if (selectedEnterprise && enterpriseField) {
-            return (selectedEnterprise as any)[enterpriseField] || '';
-        }
-        return '';
-    };
-
-    // 处理证照图片上传
-    const handleImageUpload = (field: string, imageUrl: string) => {
-        updateComponent(component.id, {
-            [`${field}Image`]: imageUrl
-        });
-    };
-
-    // 处理证照图片删除
-    const handleImageDelete = (field: string) => {
-        updateComponent(component.id, {
-            [`${field}Image`]: ''
-        });
-    };
-
     // 图片预览
-    const handlePreview = (imageUrl: string) => {
+    const handlePreview = (imageUrl: string, title: string) => {
         setPreviewImage(imageUrl);
+        setPreviewTitle(title);
         setPreviewVisible(true);
     };
 
-    const renderCertificateField = (
-        title: string, 
-        field: string, 
-        enterpriseField?: string,
-        placeholder?: string
-    ) => {
-        const imageUrl = (component as any)[`${field}Image`];
-        const isAutoFilled = selectedEnterprise && enterpriseField && 
-            (component as any)[`manual${field}`] === undefined;
-
+    // 渲染证照图片
+    const renderCertificateImage = (title: string, imageUrl?: string) => {
+        // 模拟企业证照图片（实际应该从企业数据中获取）
+        const mockImageUrl = imageUrl || `https://via.placeholder.com/300x200?text=${encodeURIComponent(title)}`;
+        
         return (
-            <div style={{ marginBottom: '16px' }}>
-                <label style={{ 
-                    display: 'block', 
-                    marginBottom: '8px', 
+            <div style={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center',
+                marginBottom: '16px'
+            }}>
+                <div style={{ 
                     fontSize: '14px', 
-                    fontWeight: 500 
+                    fontWeight: 500, 
+                    marginBottom: '8px',
+                    color: '#262626'
                 }}>
                     {title}
-                    {selectedEnterprise && (
-                        <span style={{ 
-                            color: '#1890ff', 
-                            fontSize: '12px', 
-                            marginLeft: '8px' 
-                        }}>
-                            (我方企业)
-                        </span>
-                    )}
-                </label>
-                
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
-                    {/* 证照号码输入框 */}
-                    <Input
-                        placeholder={placeholder || `请输入${title}`}
-                        value={getFieldValue(field, enterpriseField)}
-                        onChange={(e) => handleManualEdit(field, e.target.value)}
-                        style={{
-                            backgroundColor: isAutoFilled ? '#f6ffed' : undefined,
-                            borderColor: isAutoFilled ? '#b7eb8f' : undefined
+                </div>
+                <div style={{ position: 'relative' }}>
+                    <Image 
+                        src={mockImageUrl}
+                        width={200}
+                        height={120}
+                        style={{ 
+                            objectFit: 'cover', 
+                            borderRadius: '6px',
+                            border: '1px solid #d9d9d9'
                         }}
+                        preview={false}
                     />
-                    
-                    {/* 证照图片上传 */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Upload
-                            showUploadList={false}
-                            beforeUpload={() => false}
-                            onChange={(info) => {
-                                // 这里应该调用实际的上传API
-                                // 暂时模拟上传成功
-                                if (info.file) {
-                                    const mockUrl = `https://via.placeholder.com/200x150?text=${title}`;
-                                    handleImageUpload(field, mockUrl);
-                                }
-                            }}
-                        >
-                            <Button icon={<UploadOutlined />} size="small">
-                                上传{title}扫描件
-                            </Button>
-                        </Upload>
-                        
-                        {imageUrl && (
-                            <>
-                                <Button 
-                                    icon={<EyeOutlined />} 
-                                    size="small"
-                                    onClick={() => handlePreview(imageUrl)}
-                                >
-                                    预览
-                                </Button>
-                                <Button 
-                                    icon={<DeleteOutlined />} 
-                                    size="small"
-                                    danger
-                                    onClick={() => handleImageDelete(field)}
-                                >
-                                    删除
-                                </Button>
-                            </>
-                        )}
-                    </div>
-                    
-                    {/* 显示缩略图 */}
-                    {imageUrl && (
-                        <Image 
-                            src={imageUrl}
-                            width={100}
-                            height={60}
-                            style={{ objectFit: 'cover', borderRadius: '4px' }}
-                            preview={false}
-                        />
-                    )}
-                </Space>
+                    <Button 
+                        icon={<EyeOutlined />} 
+                        size="small"
+                        style={{
+                            position: 'absolute',
+                            top: '8px',
+                            right: '8px',
+                            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                            borderColor: 'transparent',
+                            color: 'white'
+                        }}
+                        onClick={() => handlePreview(mockImageUrl, title)}
+                    >
+                        预览
+                    </Button>
+                </div>
             </div>
         );
+    };
+
+    // 获取企业营业执照信息
+    const getBusinessLicenseInfo = () => {
+        if (selectedEnterprise) {
+            return {
+                number: selectedEnterprise.businessLicense || component.manualBusinessLicense || '统一社会信用代码：91XXXXXXXXXXXXXXXXX',
+                image: selectedEnterprise.businessLicenseImage
+            };
+        }
+        return {
+            number: component.manualBusinessLicense || '统一社会信用代码：91XXXXXXXXXXXXXXXXX',
+            image: undefined
+        };
+    };
+
+    // 获取开户许可证信息
+    const getBankPermitInfo = () => {
+        if (selectedEnterprise) {
+            return {
+                number: selectedEnterprise.bankPermit || component.manualBankPermit || '开户许可证核准号：J1XXXXXXXXXXXXXXXX',
+                image: selectedEnterprise.bankPermitImage
+            };
+        }
+        return {
+            number: component.manualBankPermit || '开户许可证核准号：J1XXXXXXXXXXXXXXXX',
+            image: undefined
+        };
     };
 
     return (
         <div style={{ width: '100%' }}>
             <Card 
-                title="我方证照信息" 
+                title={
+                    <span style={{ fontSize: '16px', fontWeight: 600 }}>
+                        {selectedEnterprise ? `${selectedEnterprise.enterpriseName}证照` : '企业证照'}
+                    </span>
+                }
                 size="small" 
-                style={{ ...component.style }}
+                style={{ 
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '8px',
+                    ...component.style 
+                }}
             >
-                <Space direction="vertical" style={{ width: '100%' }} size="middle">
-                    {/* 企业选择 */}
-                    <div>
-                        <label style={{ 
-                            display: 'block', 
-                            marginBottom: '8px', 
-                            fontSize: '14px', 
-                            fontWeight: 500 
-                        }}>
-                            选择企业 {component.required && <span style={{ color: '#ff4d4f' }}>*</span>}
-                        </label>
-                        <Select
-                            placeholder="请选择企业"
-                            value={component.selectedEnterprise || undefined}
-                            onChange={handleEnterpriseSelect}
-                            style={{ width: '100%' }}
-                            allowClear
-                            showSearch
-                            filterOption={(input, option) => 
-                                (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
-                            }
-                        >
-                            {enterprises.map((enterprise) => (
-                                <Select.Option key={enterprise.id} value={enterprise.enterpriseName}>
-                                    {enterprise.enterpriseName}
-                                    {enterprise.enterpriseAlias && ` (${enterprise.enterpriseAlias})`}
-                                </Select.Option>
-                            ))}
-                        </Select>
-                    </div>
+                <Space direction="vertical" style={{ width: '100%' }} size="large">
+                    {/* 营业执照 */}
+                    {component.showBusinessLicense !== false && (
+                        <div>
+                            {renderCertificateImage('营业执照', getBusinessLicenseInfo().image)}
+                            <div style={{ 
+                                fontSize: '12px', 
+                                color: '#8c8c8c', 
+                                textAlign: 'center',
+                                marginTop: '4px'
+                            }}>
+                                {getBusinessLicenseInfo().number}
+                            </div>
+                        </div>
+                    )}
 
-                    {/* 证照字段 */}
-                    {component.showBusinessLicense !== false && 
-                        renderCertificateField('营业执照', 'BusinessLicense', 'businessLicense', '请输入营业执照号码')}
-                    
-                    {component.showOrganizationCode !== false && 
-                        renderCertificateField('组织机构代码证', 'OrganizationCode', 'organizationCode', '请输入组织机构代码')}
-                    
-                    {component.showTaxRegistration !== false && 
-                        renderCertificateField('税务登记证', 'TaxRegistration', 'taxRegistration', '请输入税务登记证号')}
-                    
-                    {component.showBankPermit === true && 
-                        renderCertificateField('开户许可证', 'BankPermit', 'bankPermit', '请输入开户许可证号')}
+                    {/* 开户许可证 */}
+                    {component.showBankPermit === true && (
+                        <div>
+                            {renderCertificateImage('开户许可证', getBankPermitInfo().image)}
+                            <div style={{ 
+                                fontSize: '12px', 
+                                color: '#8c8c8c', 
+                                textAlign: 'center',
+                                marginTop: '4px'
+                            }}>
+                                {getBankPermitInfo().number}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 如果没有选择企业，显示提示 */}
+                    {!selectedEnterprise && (
+                        <div style={{
+                            textAlign: 'center',
+                            padding: '20px',
+                            color: '#8c8c8c',
+                            fontSize: '14px'
+                        }}>
+                            请在属性面板中选择企业以显示证照信息
+                        </div>
+                    )}
                 </Space>
             </Card>
 
@@ -254,13 +199,14 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
             {/* 图片预览模态框 */}
             <Modal
                 open={previewVisible}
-                title="证照预览"
+                title={`${previewTitle} - 预览`}
                 footer={null}
                 onCancel={() => setPreviewVisible(false)}
+                width={600}
             >
                 <img 
-                    alt="证照预览" 
-                    style={{ width: '100%' }} 
+                    alt={previewTitle} 
+                    style={{ width: '100%', maxHeight: '500px', objectFit: 'contain' }} 
                     src={previewImage} 
                 />
             </Modal>
