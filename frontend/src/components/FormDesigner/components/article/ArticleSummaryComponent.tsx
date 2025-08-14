@@ -11,10 +11,13 @@ interface ArticleSummaryComponentProps {
 const ArticleSummaryComponent: React.FC<ArticleSummaryComponentProps> = ({ component }) => {
     return (
         <TextArea
-            placeholder={component.placeholder}
-            disabled={true}
-            rows={4}
+            placeholder={component.placeholder || '请输入文章摘要'}
+            disabled={component.disabled}
+            rows={component.rows || 4}
             style={component.style}
+            maxLength={component.maxLength || 200}
+            showCount={component.showCharCount}
+            autoSize={component.autoSize ? { minRows: 3, maxRows: 8 } : false}
         />
     );
 };

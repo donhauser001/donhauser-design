@@ -47,8 +47,15 @@ import OurCertificateComponent from './components/contract/OurCertificateCompone
 
 // 导入文章组件
 import {
+    ArticleTitleComponent,
+    ArticleContentComponent,
     AuthorComponent,
-    ArticleSummaryComponent
+    ArticleSummaryComponent,
+    ArticleCategoryComponent,
+    ArticleTagsComponent,
+    ArticlePublishTimeComponent,
+    ArticleCoverImageComponent,
+    ArticleSeoComponent
 } from './components/article';
 
 // 导入财务组件
@@ -58,8 +65,7 @@ import {
     TotalComponent,
     InvoiceTypeComponent,
     InvoiceInfoComponent,
-    PaymentMethodComponent,
-    TaxRateComponent
+    PaymentMethodComponent
 } from './components/finance';
 
 interface FormComponentRendererProps {
@@ -134,10 +140,24 @@ const FormComponentRenderer: React.FC<FormComponentRendererProps> = ({ component
                 return <SignatureComponent component={component} />;
 
             // 文章组件
+            case 'articleTitle':
+                return <ArticleTitleComponent component={component} />;
+            case 'articleContent':
+                return <ArticleContentComponent component={component} />;
             case 'author':
                 return <AuthorComponent component={component} />;
             case 'articleSummary':
                 return <ArticleSummaryComponent component={component} />;
+            case 'articleCategory':
+                return <ArticleCategoryComponent component={component} />;
+            case 'articleTags':
+                return <ArticleTagsComponent component={component} />;
+            case 'articlePublishTime':
+                return <ArticlePublishTimeComponent component={component} />;
+            case 'articleCoverImage':
+                return <ArticleCoverImageComponent component={component} />;
+            case 'articleSeo':
+                return <ArticleSeoComponent component={component} />;
 
             // 财务组件
             case 'amount':
@@ -152,8 +172,7 @@ const FormComponentRenderer: React.FC<FormComponentRendererProps> = ({ component
                 return <InvoiceInfoComponent component={component} />;
             case 'paymentMethod':
                 return <PaymentMethodComponent component={component} />;
-            case 'taxRate':
-                return <TaxRateComponent component={component} />;
+
 
             default:
                 return <div>未知组件类型: {component.type}</div>;

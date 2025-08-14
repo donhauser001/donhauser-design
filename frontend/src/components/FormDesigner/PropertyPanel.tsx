@@ -12,6 +12,8 @@ import MediaComponents from './PropertyPanels/MediaComponents';
 import ContentComponents from './PropertyPanels/ContentComponents';
 import ProjectComponents from './PropertyPanels/ProjectComponents';
 import ContractComponents from './PropertyPanels/ContractComponents';
+import ArticleComponents from './PropertyPanels/ArticleComponents';
+import FinanceComponents from './PropertyPanels/FinanceComponents';
 
 const { Option } = Select;
 
@@ -52,6 +54,8 @@ const PropertyPanel: React.FC = () => {
             const contentTypes = ['presetText', 'html', 'countdown', 'slider'];
             const projectTypes = ['projectName', 'client', 'contact', 'quotation', 'order', 'instruction', 'taskList'];
             const contractTypes = ['contractName', 'contractParty', 'ourCertificate', 'signature'];
+            const articleTypes = ['articleTitle', 'articleContent', 'author', 'articleSummary', 'articleCategory', 'articleTags', 'articlePublishTime', 'articleCoverImage', 'articleSeo'];
+            const financeTypes = ['amount', 'amountInWords', 'total', 'invoiceType', 'invoiceInfo', 'paymentMethod'];
 
             if (basicTypes.includes(selectedComponentData.type)) return 'basic';
             if (layoutTypes.includes(selectedComponentData.type)) return 'layout';
@@ -60,6 +64,8 @@ const PropertyPanel: React.FC = () => {
             if (contentTypes.includes(selectedComponentData.type)) return 'content';
             if (projectTypes.includes(selectedComponentData.type)) return 'project';
             if (contractTypes.includes(selectedComponentData.type)) return 'contract';
+            if (articleTypes.includes(selectedComponentData.type)) return 'article';
+            if (financeTypes.includes(selectedComponentData.type)) return 'finance';
             return 'basic';
         };
 
@@ -166,6 +172,18 @@ const PropertyPanel: React.FC = () => {
                             )}
                             {category === 'contract' && (
                                 <ContractComponents
+                                    component={selectedComponentData}
+                                    onPropertyChange={handlePropertyChange}
+                                />
+                            )}
+                            {category === 'article' && (
+                                <ArticleComponents
+                                    component={selectedComponentData}
+                                    onPropertyChange={handlePropertyChange}
+                                />
+                            )}
+                            {category === 'finance' && (
+                                <FinanceComponents
                                     component={selectedComponentData}
                                     onPropertyChange={handlePropertyChange}
                                 />

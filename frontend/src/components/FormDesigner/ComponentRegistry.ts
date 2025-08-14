@@ -536,17 +536,63 @@ class ComponentRegistry {
         });
 
         // 文章组件
+        this.register('articleTitle', {
+            type: 'articleTitle',
+            name: '文章标题',
+            icon: 'EditOutlined',
+            category: 'article',
+            description: '文章标题输入框',
+            defaultProps: {
+                label: '文章标题',
+                placeholder: '请输入文章标题',
+                required: true,
+                disabled: false,
+                maxLength: 100,
+                showCharCount: true,
+                order: 0
+            }
+        });
+
+        this.register('articleContent', {
+            type: 'articleContent',
+            name: '文章内容',
+            icon: 'FileTextOutlined',
+            category: 'article',
+            description: '文章内容编辑器，支持富文本或纯文本模式',
+            defaultProps: {
+                label: '文章内容',
+                placeholder: '请输入文章内容',
+                required: true,
+                disabled: false,
+                enableRichText: false, // 默认为普通文本模式
+                richTextHeight: 400,
+                rows: 8,
+                maxLength: 10000, // 默认最大字符数
+                showCharCount: true, // 默认显示字符统计
+                autoSize: false,
+                fieldDescription: '支持切换普通文本和富文本编辑模式',
+                order: 0
+            }
+        });
+
         this.register('author', {
             type: 'author',
             name: '作者',
             icon: 'UserOutlined',
             category: 'article',
-            description: '文章作者输入框',
+            description: '文章作者输入框，支持从用户表选择',
             defaultProps: {
                 label: '作者',
-                placeholder: '请输入作者姓名',
+                placeholder: '请输入作者真实姓名',
                 required: false,
                 disabled: false,
+                fromUserTable: false,
+                authorSelectMode: 'input', // 'input' | 'select' | 'autocomplete'
+                autoCurrentUser: false, // 自动获取当前用户为作者
+                allowClear: true,
+                allowSearch: true,
+                maxLength: 50,
+                showCharCount: false,
                 order: 0
             }
         });
@@ -562,6 +608,119 @@ class ComponentRegistry {
                 placeholder: '请输入文章摘要',
                 required: false,
                 disabled: false,
+                rows: 4,
+                maxLength: 200,
+                showCharCount: true,
+                autoSize: false,
+                order: 0
+            }
+        });
+
+        this.register('articleCategory', {
+            type: 'articleCategory',
+            name: '文章分类',
+            icon: 'FolderOutlined',
+            category: 'article',
+            description: '文章分类选择器，从文章分类表动态加载',
+            defaultProps: {
+                label: '文章分类',
+                placeholder: '请选择文章分类',
+                required: true,
+                disabled: false,
+                allowClear: true,
+                allowSearch: true,
+                order: 0
+            }
+        });
+
+        this.register('articleTags', {
+            type: 'articleTags',
+            name: '文章标签',
+            icon: 'TagsOutlined',
+            category: 'article',
+            description: '文章标签多选器',
+            defaultProps: {
+                label: '文章标签',
+                placeholder: '请输入文章标签，多个标签用逗号分隔',
+                required: false,
+                disabled: false,
+                fromTagTable: false,
+                allowClear: true,
+                allowSearch: true,
+                maxTagCount: 5,
+                maxTagTextLength: 10,
+                maxLength: 200,
+                showCharCount: true,
+                options: [
+                    { label: '技术', value: 'tech' },
+                    { label: '设计', value: 'design' },
+                    { label: '产品', value: 'product' },
+                    { label: '市场', value: 'marketing' },
+                    { label: '运营', value: 'operation' }
+                ],
+                order: 0
+            }
+        });
+
+        this.register('articlePublishTime', {
+            type: 'articlePublishTime',
+            name: '发布时间',
+            icon: 'CalendarOutlined',
+            category: 'article',
+            description: '文章发布时间选择器',
+            defaultProps: {
+                label: '发布时间',
+                placeholder: '请选择发布时间',
+                required: false,
+                disabled: false,
+                showTimePicker: true,
+                autoCurrentTime: false,
+                allowClear: true,
+                showToday: true,
+                showNow: true,
+                disablePastDates: false,
+                order: 0
+            }
+        });
+
+        this.register('articleCoverImage', {
+            type: 'articleCoverImage',
+            name: '封面图片',
+            icon: 'PictureOutlined',
+            category: 'article',
+            description: '文章封面图片上传',
+            defaultProps: {
+                label: '封面图片',
+                required: false,
+                disabled: false,
+                uploadType: 'card', // 'button' | 'drag' | 'card'
+                maxFileSize: 5,
+                uploadButtonText: '上传封面图',
+                uploadTip: '支持 JPG、PNG、WebP 格式，文件大小不超过 5MB',
+                order: 0
+            }
+        });
+
+        this.register('articleSeo', {
+            type: 'articleSeo',
+            name: 'SEO设置',
+            icon: 'SearchOutlined',
+            category: 'article',
+            description: 'SEO优化信息设置',
+            defaultProps: {
+                label: 'SEO设置',
+                required: false,
+                disabled: false,
+                defaultExpanded: false,
+                ghost: false,
+                expandIconPosition: 'start',
+                seoTitlePlaceholder: '请输入SEO标题（建议60字符以内）',
+                seoKeywordsPlaceholder: '请输入关键词，用逗号分隔',
+                seoDescriptionPlaceholder: '请输入SEO描述（建议160字符以内）',
+                seoTitleMaxLength: 60,
+                seoKeywordsMaxLength: 200,
+                seoDescriptionMaxLength: 160,
+                showCharCount: true,
                 order: 0
             }
         });
@@ -578,6 +737,11 @@ class ComponentRegistry {
                 placeholder: '请输入金额',
                 required: true,
                 disabled: false,
+                precision: 2,
+                formatter: true,
+                step: 1,
+                linkOrderTotal: false,
+                orderTotalPercentage: 100,
                 order: 0
             }
         });
@@ -593,6 +757,11 @@ class ComponentRegistry {
                 content: '人民币零元整',
                 required: false,
                 disabled: false,
+                amountStyle: 'normal',
+                fontSize: 14,
+                includePrefix: true,
+                backgroundColor: 'default',
+                linkAmount: true,
                 order: 0
             }
         });
@@ -608,6 +777,13 @@ class ComponentRegistry {
                 placeholder: '请输入总计金额',
                 required: true,
                 disabled: false,
+                precision: 2,
+                formatter: true,
+                fontSize: 16,
+                fontWeight: 'bold',
+                totalMode: 'order', // 默认为订单总计模式
+                orderTotalPercentage: 100,
+                selectedAmountIds: [], // 默认没有选择金额组件
                 order: 0
             }
         });
@@ -620,14 +796,12 @@ class ComponentRegistry {
             description: '发票类型选择',
             defaultProps: {
                 label: '发票类型',
+                placeholder: '请选择发票类型',
                 required: true,
                 disabled: false,
-                options: [
-                    { label: '增值税普通发票', value: 'normal' },
-                    { label: '增值税专用发票', value: 'special' },
-                    { label: '电子发票', value: 'electronic' },
-                    { label: '其他发票', value: 'other' }
-                ],
+                allowClear: true,
+                allowSearch: true,
+                invoiceOptions: ['增值税专用发票', '增值税普通发票', '电子发票', '纸质发票', '收据'],
                 order: 0
             }
         });
@@ -637,12 +811,13 @@ class ComponentRegistry {
             name: '开票信息',
             icon: 'FileTextOutlined',
             category: 'finance',
-            description: '开票信息多行文本',
+            description: '从企业设置自动获取开票信息',
             defaultProps: {
                 label: '开票信息',
-                placeholder: '请输入开票信息',
                 required: false,
                 disabled: false,
+                titleDisplay: 'show',
+                customTitle: '开票信息',
                 order: 0
             }
         });
@@ -655,32 +830,17 @@ class ComponentRegistry {
             description: '付款方式选择',
             defaultProps: {
                 label: '付款方式',
+                placeholder: '请选择付款方式',
                 required: true,
                 disabled: false,
-                options: [
-                    { label: '银行转账', value: 'bank' },
-                    { label: '现金支付', value: 'cash' },
-                    { label: '支付宝', value: 'alipay' },
-                    { label: '微信支付', value: 'wechat' }
-                ],
+                allowClear: true,
+                allowSearch: true,
+                paymentOptions: ['现金', '银行转账', '支票', '微信支付', '支付宝', '信用卡'],
                 order: 0
             }
         });
 
-        this.register('taxRate', {
-            type: 'taxRate',
-            name: '税率',
-            icon: 'NumberOutlined',
-            category: 'finance',
-            description: '税率百分比输入',
-            defaultProps: {
-                label: '税率',
-                placeholder: '请输入税率(%)',
-                required: false,
-                disabled: false,
-                order: 0
-            }
-        });
+
     }
 }
 

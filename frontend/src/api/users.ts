@@ -44,7 +44,13 @@ const API_BASE_URL = 'http://localhost:3000/api'
  */
 export const getUsers = async (params: UserQueryParams = {}): Promise<UserListResponse> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/users`, { params })
+    const response = await axios.get(`${API_BASE_URL}/users`, {
+      params,
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    })
     return response.data
   } catch (error) {
     console.error('获取用户列表失败:', error)
@@ -61,6 +67,10 @@ export const getEmployees = async (): Promise<{ success: boolean; data: User[] }
       params: {
         status: 'active',
         limit: 100
+      },
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
       }
     })
     // 过滤出员工、系统管理员和设计师
@@ -86,6 +96,10 @@ export const getClientUsers = async (): Promise<{ success: boolean; data: User[]
       params: {
         status: 'active',
         limit: 200
+      },
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
       }
     })
     // 在前端过滤出客户角色的用户

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Switch, Select, DatePicker } from 'antd';
+import { Form, Input, Switch, Select, DatePicker, InputNumber } from 'antd';
 import { FormComponent } from '../../../types/formDesigner';
 import { getLinearIcon } from '../utils/iconUtils';
 import dayjs from 'dayjs';
@@ -29,6 +29,16 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
     const isContractPartyComponent = component.type === 'contractParty';
     // 我方证照组件只保留字段说明
     const isOurCertificateComponent = component.type === 'ourCertificate';
+    // 文章分类组件不需要默认值设置
+    const isArticleCategoryComponent = component.type === 'articleCategory';
+    // 文章标签组件不需要默认值设置（支持双模式：输入框/下拉选择）
+    const isArticleTagsComponent = component.type === 'articleTags';
+    // SEO设置组件不需要图标、默认值和占位符设置
+    const isArticleSeoComponent = component.type === 'articleSeo';
+    // 文章内容组件不需要图标和默认值设置
+    const isArticleContentComponent = component.type === 'articleContent';
+    // 金额组件需要数字类型的默认值处理
+    const isAmountComponent = ['amount', 'total'].includes(component.type);
 
 
     return (
@@ -63,7 +73,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         </Form.Item>
                     )}
 
-                    {!isTextAreaComponent && !isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTaskListComponent && !isDateComponent && !isContractPartyComponent && (
+                    {!isTextAreaComponent && !isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTaskListComponent && !isDateComponent && !isContractPartyComponent && !isArticleSeoComponent && !isArticleContentComponent && (
                         <Form.Item label="图标">
                             <Select
                                 value={component.icon || ''}
@@ -192,7 +202,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         />
                     </Form.Item>
 
-                    {!isRadioComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTextAreaComponent && !isTaskListComponent && !isNumberComponent && !isDateComponent && !isContractPartyComponent && (
+                    {!isRadioComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTextAreaComponent && !isTaskListComponent && !isNumberComponent && !isDateComponent && !isContractPartyComponent && !isArticleCategoryComponent && !isArticleTagsComponent && !isArticleSeoComponent && !isArticleContentComponent && !isAmountComponent && (
                         <Form.Item label="默认值">
                             <Input
                                 value={component.defaultValue || ''}
@@ -238,7 +248,52 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         </Form.Item>
                     )}
 
-                    {!isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && !isTaskListComponent && !isNumberComponent && !isContractPartyComponent && (
+                    {isAmountComponent && (
+                        <Form.Item label="默认值">
+                            <InputNumber
+                                value={component.defaultValue ? parseFloat(component.defaultValue) : undefined}
+                                onChange={(value) => onPropertyChange('defaultValue', value?.toString() || '')}
+                                placeholder="请输入默认金额"
+                                style={{ width: '100%' }}
+                                precision={component.precision || 2}
+                                min={0}
+                                step={1}
+                                formatter={(value) => {
+                                    if (value === undefined || value === null ||
+                                        (typeof value === 'string' && value === '') ||
+                                        isNaN(Number(value))) return '';
+                                    // 使用组件的precision设置进行格式化
+                                    const precision = component.precision || 2;
+                                    const numValue = parseFloat(value.toString());
+                                    if (isNaN(numValue)) return '';
+                                    const formattedValue = numValue.toFixed(precision);
+
+                                    // 分离整数和小数部分
+                                    const parts = formattedValue.split('.');
+                                    // 只对整数部分添加千分号
+                                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+                                    return `¥ ${parts.join('.')}`;
+                                }}
+                                parser={(value) => {
+                                    if (!value) return 0;
+                                    const cleanValue = value.replace(/¥\s?|(,*)/g, '');
+                                    const parsed = parseFloat(cleanValue);
+                                    return isNaN(parsed) ? 0 : parsed;
+                                }}
+                                addonAfter="元"
+                            />
+                            <div style={{
+                                fontSize: '12px',
+                                color: '#8c8c8c',
+                                marginTop: '4px'
+                            }}>
+                                设置金额组件的默认数值
+                            </div>
+                        </Form.Item>
+                    )}
+
+                    {!isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && !isTaskListComponent && !isNumberComponent && !isContractPartyComponent && !isArticleSeoComponent && (
                         <Form.Item label="占位符">
                             <Input
                                 value={component.placeholder || ''}

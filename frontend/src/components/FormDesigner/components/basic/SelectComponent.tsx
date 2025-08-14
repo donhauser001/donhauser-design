@@ -1,7 +1,7 @@
 import React from 'react';
 import { Select } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
-import { getLinearIcon } from '../../utils/iconUtils';
+import { getIconPrefix } from '../../utils/iconUtils';
 
 interface SelectComponentProps {
     component: FormComponent;
@@ -27,31 +27,24 @@ const SelectComponent: React.FC<SelectComponentProps> = ({ component }) => {
         }
     };
 
-    // 获取图标显示
-    const getIconDisplay = () => {
-        if (!component.icon) {
-            return '';
-        }
-
-        const icon = getLinearIcon(component.icon);
-        if (icon) {
-            return React.cloneElement(icon, { style: { marginRight: '4px' } });
-        }
-        return '';
+    // 获取图标前缀
+    const getPrefix = () => {
+        return getIconPrefix(component.icon);
     };
 
     return (
         <div style={{ width: '100%' }}>
             <Select
-                placeholder={`${getIconDisplay()} ${component.placeholder || '请选择'}`.trim()}
+                placeholder={component.placeholder || '请选择'}
                 value={getDefaultValue()}
                 mode={component.selectMode === 'multiple' ? 'multiple' : undefined}
                 allowClear={component.allowClear}
                 showSearch={component.allowSearch}
                 disabled={true}
                 style={{ width: '100%' }}
+                prefix={getPrefix()}
                 options={component.options?.map(opt => ({
-                    label: `${getIconDisplay()} ${opt.label}`.trim(),
+                    label: opt.label,
                     value: opt.value
                 }))}
             />

@@ -31,8 +31,15 @@ export type ComponentType =
     | 'ourCertificate'
     | 'signature'
     // 文章组件
+    | 'articleTitle'
+    | 'articleContent'
     | 'author'
     | 'articleSummary'
+    | 'articleCategory'
+    | 'articleTags'
+    | 'articlePublishTime'
+    | 'articleCoverImage'
+    | 'articleSeo'
     // 财务组件
     | 'amount'
     | 'amountInWords'
@@ -40,7 +47,7 @@ export type ComponentType =
     | 'invoiceType'
     | 'invoiceInfo'
     | 'paymentMethod'
-    | 'taxRate';
+    ;
 
 // 验证规则类型
 export interface ValidationRule {
@@ -98,10 +105,32 @@ export interface FormComponent {
     maxFileCount?: number; // 最大文件数量
     uploadButtonText?: string; // 上传按钮文本
     uploadTip?: string; // 上传提示文本
-    uploadType?: 'button' | 'dragger'; // 上传类型：按钮或拖拽
+    uploadType?: 'button' | 'dragger' | 'card'; // 上传类型：按钮、拖拽或卡片
     showFileList?: boolean; // 显示文件列表
     validation?: ValidationRule[];
     style?: ComponentStyle;
+
+    // 财务组件特有属性
+    precision?: number; // 小数位数
+    formatter?: boolean; // 千分位格式化
+    amountStyle?: 'normal' | 'bold' | 'italic'; // 金额大写样式
+    fontSize?: number; // 字体大小
+    includePrefix?: boolean; // 包含人民币前缀
+    backgroundColor?: 'default' | 'transparent' | 'white'; // 背景颜色
+    fontWeight?: 'normal' | 'bold' | 'bolder'; // 字体粗细
+    invoiceOptions?: string[]; // 发票类型选项
+    paymentOptions?: string[]; // 付款方式选项
+
+    linkOrderTotal?: boolean; // 关联订单总计
+    orderTotalPercentage?: number; // 订单总计百分比
+    totalMode?: 'order' | 'amounts'; // 总计模式：订单总计或金额组件求和
+    selectedAmountIds?: string[]; // 选中的金额组件ID列表（用于求和模式）
+    linkAmount?: boolean; // 关联金额（用于金额大写组件）
+    linkedAmountComponentId?: string; // 关联的金额组件ID
+    invoiceDisplayMode?: 'card' | 'compact'; // 开票信息显示模式
+    selectedEnterpriseId?: string; // 选择的企业ID（用于开票信息组件）
+    titleDisplay?: 'show' | 'hide' | 'custom'; // 标题显示模式
+    customTitle?: string; // 自定义标题内容
     options?: Array<{ label: string; value: any; defaultSelected?: boolean }>; // 用于select、radio、checkbox
     allowMultiple?: boolean; // 允许多选（用于radio/checkbox合并组件）
     optionLayout?: 'vertical' | 'horizontal'; // 选项布局方向
@@ -195,6 +224,30 @@ export interface FormComponent {
     // 手动编辑的证照信息（优先级高于企业数据）
     manualBusinessLicense?: string; // 手动输入的营业执照号
     manualBankPermit?: string; // 手动输入的开户许可证号
+
+    // 文章组件特有属性
+    rows?: number; // 多行文本框行数
+    autoSize?: boolean; // 自动调整大小
+    fromUserTable?: boolean; // 从用户表选择作者
+    authorSelectMode?: 'input' | 'select' | 'autocomplete'; // 作者选择模式
+    autoCurrentUser?: boolean; // 自动获取当前用户为作者
+    fromCategoryTable?: boolean; // 从分类表加载分类
+    fromTagTable?: boolean; // 从标签表加载标签
+    maxTagCount?: number; // 最大标签数量
+    maxTagTextLength?: number; // 标签最大字符数
+    showToday?: boolean; // 显示今天按钮
+    showNow?: boolean; // 显示此刻按钮
+    disablePastDates?: boolean; // 禁止选择过去日期
+    defaultExpanded?: boolean; // 默认展开（用于折叠面板）
+    ghost?: boolean; // 无边框模式
+    expandIconPosition?: 'start' | 'end'; // 展开图标位置
+    seoTitlePlaceholder?: string; // SEO标题占位符
+    seoKeywordsPlaceholder?: string; // SEO关键词占位符
+    seoDescriptionPlaceholder?: string; // SEO描述占位符
+    seoTitleMaxLength?: number; // SEO标题最大长度
+    seoKeywordsMaxLength?: number; // SEO关键词最大长度
+    seoDescriptionMaxLength?: number; // SEO描述最大长度
+
     parentId?: string; // 父容器ID，null表示在根容器中
     order: number; // 排序
     columnIndex?: number; // 用于分栏容器，标识组件属于哪一列

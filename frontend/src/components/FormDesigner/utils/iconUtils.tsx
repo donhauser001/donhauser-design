@@ -147,7 +147,12 @@ export const getIconPrefix = (iconKey?: string): React.ReactElement => {
     if (iconKey) {
         const icon = getLinearIcon(iconKey);
         if (icon) {
-            return <span style={{ opacity: 1, display: 'inline-flex', alignItems: 'center' }}>{icon}</span>;
+            return <span style={{
+                opacity: 1,
+                display: 'inline-flex',
+                alignItems: 'center',
+                transform: 'translateY(3px)' // 向下移动3像素
+            }}>{icon}</span>;
         }
     }
     // 返回透明的占位符，保持DOM结构稳定

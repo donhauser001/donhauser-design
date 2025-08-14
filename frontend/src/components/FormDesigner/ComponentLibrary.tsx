@@ -15,7 +15,12 @@ import {
     PictureOutlined,
     SlidersOutlined,
     CodeOutlined,
-    BulbOutlined
+    BulbOutlined,
+    UserOutlined,
+    TagsOutlined,
+    SearchOutlined,
+    FolderOutlined,
+    EditOutlined
 } from '@ant-design/icons';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
@@ -41,7 +46,12 @@ const iconMap: { [key: string]: React.ReactElement } = {
     PictureOutlined: <PictureOutlined />,
     SlidersOutlined: <SlidersOutlined />,
     CodeOutlined: <CodeOutlined />,
-    BulbOutlined: <BulbOutlined />
+    BulbOutlined: <BulbOutlined />,
+    UserOutlined: <UserOutlined />,
+    TagsOutlined: <TagsOutlined />,
+    SearchOutlined: <SearchOutlined />,
+    FolderOutlined: <FolderOutlined />,
+    EditOutlined: <EditOutlined />
 };
 
 // 可拖拽的组件项
