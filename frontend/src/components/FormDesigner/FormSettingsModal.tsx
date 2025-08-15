@@ -13,18 +13,17 @@ import {
     Row,
     Col,
     Tag,
-    Alert,
-    Radio,
-    ColorPicker
+    Alert
 } from 'antd';
 import {
     InfoCircleOutlined,
     SettingOutlined,
-    ThunderboltOutlined,
-    BgColorsOutlined,
+    BellOutlined,
+    ProjectOutlined,
+    FileTextOutlined,
+    FileProtectOutlined,
     ExportOutlined,
     ImportOutlined,
-    DeleteOutlined,
     SaveOutlined
 } from '@ant-design/icons';
 import { useFormDesignerStore } from '../../stores/formDesignerStore';
@@ -176,7 +175,7 @@ const FormSettingsModal: React.FC<FormSettingsModalProps> = ({
             label: (
                 <span>
                     <InfoCircleOutlined />
-                    基本设置
+                    基础设置
                 </span>
             ),
             children: (
@@ -212,7 +211,7 @@ const FormSettingsModal: React.FC<FormSettingsModalProps> = ({
                         </Form.Item>
                     </Card>
 
-                    <Card size="small" title="表单配置">
+                    <Card size="small" title="基础配置" style={{ marginBottom: '16px' }}>
                         <Row gutter={16}>
                             <Col span={12}>
                                 <Form.Item name="enableValidation" label="启用验证" valuePropName="checked">
@@ -236,181 +235,16 @@ const FormSettingsModal: React.FC<FormSettingsModalProps> = ({
                             </Col>
                         </Row>
                     </Card>
-                </div>
-            )
-        },
-        {
-            key: 'layout',
-            label: (
-                <span>
-                    <SettingOutlined />
-                    布局设置
-                </span>
-            ),
-            children: (
-                <div style={{ maxHeight: '60vh', overflowY: 'auto', padding: '8px 0' }}>
-                    <Card size="small" title="标签设置" style={{ marginBottom: '16px' }}>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item name="labelPosition" label="标签位置">
-                                    <Radio.Group>
-                                        <Radio value="top">顶部</Radio>
-                                        <Radio value="left">左侧</Radio>
-                                        <Radio value="right">右侧</Radio>
-                                    </Radio.Group>
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="labelWidth" label="标签宽度">
-                                    <Select>
-                                        <Option value="80px">80px</Option>
-                                        <Option value="100px">100px</Option>
-                                        <Option value="120px">120px</Option>
-                                        <Option value="150px">150px</Option>
-                                        <Option value="auto">自动</Option>
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Card>
 
-                    <Card size="small" title="间距设置" style={{ marginBottom: '16px' }}>
+                    <Card size="small" title="安全设置" style={{ marginBottom: '16px' }}>
                         <Row gutter={16}>
                             <Col span={12}>
-                                <Form.Item name="componentSpacing" label="组件间距">
-                                    <Select>
-                                        <Option value="8px">紧凑 (8px)</Option>
-                                        <Option value="16px">标准 (16px)</Option>
-                                        <Option value="24px">宽松 (24px)</Option>
-                                        <Option value="32px">超宽松 (32px)</Option>
-                                    </Select>
+                                <Form.Item name="enableCaptcha" label="启用验证码" valuePropName="checked">
+                                    <Switch />
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
-                                <Form.Item name="padding" label="内边距">
-                                    <Select>
-                                        <Option value="16px">16px</Option>
-                                        <Option value="24px">24px</Option>
-                                        <Option value="32px">32px</Option>
-                                        <Option value="48px">48px</Option>
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Card>
-
-                    <Card size="small" title="容器设置">
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item name="maxWidth" label="最大宽度">
-                                    <Select>
-                                        <Option value="100%">100%</Option>
-                                        <Option value="1200px">1200px</Option>
-                                        <Option value="1000px">1000px</Option>
-                                        <Option value="800px">800px</Option>
-                                        <Option value="600px">600px</Option>
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="alignment" label="对齐方式">
-                                    <Radio.Group>
-                                        <Radio value="left">左对齐</Radio>
-                                        <Radio value="center">居中</Radio>
-                                        <Radio value="right">右对齐</Radio>
-                                    </Radio.Group>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Card>
-                </div>
-            )
-        },
-        {
-            key: 'theme',
-            label: (
-                <span>
-                    <BgColorsOutlined />
-                    主题样式
-                </span>
-            ),
-            children: (
-                <div style={{ maxHeight: '60vh', overflowY: 'auto', padding: '8px 0' }}>
-                    <Card size="small" title="颜色设置" style={{ marginBottom: '16px' }}>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item name="primaryColor" label="主色调">
-                                    <ColorPicker showText />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="backgroundColor" label="背景色">
-                                    <ColorPicker showText />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="borderColor" label="边框色">
-                                    <ColorPicker showText />
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="textColor" label="文本色">
-                                    <ColorPicker showText />
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Card>
-
-                    <Card size="small" title="尺寸设置" style={{ marginBottom: '16px' }}>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item name="fontSize" label="字体大小">
-                                    <Select>
-                                        <Option value="12px">小号 (12px)</Option>
-                                        <Option value="14px">标准 (14px)</Option>
-                                        <Option value="16px">大号 (16px)</Option>
-                                        <Option value="18px">超大 (18px)</Option>
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                            <Col span={12}>
-                                <Form.Item name="borderRadius" label="圆角大小">
-                                    <Select>
-                                        <Option value="0px">无圆角</Option>
-                                        <Option value="4px">小圆角 (4px)</Option>
-                                        <Option value="6px">标准 (6px)</Option>
-                                        <Option value="8px">大圆角 (8px)</Option>
-                                        <Option value="12px">超大 (12px)</Option>
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-                        </Row>
-                    </Card>
-
-                    <Alert
-                        message="主题预览"
-                        description="主题设置会实时应用到表单设计器中，您可以随时调整以获得最佳视觉效果。"
-                        type="info"
-                        showIcon
-                        style={{ marginBottom: '16px' }}
-                    />
-                </div>
-            )
-        },
-        {
-            key: 'advanced',
-            label: (
-                <span>
-                    <ThunderboltOutlined />
-                    高级设置
-                </span>
-            ),
-            children: (
-                <div style={{ maxHeight: '60vh', overflowY: 'auto', padding: '8px 0' }}>
-                    <Card size="small" title="自动保存" style={{ marginBottom: '16px' }}>
-                        <Row gutter={16}>
-                            <Col span={12}>
-                                <Form.Item name="autoSave" label="启用自动保存" valuePropName="checked">
+                                <Form.Item name="autoSave" label="自动保存" valuePropName="checked">
                                     <Switch />
                                 </Form.Item>
                             </Col>
@@ -419,53 +253,449 @@ const FormSettingsModal: React.FC<FormSettingsModalProps> = ({
                                     <InputNumber min={10} max={300} style={{ width: '100%' }} />
                                 </Form.Item>
                             </Col>
+                            <Col span={12}>
+                                <Form.Item name="maxSubmissions" label="最大提交次数">
+                                    <InputNumber min={1} max={1000} style={{ width: '100%' }} />
+                                </Form.Item>
+                            </Col>
                         </Row>
                     </Card>
 
-                    <Card size="small" title="导入导出" style={{ marginBottom: '16px' }}>
+                    <Card size="small" title="提交设置">
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="submitButtonText" label="提交按钮文本">
+                                    <Input placeholder="提交" />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="submitButtonPosition" label="按钮位置">
+                                    <Select>
+                                        <Option value="left">左对齐</Option>
+                                        <Option value="center">居中</Option>
+                                        <Option value="right">右对齐</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="enableDraft" label="启用草稿保存" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="requireConfirmation" label="提交前确认" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="redirectAfterSubmit" label="提交后跳转" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="redirectUrl" label="跳转地址">
+                                    <Input placeholder="https://..." />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Form.Item name="successMessage" label="提交成功提示">
+                            <TextArea
+                                rows={2}
+                                placeholder="表单提交成功！感谢您的填写。"
+                                maxLength={200}
+                                showCount
+                            />
+                        </Form.Item>
+                    </Card>
+                </div>
+            )
+        },
+        {
+            key: 'notification',
+            label: (
+                <span>
+                    <BellOutlined />
+                    通知设置
+                </span>
+            ),
+            children: (
+                <div style={{ maxHeight: '60vh', overflowY: 'auto', padding: '8px 0' }}>
+                    <Card size="small" title="邮件通知" style={{ marginBottom: '16px' }}>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="emailNotification" label="启用邮件通知" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="adminEmail" label="管理员邮箱">
+                                    <Input placeholder="admin@example.com" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Form.Item name="emailTemplate" label="邮件模板">
+                            <Select>
+                                <Option value="default">默认模板</Option>
+                                <Option value="business">商务模板</Option>
+                                <Option value="simple">简洁模板</Option>
+                            </Select>
+                        </Form.Item>
+                    </Card>
+
+                    <Card size="small" title="微信通知" style={{ marginBottom: '16px' }}>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="wechatNotification" label="启用微信通知" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="wechatWebhook" label="Webhook地址">
+                                    <Input placeholder="https://..." />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
+
+                    <Card size="small" title="系统通知" style={{ marginBottom: '16px' }}>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="systemNotification" label="系统内通知" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="notificationRetention" label="通知保留天数">
+                                    <InputNumber min={1} max={365} style={{ width: '100%' }} />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
+
+                    <Alert
+                        message="通知说明"
+                        description="配置表单提交后的通知方式，支持邮件、微信和系统内通知。"
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: '16px' }}
+                    />
+                </div>
+            )
+        },
+        {
+            key: 'project',
+            label: (
+                <span>
+                    <ProjectOutlined />
+                    项目设置
+                </span>
+            ),
+            children: (
+                <div style={{ maxHeight: '60vh', overflowY: 'auto', padding: '8px 0' }}>
+                    <Card size="small" title="项目关联" style={{ marginBottom: '16px' }}>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="linkedProject" label="关联项目">
+                                    <Select placeholder="选择关联项目">
+                                        <Option value="project1">项目A - 品牌设计</Option>
+                                        <Option value="project2">项目B - 网站开发</Option>
+                                        <Option value="project3">项目C - APP设计</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="projectPhase" label="项目阶段">
+                                    <Select placeholder="选择项目阶段">
+                                        <Option value="requirement">需求收集</Option>
+                                        <Option value="design">设计阶段</Option>
+                                        <Option value="development">开发阶段</Option>
+                                        <Option value="testing">测试阶段</Option>
+                                        <Option value="delivery">交付阶段</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Form.Item name="projectDescription" label="项目说明">
+                            <TextArea
+                                rows={2}
+                                placeholder="描述该表单在项目中的作用"
+                                maxLength={200}
+                            />
+                        </Form.Item>
+                    </Card>
+
+                    <Card size="small" title="团队设置" style={{ marginBottom: '16px' }}>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="projectManager" label="项目经理">
+                                    <Select placeholder="选择项目经理">
+                                        <Option value="user1">张三</Option>
+                                        <Option value="user2">李四</Option>
+                                        <Option value="user3">王五</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="designer" label="设计师">
+                                    <Select placeholder="选择设计师">
+                                        <Option value="designer1">赵六</Option>
+                                        <Option value="designer2">钱七</Option>
+                                        <Option value="designer3">孙八</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
+
+                    <Card size="small" title="项目配置">
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="requireApproval" label="需要审批" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="trackProgress" label="跟踪进度" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="autoAssign" label="自动分配" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="projectPriority" label="项目优先级">
+                                    <Select>
+                                        <Option value="low">低</Option>
+                                        <Option value="medium">中</Option>
+                                        <Option value="high">高</Option>
+                                        <Option value="urgent">紧急</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
+                </div>
+            )
+        },
+        {
+            key: 'article',
+            label: (
+                <span>
+                    <FileTextOutlined />
+                    文章设置
+                </span>
+            ),
+            children: (
+                <div style={{ maxHeight: '60vh', overflowY: 'auto', padding: '8px 0' }}>
+                    <Card size="small" title="文章关联" style={{ marginBottom: '16px' }}>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="articleCategory" label="文章分类">
+                                    <Select placeholder="选择文章分类">
+                                        <Option value="news">新闻资讯</Option>
+                                        <Option value="tutorial">教程指南</Option>
+                                        <Option value="case">案例分析</Option>
+                                        <Option value="blog">博客文章</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="articleTags" label="文章标签">
+                                    <Select mode="multiple" placeholder="选择或输入标签">
+                                        <Option value="design">设计</Option>
+                                        <Option value="development">开发</Option>
+                                        <Option value="ui">UI</Option>
+                                        <Option value="ux">UX</Option>
+                                        <Option value="business">商务</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Form.Item name="articleSummary" label="文章摘要">
+                            <TextArea
+                                rows={3}
+                                placeholder="输入文章摘要，将用于SEO和预览"
+                                maxLength={300}
+                                showCount
+                            />
+                        </Form.Item>
+                    </Card>
+
+                    <Card size="small" title="发布设置" style={{ marginBottom: '16px' }}>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="autoPublish" label="自动发布" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="allowComments" label="允许评论" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="seoOptimized" label="SEO优化" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="featured" label="推荐文章" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
+
+                    <Card size="small" title="内容管理">
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="contentTemplate" label="内容模板">
+                                    <Select>
+                                        <Option value="standard">标准模板</Option>
+                                        <Option value="rich">富文本模板</Option>
+                                        <Option value="minimal">简约模板</Option>
+                                        <Option value="gallery">图册模板</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="readingTime" label="预计阅读时长(分钟)">
+                                    <InputNumber min={1} max={60} style={{ width: '100%' }} />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
+
+                    <Alert
+                        message="文章说明"
+                        description="配置与该表单相关的文章设置，包括分类、标签、发布选项等。"
+                        type="info"
+                        showIcon
+                        style={{ marginBottom: '16px' }}
+                    />
+                </div>
+            )
+        },
+        {
+            key: 'contract',
+            label: (
+                <span>
+                    <FileProtectOutlined />
+                    合同设置
+                </span>
+            ),
+            children: (
+                <div style={{ maxHeight: '60vh', overflowY: 'auto', padding: '8px 0' }}>
+                    <Card size="small" title="合同信息" style={{ marginBottom: '16px' }}>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="contractType" label="合同类型">
+                                    <Select placeholder="选择合同类型">
+                                        <Option value="service">服务合同</Option>
+                                        <Option value="sales">销售合同</Option>
+                                        <Option value="lease">租赁合同</Option>
+                                        <Option value="employment">雇佣合同</Option>
+                                        <Option value="partnership">合作协议</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="contractTemplate" label="合同模板">
+                                    <Select placeholder="选择合同模板">
+                                        <Option value="standard">标准模板</Option>
+                                        <Option value="simplified">简化模板</Option>
+                                        <Option value="detailed">详细模板</Option>
+                                        <Option value="custom">自定义模板</Option>
+                                    </Select>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Form.Item name="contractClause" label="特殊条款">
+                            <TextArea
+                                rows={3}
+                                placeholder="输入特殊条款和约定"
+                                maxLength={500}
+                                showCount
+                            />
+                        </Form.Item>
+                    </Card>
+
+                    <Card size="small" title="签署设置" style={{ marginBottom: '16px' }}>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="requireSignature" label="需要签名" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="requireSeal" label="需要盖章" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="multiPartySign" label="多方签署" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="electronicSign" label="电子签名" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
+
+                    <Card size="small" title="合同管理" style={{ marginBottom: '16px' }}>
+                        <Row gutter={16}>
+                            <Col span={12}>
+                                <Form.Item name="contractPeriod" label="合同期限(月)">
+                                    <InputNumber min={1} max={120} style={{ width: '100%' }} />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="autoRenewal" label="自动续约" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="reminderDays" label="到期提醒(提前天数)">
+                                    <InputNumber min={1} max={365} style={{ width: '100%' }} />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="archiveAfterExpiry" label="到期自动归档" valuePropName="checked">
+                                    <Switch />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Card>
+
+                    <Card size="small" title="高级操作">
                         <Space direction="vertical" style={{ width: '100%' }}>
                             <Button
                                 icon={<ExportOutlined />}
                                 onClick={handleExportConfig}
                                 block
                             >
-                                导出表单配置
+                                导出合同模板
                             </Button>
                             <Button
                                 icon={<ImportOutlined />}
                                 block
                                 disabled
                             >
-                                导入表单配置 (开发中)
+                                导入合同模板 (开发中)
                             </Button>
+                            <Alert
+                                message="注意"
+                                description="合同相关操作涉及法律效力，请谨慎操作并确保合规。"
+                                type="warning"
+                                showIcon
+                                style={{ marginTop: '12px' }}
+                            />
                         </Space>
-                    </Card>
-
-                    <Card size="small" title="危险操作">
-                        <Alert
-                            message="警告"
-                            description="以下操作不可撤销，请谨慎使用。"
-                            type="warning"
-                            showIcon
-                            style={{ marginBottom: '12px' }}
-                        />
-                        <Button
-                            danger
-                            icon={<DeleteOutlined />}
-                            block
-                            onClick={() => {
-                                Modal.confirm({
-                                    title: '确认重置',
-                                    content: '此操作将清空所有表单设计内容，是否继续？',
-                                    onOk: () => {
-                                        // 实现重置逻辑
-                                        console.log('重置表单');
-                                    }
-                                });
-                            }}
-                        >
-                            重置表单设计
-                        </Button>
                     </Card>
                 </div>
             )
