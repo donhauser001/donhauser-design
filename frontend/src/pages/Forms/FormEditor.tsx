@@ -14,7 +14,8 @@ import {
     FormOutlined,
     SaveOutlined,
     UndoOutlined,
-    RedoOutlined
+    RedoOutlined,
+    SettingOutlined
 } from '@ant-design/icons'
 import {
     DndContext,
@@ -37,6 +38,7 @@ import { useFormDesignerStore } from '../../stores/formDesignerStore'
 import ComponentLibrary from '../../components/FormDesigner/ComponentLibrary'
 import DesignCanvas from '../../components/FormDesigner/DesignCanvas'
 import PropertyPanel from '../../components/FormDesigner/PropertyPanel'
+import FormSettingsModal from '../../components/FormDesigner/FormSettingsModal'
 import FormComponentRenderer from '../../components/FormDesigner/FormComponentRenderer'
 
 const { Title, Text } = Typography
@@ -51,6 +53,7 @@ const FormEditor: React.FC = () => {
     const [isPreviewMode, setIsPreviewMode] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
     const [lastSaved, setLastSaved] = useState<Date | null>(null)
+    const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false)
 
     const {
         components,
@@ -135,6 +138,24 @@ const FormEditor: React.FC = () => {
             message.error('表单保存失败');
         } finally {
             setIsSaving(false);
+        }
+    };
+
+    const handleOpenSettings = () => {
+        setIsSettingsModalVisible(true);
+    };
+
+    const handleSettingsSave = async () => {
+        try {
+            if (id) {
+                // 保存表单基本信息
+                await saveFormToAPI(id);
+                setLastSaved(new Date());
+                message.success('表单设置保存成功');
+            }
+        } catch (error) {
+            console.error('保存设置失败:', error);
+            message.error('保存设置失败');
         }
     };
 
@@ -360,6 +381,11 @@ const FormEditor: React.FC = () => {
                         title="重做"
                     />
                     <Button
+                        icon={<SettingOutlined />}
+                        onClick={handleOpenSettings}
+                        title="表单设置"
+                    />
+                    <Button
                         type="primary"
                         icon={<SaveOutlined />}
                         onClick={handleSave}
@@ -428,6 +454,14 @@ const FormEditor: React.FC = () => {
                     ) : null}
                 </DragOverlay>
             </DndContext>
+
+            {/* 表单设置模态窗 */}
+            <FormSettingsModal
+                visible={isSettingsModalVisible}
+                onClose={() => setIsSettingsModalVisible(false)}
+                formData={formData}
+                onSave={handleSettingsSave}
+            />
         </div>
     )
 }
