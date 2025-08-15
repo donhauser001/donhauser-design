@@ -6,9 +6,10 @@ const { TextArea } = Input;
 
 interface ArticleSummaryComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const ArticleSummaryComponent: React.FC<ArticleSummaryComponentProps> = ({ component }) => {
+const ArticleSummaryComponent: React.FC<ArticleSummaryComponentProps> = ({ component, isDesignMode = false }) => {
     return (
         <div style={{ width: '100%' }}>
             <TextArea
@@ -20,7 +21,7 @@ const ArticleSummaryComponent: React.FC<ArticleSummaryComponentProps> = ({ compo
                 maxLength={component.maxLength || 200}
                 showCount={component.showCharCount}
                 autoSize={component.autoSize ? { minRows: 3, maxRows: 8 } : false}
-                readOnly={true}
+                readOnly={isDesignMode}
             />
             {component.fieldDescription && (
                 <div style={{
@@ -29,7 +30,7 @@ const ArticleSummaryComponent: React.FC<ArticleSummaryComponentProps> = ({ compo
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

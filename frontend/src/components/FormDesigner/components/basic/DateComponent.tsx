@@ -1,29 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { DatePicker } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import dayjs from 'dayjs';
+import { useLogicEngine } from '../../hooks/useLogicEngine';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderDescription, getDescriptionContainerStyle, getComponentContentStyle } from '../../utils/descriptionUtils';
 
 interface DateComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const DateComponent: React.FC<DateComponentProps> = ({ component }) => {
+const DateComponent: React.FC<DateComponentProps> = ({ component, isDesignMode = false }) => {
+    const { getValue, setValue, getInitialValue } = useLogicEngine(component, isDesignMode);
+    const { theme } = useFormDesignerStore();
+    const [dateValue, setDateValue] = useState(getInitialValue());
+
+    // 监听外部值变化
+    useEffect(() => {
+        const currentValue = getValue();
+        if (currentValue !== undefined && currentValue !== null && currentValue !== dateValue) {
+            setDateValue(currentValue);
+        }
+    }, [getValue, dateValue]);
+
+    // 处理日期变化
+    const handleChange = (date: any, dateString: string) => {
+        setDateValue(dateString);
+        setValue(dateString);
+    };
+    // 获取当前日期值（优先使用逻辑引擎的值）
+    const getCurrentDateValue = () => {
+        const currentValue = dateValue || component.defaultValue;
+
+        // 如果开启了自动抓取当前时间且没有其他值，显示当前时间
+        if (component.autoCurrentTime && !currentValue) {
+            return dayjs();
+        }
+
+        if (!currentValue) return null;
+        try {
+            return dayjs(currentValue);
+        } catch {
+            return null;
+        }
+    };
+
     // 根据是否启用时间选择来渲染不同的DatePicker
     const renderDatePicker = () => {
-        // 获取默认值
-        const getDefaultValue = () => {
-            // 如果开启了自动抓取当前时间，显示当前时间
-            if (component.autoCurrentTime) {
-                return dayjs();
-            }
-
-            if (!component.defaultValue) return null;
-            try {
-                return dayjs(component.defaultValue);
-            } catch {
-                return null;
-            }
-        };
 
         if (component.showTimePicker) {
             // 启用时间选择
@@ -34,8 +58,9 @@ const DateComponent: React.FC<DateComponentProps> = ({ component }) => {
                     }}
                     format="YYYY-MM-DD HH:mm:ss"
                     placeholder={component.placeholder || '请选择日期时间'}
-                    value={getDefaultValue()}
-                    disabled={true}
+                    value={getCurrentDateValue()}
+                    disabled={isDesignMode}
+                    onChange={handleChange}
                     style={{ width: '100%', ...component.style }}
                 />
             );
@@ -45,8 +70,9 @@ const DateComponent: React.FC<DateComponentProps> = ({ component }) => {
                 <DatePicker
                     format="YYYY-MM-DD"
                     placeholder={component.placeholder || '请选择日期'}
-                    value={getDefaultValue()}
-                    disabled={true}
+                    value={getCurrentDateValue()}
+                    disabled={isDesignMode}
+                    onChange={handleChange}
                     style={{ width: '100%', ...component.style }}
                 />
             );
@@ -54,18 +80,15 @@ const DateComponent: React.FC<DateComponentProps> = ({ component }) => {
     };
 
     return (
-        <div style={{ width: '100%' }}>
-            {renderDatePicker()}
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    {component.fieldDescription}
-                </div>
-            )}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {theme.descriptionPosition === 'top' && renderDescription({ component, theme })}
+
+            <div style={getComponentContentStyle(theme)}>
+                {renderDatePicker()}
+            </div>
+
+            {theme.descriptionPosition === 'bottom' && renderDescription({ component, theme })}
+            {theme.descriptionPosition === 'right' && renderDescription({ component, theme })}
         </div>
     );
 };

@@ -21,7 +21,8 @@ interface TaskListComponentProps {
 }
 
 const TaskListComponent: React.FC<TaskListComponentProps> = ({ component }) => {
-    const { components, getComponentValue, updateComponent } = useFormDesignerStore();
+    const { components, getComponentValue, updateComponent, theme } = useFormDesignerStore();
+    const primaryColor = theme.primaryColor || '#1890ff';
     const [taskListItems, setTaskListItems] = useState<TaskListItem[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -112,7 +113,10 @@ const TaskListComponent: React.FC<TaskListComponentProps> = ({ component }) => {
     // 如果没有项目名称组件，显示提示信息
     if (!hasProjectNameComponent) {
         return (
-            <div style={{ width: '100%' }}>
+            <div style={{
+                width: '100%',
+                ...component.style
+            }}>
                 <Alert
                     message="任务列表组件需要配合项目名称组件使用，请先在画布中添加项目名称组件"
                     type="warning"
@@ -127,7 +131,7 @@ const TaskListComponent: React.FC<TaskListComponentProps> = ({ component }) => {
                         marginTop: '4px',
                         lineHeight: '1.4'
                     }}>
-                        {component.fieldDescription}
+                        提示：{component.fieldDescription}
                     </div>
                 )}
             </div>
@@ -153,7 +157,7 @@ const TaskListComponent: React.FC<TaskListComponentProps> = ({ component }) => {
             key: 'taskCategory',
             width: '20%',
             render: (category: string) => (
-                <Tag color="blue">{category}</Tag>
+                <Tag color={primaryColor}>{category}</Tag>
             )
         },
         {
@@ -170,7 +174,7 @@ const TaskListComponent: React.FC<TaskListComponentProps> = ({ component }) => {
             key: 'quantity',
             width: '20%',
             render: (record: TaskListItem) => (
-                <Text strong style={{ color: '#1890ff' }}>
+                <Text strong style={{ color: primaryColor }}>
                     {record.quantity} {record.unit}
                 </Text>
             )
@@ -213,7 +217,10 @@ const TaskListComponent: React.FC<TaskListComponentProps> = ({ component }) => {
 
     // 列表模式：显示完整的卡片和表格
     return (
-        <div style={{ width: '100%' }}>
+        <div style={{
+            width: '100%',
+            ...component.style
+        }}>
             <Card
                 title={getCardTitle()}
                 size="small"
@@ -259,7 +266,7 @@ const TaskListComponent: React.FC<TaskListComponentProps> = ({ component }) => {
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
 

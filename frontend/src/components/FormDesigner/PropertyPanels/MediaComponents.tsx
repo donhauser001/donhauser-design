@@ -4,7 +4,6 @@ import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../types/formDesigner';
 
 const { Option } = Select;
-const { TextArea } = Input;
 
 interface MediaComponentsProps {
     component: FormComponent;
@@ -31,15 +30,6 @@ const MediaComponents: React.FC<MediaComponentsProps> = ({ component, onProperty
                     value={component.uploadButtonText || ''}
                     onChange={(e) => onPropertyChange('uploadButtonText', e.target.value)}
                     placeholder="点击上传"
-                />
-            </Form.Item>
-
-            <Form.Item label="上传提示文本">
-                <TextArea
-                    value={component.uploadTip || ''}
-                    onChange={(e) => onPropertyChange('uploadTip', e.target.value)}
-                    placeholder="支持单个文件上传"
-                    rows={2}
                 />
             </Form.Item>
 

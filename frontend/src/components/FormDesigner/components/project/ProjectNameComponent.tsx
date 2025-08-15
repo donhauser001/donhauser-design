@@ -9,15 +9,17 @@ const { Option } = Select;
 
 interface ProjectNameComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }) => {
+const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component, isDesignMode = false }) => {
     const [projects, setProjects] = useState<ProjectItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchLoading, setSearchLoading] = useState(false);
 
     // 使用store管理组件值
-    const { setComponentValue, getComponentValue, components, updateComponent } = useFormDesignerStore();
+    const { setComponentValue, getComponentValue, components, updateComponent, theme } = useFormDesignerStore();
+    const primaryColor = theme.primaryColor || '#1890ff';
 
     // 获取图标，始终返回一个prefix以避免DOM结构变化
     const getPrefix = () => {
@@ -27,7 +29,7 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
     // 获取项目状态的显示样式
     const getStatusTag = (status: string) => {
         const statusMap: Record<string, { text: string; color: string }> = {
-            'consulting': { text: '咨询中', color: '#1890ff' },
+            'consulting': { text: '咨询中', color: primaryColor },
             'in-progress': { text: '进行中', color: '#52c41a' },
             'partial-delivery': { text: '部分交付', color: '#fa8c16' },
             'completed': { text: '已完成', color: '#52c41a' },
@@ -97,7 +99,7 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
                 value={component.defaultValue || ''}
                 prefix={getPrefix()}
                 style={restStyle}
-                readOnly={true}
+                readOnly={isDesignMode}
             />
         );
     };
@@ -153,7 +155,7 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
                                 padding: '8px 12px',
                                 fontSize: '12px',
                                 color: '#999',
-                                borderTop: '1px solid #f0f0f0',
+                                borderTop: `1px solid ${theme.borderColor || '#d9d9d9'}`,
                                 backgroundColor: '#fafafa'
                             }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -279,8 +281,7 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
                         top: 'calc(50% + 2px)',
                         transform: 'translateY(-50%)',
                         zIndex: 10,
-                        pointerEvents: 'none',
-                        color: '#8c8c8c'
+                        pointerEvents: 'none'
                     }}>
                         {getPrefix()}
                     </div>
@@ -302,7 +303,7 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component }
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

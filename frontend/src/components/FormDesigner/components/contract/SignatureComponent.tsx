@@ -9,7 +9,8 @@ interface SignatureComponentProps {
 }
 
 const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) => {
-    const { components } = useFormDesignerStore();
+    const { components, theme } = useFormDesignerStore();
+    const borderColor = theme.borderColor || '#d9d9d9';
 
     // 检查画布上是否存在合同方组件
     const hasContractPartyComponent = components.some((comp: FormComponent) => comp.type === 'contractParty');
@@ -63,7 +64,10 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
     // 如果没有合同方组件，显示提示信息
     if (!hasContractPartyComponent) {
         return (
-            <div style={{ width: '100%' }}>
+            <div style={{
+                width: '100%',
+                ...component.style
+            }}>
                 <Alert
                     message="签章组件需要配合合同方组件使用，请先在画布中添加合同方组件"
                     type="warning"
@@ -78,7 +82,7 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                         marginTop: '8px',
                         lineHeight: '1.4'
                     }}>
-                        {component.fieldDescription}
+                        提示：{component.fieldDescription}
                     </div>
                 )}
             </div>
@@ -87,12 +91,15 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
 
     // 渲染签章区域
     return (
-        <div style={{ width: '100%' }}>
+        <div style={{
+            width: '100%',
+            ...component.style
+        }}>
             <Card
                 title="签章区域"
                 size="small"
                 style={{
-                    border: '1px solid #e8e8e8',
+                    border: `1px solid ${borderColor}`,
                     borderRadius: '8px'
                 }}
             >
@@ -104,7 +111,7 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                         return (
                             <div key={index} style={{
                                 padding: '16px',
-                                border: '1px solid #f0f0f0',
+                                border: `1px solid ${borderColor}`,
                                 borderRadius: '6px',
                                 backgroundColor: '#fafafa'
                             }}>
@@ -115,7 +122,7 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                                     color: '#262626',
                                     marginBottom: '12px',
                                     textAlign: 'center',
-                                    borderBottom: '1px solid #e8e8e8',
+                                    borderBottom: `1px solid ${borderColor}`,
                                     paddingBottom: '8px'
                                 }}>
                                     {displayTitle}
@@ -133,7 +140,7 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                                         </div>
                                         <div style={{
                                             height: '40px',
-                                            border: '1px dashed #d9d9d9',
+                                            border: `1px dashed ${borderColor}`,
                                             borderRadius: '4px',
                                             backgroundColor: '#ffffff',
                                             display: 'flex',
@@ -157,7 +164,7 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                                         </div>
                                         <div style={{
                                             padding: '8px',
-                                            border: '1px solid #e8e8e8',
+                                            border: `1px solid ${borderColor}`,
                                             borderRadius: '4px',
                                             backgroundColor: '#ffffff',
                                             fontSize: '12px',
@@ -186,7 +193,7 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                                 return (
                                     <div key={partyIndex} style={{
                                         padding: '16px',
-                                        border: '1px solid #f0f0f0',
+                                        border: `1px solid ${borderColor}`,
                                         borderRadius: '6px',
                                         backgroundColor: '#fafafa'
                                     }}>
@@ -197,7 +204,7 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                                             color: '#262626',
                                             marginBottom: '12px',
                                             textAlign: 'center',
-                                            borderBottom: '1px solid #e8e8e8',
+                                            borderBottom: `1px solid ${borderColor}`,
                                             paddingBottom: '8px'
                                         }}>
                                             {displayTitle}
@@ -215,7 +222,7 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                                                 </div>
                                                 <div style={{
                                                     height: '40px',
-                                                    border: '1px dashed #d9d9d9',
+                                                    border: `1px dashed ${borderColor}`,
                                                     borderRadius: '4px',
                                                     backgroundColor: '#ffffff',
                                                     display: 'flex',
@@ -239,7 +246,7 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                                                 </div>
                                                 <div style={{
                                                     padding: '8px',
-                                                    border: '1px solid #e8e8e8',
+                                                    border: `1px solid ${borderColor}`,
                                                     borderRadius: '4px',
                                                     backgroundColor: '#ffffff',
                                                     fontSize: '12px',
@@ -266,7 +273,7 @@ const SignatureComponent: React.FC<SignatureComponentProps> = ({ component }) =>
                     marginTop: '8px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

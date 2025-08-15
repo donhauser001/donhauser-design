@@ -10,7 +10,8 @@ interface AmountInWordsComponentProps {
 }
 
 const AmountInWordsComponent: React.FC<AmountInWordsComponentProps> = ({ component }) => {
-    const { components, getOrderTotal, orderItems, getComponentValue, componentValues } = useFormDesignerStore();
+    const { components, getOrderTotal, orderItems, getComponentValue, componentValues, theme } = useFormDesignerStore();
+    const borderColor = theme.borderColor || '#d9d9d9';
     const [hasAmountComponent, setHasAmountComponent] = useState(false);
     const [amountComponentId, setAmountComponentId] = useState<string | null>(null);
     const [linkedAmount, setLinkedAmount] = useState<number>(0);
@@ -138,7 +139,7 @@ const AmountInWordsComponent: React.FC<AmountInWordsComponentProps> = ({ compone
                 />
                 {component.fieldDescription && (
                     <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                        {component.fieldDescription}
+                        提示：{component.fieldDescription}
                     </div>
                 )}
             </div>
@@ -153,7 +154,7 @@ const AmountInWordsComponent: React.FC<AmountInWordsComponentProps> = ({ compone
             <div
                 style={{
                     padding: '8px 12px',
-                    border: '1px solid #d9d9d9',
+                    border: `1px solid ${borderColor}`,
                     borderRadius: '6px',
                     backgroundColor: getBackgroundColor(),
                     minHeight: '40px',
@@ -168,7 +169,7 @@ const AmountInWordsComponent: React.FC<AmountInWordsComponentProps> = ({ compone
             </div>
             {component.fieldDescription && (
                 <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

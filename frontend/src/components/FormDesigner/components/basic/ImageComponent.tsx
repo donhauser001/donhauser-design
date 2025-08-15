@@ -2,12 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Carousel, Button, Space } from 'antd';
 import { LeftOutlined, RightOutlined, PlayCircleOutlined, PauseCircleOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 interface ImageComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const ImageComponent: React.FC<ImageComponentProps> = ({ component }) => {
+const ImageComponent: React.FC<ImageComponentProps> = ({ component, isDesignMode = false }) => {
+    const { theme } = useFormDesignerStore();
+    const primaryColor = theme.primaryColor || '#1890ff';
+    const borderColor = theme.borderColor || '#d9d9d9';
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(component.slideshowAutoplay || false);
 
@@ -39,7 +44,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({ component }) => {
         margin: component.style?.margin || '0',
         borderRadius: component.style?.borderRadius || '4px',
         border: component.style?.borderWidth ?
-            `${component.style.borderWidth} ${component.style.borderStyle || 'solid'} ${component.style.borderColor || '#d9d9d9'}` :
+            `${component.style.borderWidth} ${component.style.borderStyle || 'solid'} ${component.style.borderColor || borderColor}` :
             'none'
     };
 
@@ -54,7 +59,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({ component }) => {
         width: component.imageWidth || '200px',
         height: component.imageHeight || '150px',
         backgroundColor: '#f5f5f5',
-        border: '2px dashed #d9d9d9',
+        border: `2px dashed ${borderColor}`,
         borderRadius: '4px',
         display: 'flex',
         alignItems: 'center',
@@ -196,7 +201,7 @@ const ImageComponent: React.FC<ImageComponentProps> = ({ component }) => {
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

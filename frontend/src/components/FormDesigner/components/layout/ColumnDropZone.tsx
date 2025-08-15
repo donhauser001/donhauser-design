@@ -4,6 +4,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { FormComponent } from '../../../../types/formDesigner';
 import SortableComponent from '../SortableComponent';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 interface ColumnDropZoneProps {
     containerComponent: FormComponent;
@@ -18,6 +19,8 @@ const ColumnDropZone: React.FC<ColumnDropZoneProps> = ({
     components,
     isSelected
 }) => {
+    const { theme } = useFormDesignerStore();
+    const primaryColor = theme.primaryColor || '#1890ff';
     // 为每一列配置独立的droppable区域
     const { setNodeRef, isOver } = useDroppable({
         id: `column-${containerComponent.id}-${columnIndex}`,
@@ -39,7 +42,7 @@ const ColumnDropZone: React.FC<ColumnDropZoneProps> = ({
                 minHeight: '100px',
                 position: 'relative',
                 backgroundColor: isOver ? '#f0f8ff' : 'transparent',
-                border: isOver ? '2px dashed #1890ff' : '2px dashed transparent',
+                border: isOver ? `2px dashed ${primaryColor}` : '2px dashed transparent',
                 borderRadius: '4px',
                 transition: 'all 0.2s ease',
                 padding: isOver ? '8px' : (containerComponent.style?.columnPadding || '4px')
@@ -53,7 +56,7 @@ const ColumnDropZone: React.FC<ColumnDropZoneProps> = ({
                     left: 0,
                     right: 0,
                     bottom: 0,
-                    border: '1px dashed #1890ff',
+                    border: `1px dashed ${primaryColor}`,
                     borderRadius: '4px',
                     backgroundColor: 'rgba(24, 144, 255, 0.05)',
                     pointerEvents: 'none',
@@ -64,7 +67,7 @@ const ColumnDropZone: React.FC<ColumnDropZoneProps> = ({
                         top: '2px',
                         left: '4px',
                         fontSize: '10px',
-                        color: '#1890ff',
+                        color: primaryColor,
                         fontWeight: 500,
                         background: '#fff',
                         padding: '0 4px',
@@ -88,7 +91,7 @@ const ColumnDropZone: React.FC<ColumnDropZoneProps> = ({
                 // 没有子组件时，显示拖拽提示
                 <div style={{
                     minHeight: '80px',
-                    color: isOver ? '#1890ff' : '#999',
+                    color: isOver ? primaryColor : '#999',
                     fontSize: '12px',
                     display: 'flex',
                     flexDirection: 'column',
@@ -98,7 +101,7 @@ const ColumnDropZone: React.FC<ColumnDropZoneProps> = ({
                     padding: '20px 8px',
                     backgroundColor: isOver ? '#e6f7ff' : '#fafafa',
                     borderRadius: '4px',
-                    border: isOver ? '1px dashed #1890ff' : '1px dashed #d9d9d9',
+                    border: isOver ? `1px dashed ${primaryColor}` : `1px dashed ${theme.borderColor || '#d9d9d9'}`,
                     transition: 'all 0.2s ease',
                     position: 'relative',
                     zIndex: 2

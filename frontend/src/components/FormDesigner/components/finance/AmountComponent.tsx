@@ -10,7 +10,8 @@ interface AmountComponentProps {
 }
 
 const AmountComponent: React.FC<AmountComponentProps> = ({ component }) => {
-    const { components, getOrderTotal, orderItems, setComponentValue, getComponentValue } = useFormDesignerStore();
+    const { components, getOrderTotal, orderItems, setComponentValue, getComponentValue, theme } = useFormDesignerStore();
+    const borderColor = theme.borderColor || '#d9d9d9';
     const [hasOrderComponent, setHasOrderComponent] = useState(false);
     const [orderComponentId, setOrderComponentId] = useState<string | null>(null);
 
@@ -75,7 +76,7 @@ const AmountComponent: React.FC<AmountComponentProps> = ({ component }) => {
                         marginTop: '4px',
                         lineHeight: '1.4'
                     }}>
-                        {component.fieldDescription}
+                        提示：{component.fieldDescription}
                     </div>
                 )}
             </div>
@@ -188,7 +189,7 @@ const AmountComponent: React.FC<AmountComponentProps> = ({ component }) => {
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

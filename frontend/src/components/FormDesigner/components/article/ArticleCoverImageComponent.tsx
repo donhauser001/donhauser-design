@@ -2,12 +2,16 @@ import React, { useState } from 'react';
 import { Upload, Image, Button, message } from 'antd';
 import { PlusOutlined, UploadOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 interface ArticleCoverImageComponentProps {
     component: FormComponent;
 }
 
 const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({ component }) => {
+    const { theme } = useFormDesignerStore();
+    const primaryColor = theme.primaryColor || '#1890ff';
+    const borderColor = theme.borderColor || '#d9d9d9';
     const [previewOpen, setPreviewOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState('');
     const [fileList, setFileList] = useState<any[]>([]);
@@ -105,9 +109,40 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
 
     // 卡片式上传
     if (uploadType === 'card') {
+        const cardContainerId = `cover-card-${component.id}`;
         return (
             <div style={{ width: '100%' }}>
-                <div style={component.style}>
+                <div id={cardContainerId} style={component.style}>
+                    <style>
+                        {`
+                        /* 卡片上传区域边框和悬停效果 */
+                        #${cardContainerId} .ant-upload-select {
+                            border-color: ${borderColor} !important;
+                        }
+                        
+                        #${cardContainerId} .ant-upload-select:hover {
+                            border-color: ${primaryColor} !important;
+                        }
+                        
+                        #${cardContainerId} .ant-upload-select .ant-upload {
+                            background-color: transparent !important;
+                        }
+                        
+                        #${cardContainerId} .ant-upload-select:hover .ant-upload {
+                            background-color: ${primaryColor}08 !important;
+                        }
+                        
+                        /* 上传图标颜色 */
+                        #${cardContainerId} .ant-upload-select .anticon {
+                            color: ${primaryColor} !important;
+                        }
+                        
+                        /* 上传文字颜色 */
+                        #${cardContainerId} .ant-upload-select .ant-upload-text {
+                            color: ${primaryColor} !important;
+                        }
+                        `}
+                    </style>
                     <Upload
                         listType="picture-card"
                         fileList={fileList}
@@ -134,7 +169,7 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
                 </div>
                 {component.fieldDescription && (
                     <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                        {component.fieldDescription}
+                        提示：{component.fieldDescription}
                     </div>
                 )}
             </div>
@@ -144,9 +179,33 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
     // 拖拽上传
     if (uploadType === 'drag') {
         const { Dragger } = Upload;
+        const dragContainerId = `cover-drag-${component.id}`;
         return (
             <div style={{ width: '100%' }}>
-                <div style={component.style}>
+                <div id={dragContainerId} style={component.style}>
+                    <style>
+                        {`
+                        /* 拖拽区域边框和悬停效果 */
+                        #${dragContainerId} .ant-upload-drag {
+                            border-color: ${borderColor} !important;
+                        }
+                        
+                        #${dragContainerId} .ant-upload-drag:hover,
+                        #${dragContainerId} .ant-upload-drag.ant-upload-drag-hover {
+                            border-color: ${primaryColor} !important;
+                            background-color: ${primaryColor}08 !important;
+                        }
+                        
+                        /* 文件列表边框颜色 */
+                        #${dragContainerId} .ant-upload-list-item {
+                            border-color: ${borderColor} !important;
+                        }
+                        
+                        #${dragContainerId} .ant-upload-list-item:hover {
+                            border-color: ${primaryColor} !important;
+                        }
+                        `}
+                    </style>
                     <Dragger
                         fileList={fileList}
                         onChange={handleChange}
@@ -157,7 +216,7 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
                         style={{ padding: '20px' }}
                     >
                         <p className="ant-upload-drag-icon">
-                            <UploadOutlined style={{ fontSize: '48px', color: '#1890ff' }} />
+                            <UploadOutlined style={{ fontSize: '48px', color: primaryColor }} />
                         </p>
                         <p className="ant-upload-text">
                             {component.uploadButtonText || '点击或拖拽文件到此区域上传'}
@@ -178,7 +237,7 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
                                     display: 'flex',
                                     alignItems: 'center',
                                     padding: '8px',
-                                    border: '1px solid #d9d9d9',
+                                    border: `1px solid ${borderColor}`,
                                     borderRadius: '4px',
                                     marginBottom: '8px'
                                 }}>
@@ -221,9 +280,36 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
     }
 
     // 按钮上传（默认）
+    const buttonContainerId = `cover-button-${component.id}`;
     return (
         <div style={{ width: '100%' }}>
-            <div style={component.style}>
+            <div id={buttonContainerId} style={component.style}>
+                <style>
+                    {`
+                    /* 按钮上传样式 */
+                    #${buttonContainerId} .ant-btn {
+                        border-color: ${primaryColor} !important;
+                        color: ${primaryColor} !important;
+                    }
+                    
+                    #${buttonContainerId} .ant-btn:hover,
+                    #${buttonContainerId} .ant-btn:focus {
+                        border-color: ${primaryColor} !important;
+                        color: ${primaryColor} !important;
+                        background-color: ${primaryColor}08 !important;
+                    }
+                    
+                    /* 上传列表项悬停效果 */
+                    #${buttonContainerId} .ant-upload-list-item:hover {
+                        border-color: ${primaryColor} !important;
+                    }
+                    
+                    /* 上传列表中的文件名链接 */
+                    #${buttonContainerId} .ant-upload-list-item-name {
+                        color: ${primaryColor} !important;
+                    }
+                    `}
+                </style>
                 <Upload
                     fileList={fileList}
                     onChange={handleChange}
@@ -244,7 +330,7 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
             </div>
             {component.fieldDescription && (
                 <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

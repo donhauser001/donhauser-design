@@ -1,6 +1,7 @@
 import React from 'react';
 import { Typography, Table, Divider } from 'antd';
 import { RenderModeProps } from './types';
+import { useFormDesignerStore } from '../../../../../stores/formDesignerStore';
 
 const { Text } = Typography;
 
@@ -14,6 +15,9 @@ export const ListMode: React.FC<RenderModeProps> = ({
     onServiceSelect,
     isServiceSelected
 }) => {
+    const { theme } = useFormDesignerStore();
+    const primaryColor = theme.primaryColor || '#1890ff';
+    const borderColor = theme.borderColor || '#d9d9d9';
     const columns = [
         {
             title: '服务名称',
@@ -69,7 +73,7 @@ export const ListMode: React.FC<RenderModeProps> = ({
                 <div style={{ padding: '4px 0', textAlign: 'right' }}>
                     <Text strong style={{
                         fontSize: '14px',
-                        color: '#1890ff',
+                        color: primaryColor,
                         fontFamily: 'Monaco, Consolas, monospace'
                     }}>
                         ¥{price.toLocaleString()}
@@ -115,12 +119,12 @@ export const ListMode: React.FC<RenderModeProps> = ({
                         <div style={{
                             marginBottom: '16px',
                             paddingBottom: '8px',
-                            borderBottom: `2px solid #1890ff`,
+                            borderBottom: `2px solid ${primaryColor}`,
                             width: 'fit-content'
                         }}>
                             <Text strong style={{
                                 fontSize: '16px',
-                                color: '#1890ff',
+                                color: primaryColor,
                                 letterSpacing: '0.5px'
                             }}>
                                 {category}
@@ -158,7 +162,7 @@ export const ListMode: React.FC<RenderModeProps> = ({
                     {categoryIndex < sortedCategories.length - 1 && (
                         <Divider style={{
                             margin: '24px 0',
-                            borderColor: '#e8e8e8'
+                            borderColor: borderColor
                         }} />
                     )}
                 </div>
@@ -167,7 +171,7 @@ export const ListMode: React.FC<RenderModeProps> = ({
             <style>{`
                 .quotation-table .ant-table-thead > tr > th {
                     background-color: #f0f2f5 !important;
-                    border-bottom: 2px solid #e8e8e8 !important;
+                    border-bottom: 2px solid ${borderColor} !important;
                     font-weight: 600 !important;
                     color: #262626 !important;
                     padding: 12px 16px !important;
@@ -188,36 +192,36 @@ export const ListMode: React.FC<RenderModeProps> = ({
                 }
                 
                 .quotation-table .ant-table-tbody .table-row-selected > td {
-                    background-color: #f0f8ff !important;
+                    background-color: ${primaryColor}10 !important;
                     border-left: none !important;
                     border-right: none !important;
                     position: relative !important;
-                    border-top: 3px solid #1890ff !important;
-                    border-bottom: 3px solid #1890ff !important;
+                    border-top: 3px solid ${primaryColor} !important;
+                    border-bottom: 3px solid ${primaryColor} !important;
                 }
                 
                 .quotation-table .ant-table-tbody .table-row-selected > td:first-child {
-                    border-left: 3px solid #1890ff !important;
+                    border-left: 3px solid ${primaryColor} !important;
                 }
                 
                 .quotation-table .ant-table-tbody .table-row-selected > td:last-child {
-                    border-right: 3px solid #1890ff !important;
+                    border-right: 3px solid ${primaryColor} !important;
                 }
                 
                 .quotation-table .table-row-selected {
-                    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.15) !important;
+                    box-shadow: 0 2px 8px ${primaryColor}25 !important;
                 }
                 
                 .quotation-table .ant-table-tbody > tr:hover:not(.table-row-selected) > td {
-                    background-color: #e6f7ff !important;
+                    background-color: ${primaryColor}08 !important;
                 }
                 
                 .quotation-table .table-row-selected:hover > td {
-                    background-color: #f0f8ff !important;
+                    background-color: ${primaryColor}10 !important;
                 }
                 
                 .quotation-table .ant-table {
-                    border: 1px solid #e8e8e8;
+                    border: 1px solid ${borderColor};
                     border-radius: ${component.style?.borderRadius || '8px'};
                 }
                 

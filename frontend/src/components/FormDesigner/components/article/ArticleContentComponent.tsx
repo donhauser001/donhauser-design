@@ -7,16 +7,18 @@ const { TextArea } = Input;
 
 interface ArticleContentComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const ArticleContentComponent: React.FC<ArticleContentComponentProps> = ({ component }) => {
+const ArticleContentComponent: React.FC<ArticleContentComponentProps> = ({ component, isDesignMode = false }) => {
     const isRichText = component.enableRichText === true;
 
     return (
         <div style={{
             width: '100%',
             overflow: 'hidden',
-            paddingBottom: (!isRichText && component.showCharCount !== false) ? '20px' : '0'
+            paddingBottom: (!isRichText && component.showCharCount !== false) ? '20px' : '0',
+            ...component.style
         }}>
             {isRichText ? (
                 <SimpleRichTextEditor
@@ -26,11 +28,13 @@ const ArticleContentComponent: React.FC<ArticleContentComponentProps> = ({ compo
                         // 在富文本模式下，可以触发变更事件
                         console.log('Article content:', html);
                     }}
+                    readOnly={isDesignMode}
                 />
             ) : (
                 <TextArea
                     placeholder={component.placeholder || '请输入文章内容'}
                     disabled={component.disabled}
+                    readOnly={isDesignMode}
                     rows={component.rows || 8}
                     maxLength={component.maxLength}
                     showCount={component.showCharCount !== false}
@@ -48,7 +52,7 @@ const ArticleContentComponent: React.FC<ArticleContentComponentProps> = ({ compo
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

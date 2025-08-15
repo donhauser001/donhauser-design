@@ -8,11 +8,13 @@ import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 interface ContractPartyComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ component }) => {
+const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ component, isDesignMode = false }) => {
     const partyCount = component.partyCount || 2;
-    const { updateComponent } = useFormDesignerStore();
+    const { updateComponent, theme } = useFormDesignerStore();
+    const primaryColor = theme.primaryColor || '#1890ff';
     const [enterprises, setEnterprises] = useState<Enterprise[]>([]);
     const [ourEnterpriseData, setOurEnterpriseData] = useState<Enterprise | null>(null);
     const [employees, setEmployees] = useState<User[]>([]);
@@ -167,14 +169,14 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
                         <div>
                             <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
                                 公司名称 {component.required && <span style={{ color: '#ff4d4f' }}>*</span>}
-                                {isOurParty && <span style={{ color: '#1890ff', fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
-                                {!isOurParty && component.enableClientData && <span style={{ color: '#1890ff', fontSize: '12px', marginLeft: '8px' }}>(客户数据)</span>}
+                                {isOurParty && <span style={{ color: primaryColor, fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
+                                {!isOurParty && component.enableClientData && <span style={{ color: primaryColor, fontSize: '12px', marginLeft: '8px' }}>(客户数据)</span>}
                             </label>
                             {isOurParty ? (
                                 <Input
                                     placeholder="请输入公司名称"
                                     value={enterpriseData?.enterpriseName || ''}
-                                    readOnly={true}
+                                    readOnly={isDesignMode}
                                     style={{
                                         backgroundColor: enterpriseData ? '#f6ffed' : undefined,
                                         borderColor: enterpriseData ? '#b7eb8f' : undefined
@@ -219,7 +221,7 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
                         <div>
                             <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
                                 简称
-                                {isOurParty && <span style={{ color: '#1890ff', fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
+                                {isOurParty && <span style={{ color: primaryColor, fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
                             </label>
                             <Input
                                 placeholder="请输入公司简称"
@@ -238,7 +240,7 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
                         <div>
                             <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
                                 统一社会信用代码
-                                {isOurParty && <span style={{ color: '#1890ff', fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
+                                {isOurParty && <span style={{ color: primaryColor, fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
                             </label>
                             <Input
                                 placeholder="请输入统一社会信用代码"
@@ -257,7 +259,7 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
                         <div>
                             <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
                                 地址
-                                {isOurParty && <span style={{ color: '#1890ff', fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
+                                {isOurParty && <span style={{ color: primaryColor, fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
                             </label>
                             <Input
                                 placeholder="请输入地址"
@@ -276,7 +278,7 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
                         <div>
                             <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
                                 联系人 {component.required && <span style={{ color: '#ff4d4f' }}>*</span>}
-                                {isOurParty && <span style={{ color: '#1890ff', fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
+                                {isOurParty && <span style={{ color: primaryColor, fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
                             </label>
                             {isOurParty ? (
                                 <Select
@@ -324,7 +326,7 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
                                 <Input
                                     placeholder="请输入联系人姓名"
                                     value=""
-                                    readOnly={true}
+                                    readOnly={isDesignMode}
                                 />
                             )}
                         </div>
@@ -334,7 +336,7 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
                         <div>
                             <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
                                 电话
-                                {isOurParty && <span style={{ color: '#1890ff', fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
+                                {isOurParty && <span style={{ color: primaryColor, fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
                             </label>
                             <Input
                                 placeholder="请输入联系电话"
@@ -353,7 +355,7 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
                         <div>
                             <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
                                 邮箱
-                                {isOurParty && <span style={{ color: '#1890ff', fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
+                                {isOurParty && <span style={{ color: primaryColor, fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
                             </label>
                             <Input
                                 placeholder="请输入邮箱地址"
@@ -372,7 +374,7 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
                         <div>
                             <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
                                 法人代表
-                                {isOurParty && <span style={{ color: '#1890ff', fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
+                                {isOurParty && <span style={{ color: primaryColor, fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
                             </label>
                             <Input
                                 placeholder="请输入法人代表姓名"
@@ -391,7 +393,7 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
                         <div>
                             <label style={{ display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: 500 }}>
                                 法人代表证件号码
-                                {isOurParty && <span style={{ color: '#1890ff', fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
+                                {isOurParty && <span style={{ color: primaryColor, fontSize: '12px', marginLeft: '8px' }}>(我方)</span>}
                             </label>
                             <Input
                                 placeholder="请输入法人代表证件号码"
@@ -420,7 +422,7 @@ const ContractPartyComponent: React.FC<ContractPartyComponentProps> = ({ compone
                     marginTop: '8px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

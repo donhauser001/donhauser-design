@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Input, Collapse, Form } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { SearchOutlined } from '@ant-design/icons';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 const { TextArea } = Input;
 
@@ -10,6 +11,8 @@ interface ArticleSeoComponentProps {
 }
 
 const ArticleSeoComponent: React.FC<ArticleSeoComponentProps> = ({ component }) => {
+    const { theme } = useFormDesignerStore();
+    const borderColor = theme.borderColor || '#d9d9d9';
     const [activeKey, setActiveKey] = useState<string[]>(
         component.defaultExpanded ? ['seo'] : []
     );
@@ -102,7 +105,7 @@ const ArticleSeoComponent: React.FC<ArticleSeoComponentProps> = ({ component }) 
             </div>
             {component.fieldDescription && (
                 <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

@@ -240,7 +240,6 @@ class ComponentRegistry {
                 allowedFileTypes: [],
                 maxFileCount: 1,
                 uploadButtonText: '点击上传',
-                uploadTip: '支持单个文件上传',
                 uploadType: 'button',
                 showFileList: true,
                 order: 0
@@ -696,7 +695,6 @@ class ComponentRegistry {
                 uploadType: 'card', // 'button' | 'drag' | 'card'
                 maxFileSize: 5,
                 uploadButtonText: '上传封面图',
-                uploadTip: '支持 JPG、PNG、WebP 格式，文件大小不超过 5MB',
                 order: 0
             }
         });

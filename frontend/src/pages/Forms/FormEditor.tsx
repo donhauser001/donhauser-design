@@ -48,6 +48,7 @@ const FormEditor: React.FC = () => {
     const [formData, setFormData] = useState<FormType | null>(null)
     const [isNewForm] = useState(!id)
     const [activeId, setActiveId] = useState<string | null>(null)
+    const [isPreviewMode, setIsPreviewMode] = useState(false)
 
     const {
         components,
@@ -103,7 +104,8 @@ const FormEditor: React.FC = () => {
     // 删除handleSave函数，因为不再需要保存基础信息
 
     const handlePreview = () => {
-        message.info('预览功能开发中...')
+        setIsPreviewMode(!isPreviewMode)
+        message.success(isPreviewMode ? '已切换到设计模式' : '已切换到预览模式')
     }
 
     const handleBack = () => {
@@ -319,10 +321,13 @@ const FormEditor: React.FC = () => {
                         title="保存"
                     />
                     <Button
-                        icon={<EyeOutlined />}
+                        type={isPreviewMode ? "primary" : "default"}
+                        icon={isPreviewMode ? <FormOutlined /> : <EyeOutlined />}
                         onClick={handlePreview}
-                        title="预览"
-                    />
+                        title={isPreviewMode ? '设计模式' : '预览模式'}
+                    >
+                        {isPreviewMode ? '设计' : '预览'}
+                    </Button>
                     <Button
                         icon={<ArrowLeftOutlined />}
                         onClick={handleBack}
@@ -344,7 +349,7 @@ const FormEditor: React.FC = () => {
                             <ComponentLibrary />
                         </Col>
                         <Col span={13}>
-                            <DesignCanvas />
+                            <DesignCanvas isPreviewMode={isPreviewMode} />
                         </Col>
                         <Col span={6}>
                             <PropertyPanel />

@@ -9,9 +9,10 @@ const { Option } = Select;
 
 interface ClientComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const ClientComponent: React.FC<ClientComponentProps> = ({ component }) => {
+const ClientComponent: React.FC<ClientComponentProps> = ({ component, isDesignMode = false }) => {
     const [clients, setClients] = useState<ClientItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchLoading, setSearchLoading] = useState(false);
@@ -69,7 +70,7 @@ const ClientComponent: React.FC<ClientComponentProps> = ({ component }) => {
             value={component.defaultValue || ''}
             prefix={getPrefix()}
             style={component.style as React.CSSProperties}
-            readOnly={true}
+            readOnly={isDesignMode}
         />
     );
 
@@ -116,7 +117,7 @@ const ClientComponent: React.FC<ClientComponentProps> = ({ component }) => {
                                 padding: '8px 12px',
                                 fontSize: '12px',
                                 color: '#999',
-                                borderTop: '1px solid #f0f0f0',
+                                borderTop: `1px solid ${theme.borderColor || '#d9d9d9'}`,
                                 backgroundColor: '#fafafa'
                             }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -244,8 +245,7 @@ const ClientComponent: React.FC<ClientComponentProps> = ({ component }) => {
                         top: 'calc(50% + 2px)',
                         transform: 'translateY(-50%)',
                         zIndex: 10,
-                        pointerEvents: 'none',
-                        color: '#8c8c8c'
+                        pointerEvents: 'none'
                     }}>
                         {getPrefix()}
                     </div>
@@ -267,7 +267,7 @@ const ClientComponent: React.FC<ClientComponentProps> = ({ component }) => {
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

@@ -298,7 +298,13 @@ const LinearIcons = {
 
 // 获取线性图标的函数
 export const getLinearIcon = (iconKey: string): React.ReactElement | null => {
-    return LinearIcons[iconKey as keyof typeof LinearIcons] || null;
+    const icon = LinearIcons[iconKey as keyof typeof LinearIcons];
+    if (!icon) return null;
+
+    // 为图标添加统一的灰色
+    return React.cloneElement(icon, {
+        style: { color: '#8c8c8c' }
+    });
 };
 
 // 获取小尺寸的线性图标（12px）
@@ -306,10 +312,11 @@ export const getSmallLinearIcon = (iconKey: string): React.ReactElement | null =
     const icon = LinearIcons[iconKey as keyof typeof LinearIcons];
     if (!icon) return null;
 
-    // 克隆图标并修改尺寸
+    // 克隆图标并修改尺寸和颜色
     return React.cloneElement(icon, {
         width: "12",
-        height: "12"
+        height: "12",
+        style: { color: '#8c8c8c' }
     });
 };
 
@@ -326,7 +333,8 @@ export const getIconPrefix = (iconKey?: string): React.ReactElement => {
             return <span style={{
                 opacity: 1,
                 display: 'inline-flex',
-                alignItems: 'center'
+                alignItems: 'center',
+                color: '#8c8c8c'
             }}>{icon}</span>;
         }
     }

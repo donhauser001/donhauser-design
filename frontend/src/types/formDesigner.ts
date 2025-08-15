@@ -69,7 +69,7 @@ export interface ComponentStyle {
     fontWeight?: string | number;
     color?: string;
     lineHeight?: string;
-    textAlign?: string;
+    textAlign?: 'left' | 'center' | 'right' | 'justify';
     gap?: string; // 用于分栏容器的列间距
     columnPadding?: string; // 用于分栏容器的栏内边距
     borderWidth?: string; // 边框宽度
@@ -106,7 +106,6 @@ export interface FormComponent {
     acceptedFormats?: string[]; // 支持的文件格式（文章封面图片组件）
     maxFileCount?: number; // 最大文件数量
     uploadButtonText?: string; // 上传按钮文本
-    uploadTip?: string; // 上传提示文本
     uploadType?: 'button' | 'dragger' | 'card'; // 上传类型：按钮、拖拽或卡片
     showFileList?: boolean; // 显示文件列表
     validation?: ValidationRule[];
@@ -284,11 +283,31 @@ export interface FormComponent {
     }; // 用于divider - 描述样式
 }
 
+// 逻辑规则接口
+export interface LogicRule {
+    id: string;
+    type: 'linkage' | 'visibility';
+    sourceComponent: string;
+    condition: 'equals' | 'greater' | 'less' | 'notEquals' | 'contains' | 'notContains';
+    value: string;
+    targetComponent: string;
+    action: string; // 对于linkage是'setValue'，对于visibility是'visible'|'hidden'|'admin'
+    targetValue?: string; // 仅用于linkage类型
+}
+
 // 布局配置
 export interface LayoutConfig {
-    columns: number; // 栅格列数
-    gutter: number; // 栅格间距
-    responsive: boolean; // 是否响应式
+    columns: number; // 栅格列数（保留用于兼容性）
+    gutter: number; // 栅格间距（保留用于兼容性）
+    responsive: boolean; // 是否响应式（保留用于兼容性）
+    logicRules?: LogicRule[]; // 逻辑规则
+    // 新增布局属性
+    padding?: string; // 表单内边距
+    componentSpacing?: string; // 组件间距
+    labelPosition?: 'top' | 'left' | 'right'; // 标签位置
+    labelWidth?: string; // 标签宽度
+    maxWidth?: string; // 表单最大宽度
+    alignment?: 'left' | 'center' | 'right'; // 表单对齐方式
 }
 
 // 主题配置
@@ -298,6 +317,17 @@ export interface ThemeConfig {
     borderColor: string;
     borderRadius: string;
     fontSize: string;
+    // 新增主题属性
+    textColor?: string; // 文字颜色
+    labelColor?: string; // 标签颜色
+    labelFontSize?: string; // 标签字体大小
+    boxShadow?: string; // 组件阴影
+    showFormBorder?: boolean; // 显示表单边框
+    compactMode?: boolean; // 紧凑模式
+    // 说明文字设置
+    descriptionPosition?: 'bottom' | 'top' | 'right'; // 说明文字位置
+    descriptionFontSize?: string; // 说明文字字体大小
+    descriptionColor?: string; // 说明文字颜色
 }
 
 // 表单配置

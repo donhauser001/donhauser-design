@@ -24,8 +24,10 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         pricingPolicies,
         clearOrderItems,
         addOrderItems,
-        getComponentValue
+        getComponentValue,
+        theme
     } = useFormDesignerStore();
+    const primaryColor = theme.primaryColor || '#1890ff';
 
     // 检查画布上是否存在报价单组件或项目名称组件
     const hasQuotationComponent = components.some((comp: FormComponent) => comp.type === 'quotation');
@@ -35,7 +37,7 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
     // 获取当前订单项目
     const orderItems = getOrderItems(component.id);
     const orderTotal = getOrderTotal(component.id);
-    
+
     // 判断是否为项目任务模式（只读模式）
     const isProjectTaskMode = component.associationMode === 'project' && hasProjectNameComponent;
 
@@ -107,10 +109,10 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                 // 将任务转换为订单项目格式
                 const taskOrderItems: OrderItem[] = data.data.map((task: any) => {
                     const basePrice = task.subtotal / task.quantity; // 基础单价
-                    
+
                     // 构建计算详情（显示任务原始信息，不包含额外的政策信息）
                     let calculationDetails = task.billingDescription;
-                    
+
                     return {
                         id: task._id,
                         serviceName: task.taskName,
@@ -168,7 +170,10 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
     // 如果没有报价单组件或项目名称组件，显示提示信息
     if (!canUseOrderComponent) {
         return (
-            <div style={{ width: '100%' }}>
+            <div style={{
+                width: '100%',
+                ...component.style
+            }}>
                 <Alert
                     message="订单组件无法独立使用，请先在画布中添加报价单或项目名称组件"
                     type="warning"
@@ -185,7 +190,7 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                         marginTop: '4px',
                         lineHeight: '1.4'
                     }}>
-                        {component.fieldDescription}
+                        提示：{component.fieldDescription}
                     </div>
                 )}
             </div>
@@ -240,10 +245,10 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
             dataIndex: 'quantity',
             key: 'quantity',
             width: '10%',
-            render: (quantity: number, record: OrderItem) => 
+            render: (quantity: number, record: OrderItem) =>
                 isProjectTaskMode ? (
                     // 项目任务模式：只读显示
-                    <Text strong style={{ color: '#1890ff' }}>
+                    <Text strong style={{ color: primaryColor }}>
                         {quantity} {record.unit}
                     </Text>
                 ) : (
@@ -273,8 +278,8 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                         <div>
                             {policyNames.map((policyName, index) => (
                                 <div key={index} style={{ marginBottom: '4px' }}>
-                                    <Text 
-                                        style={{ 
+                                    <Text
+                                        style={{
                                             fontSize: '12px',
                                             padding: '2px 6px',
                                             backgroundColor: '#fff2f0',
@@ -325,7 +330,7 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
             key: 'subtotal',
             width: '12%',
             render: (subtotal: number) => (
-                <Text strong style={{ color: '#1890ff' }}>
+                <Text strong style={{ color: primaryColor }}>
                     ¥{subtotal.toLocaleString()}
                 </Text>
             )
@@ -368,7 +373,7 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
     // 获取标题显示内容
     const getCardTitle = () => {
         const { titleDisplay = 'show', customTitle = '订单详情' } = component;
-        
+
         let baseTitle = '';
         if (titleDisplay === 'hide') {
             return undefined; // 不显示标题
@@ -377,7 +382,7 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         } else {
             baseTitle = '订单详情'; // 显示默认标题
         }
-        
+
         return baseTitle;
     };
 
@@ -407,7 +412,10 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
     };
 
     return (
-        <div style={{ width: '100%' }}>
+        <div style={{
+            width: '100%',
+            ...component.style
+        }}>
             <Card
                 title={getCardTitle()}
                 size="small"
@@ -478,7 +486,7 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

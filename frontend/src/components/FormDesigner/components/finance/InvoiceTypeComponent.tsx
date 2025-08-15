@@ -65,8 +65,7 @@ const InvoiceTypeComponent: React.FC<InvoiceTypeComponentProps> = ({ component }
                         top: 'calc(50% + 2px)',
                         transform: 'translateY(-50%)',
                         zIndex: 10,
-                        pointerEvents: 'none',
-                        color: '#8c8c8c'
+                        pointerEvents: 'none'
                     }}>
                         {getPrefix()}
                     </div>
@@ -96,7 +95,7 @@ const InvoiceTypeComponent: React.FC<InvoiceTypeComponentProps> = ({ component }
             {renderSelectWithIcon(selectComponent)}
             {component.fieldDescription && (
                 <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

@@ -1,11 +1,15 @@
 import React from 'react';
 import { FormComponent } from '../../../../types/formDesigner';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 interface HtmlComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const HtmlComponent: React.FC<HtmlComponentProps> = ({ component }) => {
+const HtmlComponent: React.FC<HtmlComponentProps> = ({ component, isDesignMode = false }) => {
+    const { theme } = useFormDesignerStore();
+    const borderColor = theme.borderColor || '#d9d9d9';
     const containerStyle = {
         width: '100%',
         padding: component.style?.padding || '8px',
@@ -13,7 +17,7 @@ const HtmlComponent: React.FC<HtmlComponentProps> = ({ component }) => {
         backgroundColor: component.style?.backgroundColor || 'transparent',
         borderRadius: component.style?.borderRadius || '4px',
         border: component.style?.borderWidth ?
-            `${component.style.borderWidth} ${component.style.borderStyle || 'solid'} ${component.style.borderColor || '#d9d9d9'}` :
+            `${component.style.borderWidth} ${component.style.borderStyle || 'solid'} ${component.style.borderColor || borderColor}` :
             'none',
         fontSize: component.style?.fontSize || '14px',
         color: component.style?.color || '#333',
@@ -23,7 +27,7 @@ const HtmlComponent: React.FC<HtmlComponentProps> = ({ component }) => {
     const placeholderStyle = {
         padding: '16px',
         backgroundColor: '#f5f5f5',
-        border: '2px dashed #d9d9d9',
+        border: `2px dashed ${borderColor}`,
         borderRadius: '4px',
         textAlign: 'center' as const,
         color: '#8c8c8c',
@@ -59,7 +63,7 @@ const HtmlComponent: React.FC<HtmlComponentProps> = ({ component }) => {
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

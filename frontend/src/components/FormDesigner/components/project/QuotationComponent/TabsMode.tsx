@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Typography, Row, Col, Tabs } from 'antd';
 import { RenderModeProps } from './types';
+import { useFormDesignerStore } from '../../../../../stores/formDesignerStore';
 
 const { Text } = Typography;
 
@@ -14,6 +15,9 @@ export const TabsMode: React.FC<RenderModeProps> = ({
     onServiceSelect,
     isServiceSelected
 }) => {
+    const { theme } = useFormDesignerStore();
+    const primaryColor = theme.primaryColor || '#1890ff';
+    const borderColor = theme.borderColor || '#d9d9d9';
     const tabItems = sortedCategories.map(category => ({
         key: category,
         label: category,
@@ -29,15 +33,15 @@ export const TabsMode: React.FC<RenderModeProps> = ({
                                 style={{
                                     height: '100%',
                                     border: isSelected
-                                        ? '2px solid #1890ff'
-                                        : '1px solid #f0f0f0',
+                                        ? `2px solid ${primaryColor}`
+                                        : `1px solid ${borderColor}`,
                                     borderRadius: component.style?.borderRadius || '8px',
                                     position: 'relative',
                                     cursor: hasOrderComponent ? 'pointer' : 'default',
                                     transition: 'all 0.2s ease',
-                                    backgroundColor: isSelected ? '#f0f8ff' : 'white',
+                                    backgroundColor: isSelected ? `${primaryColor}10` : 'white',
                                     boxShadow: isSelected
-                                        ? '0 4px 12px rgba(24, 144, 255, 0.15)'
+                                        ? `0 4px 12px ${primaryColor}25`
                                         : undefined
                                 }}
                                 styles={{ body: { padding: '12px' } }}

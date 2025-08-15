@@ -7,9 +7,10 @@ import { useAuth } from '../../../../contexts/AuthContext';
 
 interface AuthorComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
+const AuthorComponent: React.FC<AuthorComponentProps> = ({ component, isDesignMode = false }) => {
     const [authors, setAuthors] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const { userInfo } = useAuth();
@@ -128,8 +129,7 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
                         top: 'calc(50% + 2px)',
                         transform: 'translateY(-50%)',
                         zIndex: 10,
-                        pointerEvents: 'none',
-                        color: '#8c8c8c'
+                        pointerEvents: 'none'
                     }}>
                         {getSelectPrefix()}
                     </div>
@@ -168,7 +168,10 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
             );
 
             return (
-                <div style={{ width: '100%' }}>
+                <div style={{
+                    width: '100%',
+                    ...component.style
+                }}>
                     {renderSelectWithIcon(selectComponent)}
                     {component.fieldDescription && (
                         <div style={{
@@ -177,7 +180,7 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
                             marginTop: '4px',
                             lineHeight: '1.4'
                         }}>
-                            {component.fieldDescription}
+                            提示：{component.fieldDescription}
                         </div>
                     )}
                 </div>
@@ -202,7 +205,10 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
             );
 
             return (
-                <div style={{ width: '100%' }}>
+                <div style={{
+                    width: '100%',
+                    ...component.style
+                }}>
                     {renderSelectWithIcon(autoCompleteComponent)}
                     {component.fieldDescription && (
                         <div style={{
@@ -211,7 +217,7 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
                             marginTop: '4px',
                             lineHeight: '1.4'
                         }}>
-                            {component.fieldDescription}
+                            提示：{component.fieldDescription}
                         </div>
                     )}
                 </div>
@@ -224,7 +230,10 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
     const defaultValue = currentUserAuthor || component.defaultValue;
 
     return (
-        <div style={{ width: '100%' }}>
+        <div style={{
+            width: '100%',
+            ...component.style
+        }}>
             <Input
                 placeholder={component.placeholder || '请输入作者真实姓名'}
                 disabled={component.disabled}
@@ -232,7 +241,7 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
                 showCount={component.showCharCount}
                 prefix={getInputPrefix()}
                 value={defaultValue}
-                readOnly={true}
+                readOnly={isDesignMode}
             />
             {component.fieldDescription && (
                 <div style={{
@@ -241,7 +250,7 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

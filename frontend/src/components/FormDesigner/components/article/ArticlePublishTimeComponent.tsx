@@ -5,9 +5,10 @@ import dayjs from 'dayjs';
 
 interface ArticlePublishTimeComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const ArticlePublishTimeComponent: React.FC<ArticlePublishTimeComponentProps> = ({ component }) => {
+const ArticlePublishTimeComponent: React.FC<ArticlePublishTimeComponentProps> = ({ component, isDesignMode = false }) => {
     const showTime = component.showTimePicker !== false; // 默认显示时间选择器
 
     // 获取默认值
@@ -39,7 +40,7 @@ const ArticlePublishTimeComponent: React.FC<ArticlePublishTimeComponentProps> = 
                 disabledDate={component.disablePastDates ? (current) => {
                     return current && current < dayjs().startOf('day');
                 } : undefined}
-                readOnly={true}
+                disabled={isDesignMode}
             />
             {component.fieldDescription && (
                 <div style={{
@@ -48,7 +49,7 @@ const ArticlePublishTimeComponent: React.FC<ArticlePublishTimeComponentProps> = 
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

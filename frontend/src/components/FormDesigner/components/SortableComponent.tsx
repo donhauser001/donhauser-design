@@ -14,7 +14,8 @@ interface SortableComponentProps {
 const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
     const [isHovered, setIsHovered] = useState(false);
 
-    const { selectedComponent, selectComponent, deleteComponent, duplicateComponent } = useFormDesignerStore();
+    const { selectedComponent, selectComponent, deleteComponent, duplicateComponent, theme } = useFormDesignerStore();
+    const primaryColor = theme.primaryColor || '#1890ff';
 
     // 检查组件可见性状态
     const visibility = component.visibility || 'visible';
@@ -51,7 +52,7 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
                 marginBottom: '16px',
                 padding: '8px',
                 border: selectedComponent === component.id
-                    ? '2px solid #1890ff'
+                    ? `2px solid ${primaryColor}`
                     : isHidden
                         ? '2px dashed #ff7875'
                         : isAdminOnly

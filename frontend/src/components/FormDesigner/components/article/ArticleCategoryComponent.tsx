@@ -8,9 +8,10 @@ const { Option } = Select;
 
 interface ArticleCategoryComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const ArticleCategoryComponent: React.FC<ArticleCategoryComponentProps> = ({ component }) => {
+const ArticleCategoryComponent: React.FC<ArticleCategoryComponentProps> = ({ component, isDesignMode = false }) => {
     const [categories, setCategories] = useState<any[]>([]);
     const [loading, setLoading] = useState(true); // 默认加载状态为true
 
@@ -105,8 +106,7 @@ const ArticleCategoryComponent: React.FC<ArticleCategoryComponentProps> = ({ com
                         top: 'calc(50% + 2px)',
                         transform: 'translateY(-50%)',
                         zIndex: 10,
-                        pointerEvents: 'none',
-                        color: '#8c8c8c'
+                        pointerEvents: 'none'
                     }}>
                         {getPrefix()}
                     </div>
@@ -121,14 +121,17 @@ const ArticleCategoryComponent: React.FC<ArticleCategoryComponentProps> = ({ com
         const loadingSelect = (
             <Select
                 placeholder="加载分类中..."
-                disabled={true}
+                disabled={isDesignMode || loading}
                 style={{ width: '100%' }}
                 notFoundContent={<Spin size="small" />}
             />
         );
 
         return (
-            <div style={{ width: '100%' }}>
+            <div style={{
+                width: '100%',
+                ...component.style
+            }}>
                 {renderSelectWithIcon(loadingSelect)}
                 {component.fieldDescription && (
                     <div style={{
@@ -137,7 +140,7 @@ const ArticleCategoryComponent: React.FC<ArticleCategoryComponentProps> = ({ com
                         marginTop: '4px',
                         lineHeight: '1.4'
                     }}>
-                        {component.fieldDescription}
+                        提示：{component.fieldDescription}
                     </div>
                 )}
             </div>
@@ -168,7 +171,10 @@ const ArticleCategoryComponent: React.FC<ArticleCategoryComponentProps> = ({ com
     );
 
     return (
-        <div style={{ width: '100%' }}>
+        <div style={{
+            width: '100%',
+            ...component.style
+        }}>
             {renderSelectWithIcon(selectComponent)}
             {component.fieldDescription && (
                 <div style={{
@@ -177,7 +183,7 @@ const ArticleCategoryComponent: React.FC<ArticleCategoryComponentProps> = ({ com
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

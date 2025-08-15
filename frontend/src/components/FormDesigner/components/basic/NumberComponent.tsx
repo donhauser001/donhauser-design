@@ -1,13 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input, InputNumber } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { getIconPrefix } from '../../utils/iconUtils';
+import { useLogicEngine } from '../../hooks/useLogicEngine';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderDescription, getDescriptionContainerStyle, getComponentContentStyle } from '../../utils/descriptionUtils';
 
 interface NumberComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const NumberComponent: React.FC<NumberComponentProps> = ({ component }) => {
+const NumberComponent: React.FC<NumberComponentProps> = ({ component, isDesignMode = false }) => {
+    const { getValue, setValue, getInitialValue } = useLogicEngine(component, isDesignMode);
+    const { theme } = useFormDesignerStore();
+    const [numberValue, setNumberValue] = useState(getInitialValue());
+
+    // 监听外部值变化（比如逻辑规则导致的值变化）
+    useEffect(() => {
+        const currentValue = getValue();
+        if (currentValue !== undefined && currentValue !== null && currentValue !== numberValue) {
+            console.log(`NumberComponent ${component.id}: 外部值变化 ${numberValue} -> ${currentValue}`);
+            setNumberValue(currentValue);
+        }
+    }, [getValue, numberValue, component.id]);
+
+    // 处理数值变化
+    const handleChange = (value: number | null) => {
+        setNumberValue(value);
+        setValue(value);
+    };
     // 获取图标，始终返回一个prefix以避免DOM结构变化
     const getPrefix = () => {
         return getIconPrefix(component.icon);
@@ -27,9 +49,11 @@ const NumberComponent: React.FC<NumberComponentProps> = ({ component }) => {
 
     // 格式化显示值
     const getFormattedValue = () => {
-        if (!component.defaultValue && component.defaultValue !== 0) return '';
+        const currentValue = numberValue !== undefined && numberValue !== null ? numberValue : component.defaultValue;
 
-        const value = Number(component.defaultValue);
+        if (!currentValue && currentValue !== 0) return '';
+
+        const value = Number(currentValue);
         if (isNaN(value)) return '';
 
         let formattedValue: string;
@@ -56,25 +80,26 @@ const NumberComponent: React.FC<NumberComponentProps> = ({ component }) => {
     };
 
     return (
-        <div style={{ width: '100%' }}>
-            <Input
-                placeholder={component.placeholder || '请输入数字'}
-                value={getFormattedValue()}
-                prefix={getPrefix()}
-                suffix={getSuffix()}
-                style={component.style}
-                readOnly={true}
-            />
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    {component.fieldDescription}
-                </div>
-            )}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {theme.descriptionPosition === 'top' && renderDescription({ component, theme })}
+
+            <div style={getComponentContentStyle(theme)}>
+                <InputNumber
+                    placeholder={component.placeholder || '请输入数字'}
+                    value={numberValue !== undefined && numberValue !== null ? Number(numberValue) : undefined}
+                    prefix={getPrefix()}
+                    suffix={getSuffix()}
+                    style={{ width: '100%', ...component.style }}
+                    readOnly={isDesignMode}
+                    onChange={handleChange}
+                    precision={component.decimalPlaces === -1 ? undefined : (component.decimalPlaces || 0)}
+                    formatter={component.showThousandSeparator ? (value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : undefined}
+                    parser={component.showThousandSeparator ? (value) => value!.replace(/\$\s?|(,*)/g, '') : undefined}
+                />
+            </div>
+
+            {theme.descriptionPosition === 'bottom' && renderDescription({ component, theme })}
+            {theme.descriptionPosition === 'right' && renderDescription({ component, theme })}
         </div>
     );
 };

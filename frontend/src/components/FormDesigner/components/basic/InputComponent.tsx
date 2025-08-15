@@ -1,13 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { getIconPrefix } from '../../utils/iconUtils';
+import { useLogicEngine } from '../../hooks/useLogicEngine';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderDescription, getDescriptionContainerStyle, getComponentContentStyle } from '../../utils/descriptionUtils';
 
 interface InputComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const InputComponent: React.FC<InputComponentProps> = ({ component }) => {
+const InputComponent: React.FC<InputComponentProps> = ({ component, isDesignMode = false }) => {
+    const { getValue, setValue, getInitialValue } = useLogicEngine(component, isDesignMode);
+    const { theme } = useFormDesignerStore();
+    const [inputValue, setInputValue] = useState(getInitialValue());
+
+    // 监听外部值变化（比如逻辑规则导致的值变化）
+    useEffect(() => {
+        const currentValue = getValue();
+        if (currentValue !== undefined && currentValue !== null && currentValue !== inputValue) {
+            console.log(`InputComponent ${component.id}: 外部值变化 ${inputValue} -> ${currentValue}`);
+            setInputValue(currentValue);
+        }
+    }, [getValue, inputValue, component.id]);
+
+    // 处理输入值变化
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        setInputValue(newValue);
+        setValue(newValue);
+    };
     // 根据输入格式设置类型和验证
     const getInputType = () => {
         switch (component.inputFormat) {
@@ -44,25 +67,23 @@ const InputComponent: React.FC<InputComponentProps> = ({ component }) => {
     };
 
     return (
-        <div style={{ width: '100%' }}>
-            <Input
-                type={getInputType()}
-                placeholder={getPlaceholder()}
-                value={component.defaultValue || ''}
-                prefix={getPrefix()}
-                style={component.style}
-                readOnly={true}
-            />
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    {component.fieldDescription}
-                </div>
-            )}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {theme.descriptionPosition === 'top' && renderDescription({ component, theme })}
+
+            <div style={getComponentContentStyle(theme)}>
+                <Input
+                    type={getInputType()}
+                    placeholder={getPlaceholder()}
+                    value={inputValue}
+                    prefix={getPrefix()}
+                    style={component.style}
+                    readOnly={isDesignMode}
+                    onChange={handleChange}
+                />
+            </div>
+
+            {theme.descriptionPosition === 'bottom' && renderDescription({ component, theme })}
+            {theme.descriptionPosition === 'right' && renderDescription({ component, theme })}
         </div>
     );
 };

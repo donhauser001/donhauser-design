@@ -5,9 +5,10 @@ import { getIconPrefix } from '../../utils/iconUtils';
 
 interface ContractNameComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const ContractNameComponent: React.FC<ContractNameComponentProps> = ({ component }) => {
+const ContractNameComponent: React.FC<ContractNameComponentProps> = ({ component, isDesignMode = false }) => {
     // 获取占位符文本
     const getPlaceholder = () => {
         return component.placeholder || '请输入合同名称';
@@ -26,7 +27,7 @@ const ContractNameComponent: React.FC<ContractNameComponentProps> = ({ component
                 value={component.defaultValue || ''}
                 prefix={getPrefix()}
                 style={component.style}
-                readOnly={true}
+                readOnly={isDesignMode}
                 required={component.required}
             />
             {component.fieldDescription && (
@@ -36,7 +37,7 @@ const ContractNameComponent: React.FC<ContractNameComponentProps> = ({ component
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

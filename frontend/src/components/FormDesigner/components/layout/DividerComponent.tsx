@@ -1,17 +1,20 @@
 import React from 'react';
 import { Divider } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 interface DividerComponentProps {
     component: FormComponent;
 }
 
 const DividerComponent: React.FC<DividerComponentProps> = ({ component }) => {
+    const { theme } = useFormDesignerStore();
+    const borderColor = theme.borderColor || '#d9d9d9';
     // 构建线条样式
     const lineStyle = {
         borderTopStyle: component.dividerStyle || 'solid',
         borderTopWidth: `${component.thickness || 1}px`,
-        borderTopColor: component.lineColor || '#d9d9d9',
+        borderTopColor: component.lineColor || borderColor,
         ...component.style
     };
 

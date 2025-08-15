@@ -151,7 +151,7 @@ const InvoiceInfoComponent: React.FC<InvoiceInfoComponentProps> = ({ component }
             </Card>
             {component.fieldDescription && (
                 <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

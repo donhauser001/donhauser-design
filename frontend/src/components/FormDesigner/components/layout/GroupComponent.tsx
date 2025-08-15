@@ -11,7 +11,8 @@ interface GroupComponentProps {
 }
 
 const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
-    const { getComponentsByParent } = useFormDesignerStore();
+    const { getComponentsByParent, theme } = useFormDesignerStore();
+    const primaryColor = theme.primaryColor || '#1890ff';
     const childComponents = getComponentsByParent(component.id);
 
     // 配置分组为可放置区域
@@ -31,7 +32,7 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
         <div
             data-component-type="group"
             style={{
-                border: '1px solid #d9d9d9',
+                border: `1px solid ${theme.borderColor || '#d9d9d9'}`,
                 borderRadius: '8px',
                 padding: '12px',
                 backgroundColor: '#ffffff',
@@ -44,7 +45,7 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                 fontSize: '16px',
                 marginBottom: '16px',
                 color: '#262626',
-                borderBottom: '1px solid #f0f0f0',
+                borderBottom: `1px solid ${theme.borderColor || '#d9d9d9'}`,
                 paddingBottom: '8px',
                 paddingLeft: '8px'
             }}>
@@ -59,7 +60,7 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                     position: 'relative',
                     zIndex: 1,
                     backgroundColor: isOver ? '#f0f8ff' : 'transparent',
-                    border: isOver ? '2px dashed #1890ff' : '2px dashed transparent',
+                    border: isOver ? `2px dashed ${primaryColor}` : '2px dashed transparent',
                     borderRadius: '4px',
                     transition: 'all 0.2s ease',
                     padding: isOver ? '8px' : '0px'
@@ -82,12 +83,12 @@ const GroupComponent: React.FC<GroupComponentProps> = ({ component }) => {
                             padding: '12px',
                             backgroundColor: isOver ? '#e6f7ff' : '#fafafa',
                             borderRadius: '4px',
-                            border: isOver ? '2px dashed #1890ff' : '2px dashed #d9d9d9',
+                            border: isOver ? `2px dashed ${primaryColor}` : `2px dashed ${theme.borderColor || '#d9d9d9'}`,
                             transition: 'all 0.2s ease'
                         }}
                     >
                         <div style={{
-                            color: isOver ? '#1890ff' : '#999',
+                            color: isOver ? primaryColor : '#999',
                             fontSize: '14px',
                             textAlign: 'center',
                             padding: '20px 0',

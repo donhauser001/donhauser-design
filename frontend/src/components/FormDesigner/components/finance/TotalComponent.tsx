@@ -10,7 +10,8 @@ interface TotalComponentProps {
 }
 
 const TotalComponent: React.FC<TotalComponentProps> = ({ component }) => {
-    const { components, getOrderTotal, orderItems, setComponentValue, getComponentValue, updateComponent } = useFormDesignerStore();
+    const { components, getOrderTotal, orderItems, setComponentValue, getComponentValue, updateComponent, theme } = useFormDesignerStore();
+    const borderColor = theme.borderColor || '#d9d9d9';
     const [hasOrderComponent, setHasOrderComponent] = useState(false);
     const [orderComponentId, setOrderComponentId] = useState<string | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
@@ -300,7 +301,7 @@ const TotalComponent: React.FC<TotalComponentProps> = ({ component }) => {
                         marginTop: '4px',
                         lineHeight: '1.4'
                     }}>
-                        {component.fieldDescription}
+                        提示：{component.fieldDescription}
                     </div>
                 )}
             </div>
@@ -390,7 +391,7 @@ const TotalComponent: React.FC<TotalComponentProps> = ({ component }) => {
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

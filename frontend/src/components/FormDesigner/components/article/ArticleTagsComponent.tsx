@@ -56,7 +56,10 @@ const ArticleTagsComponent: React.FC<ArticleTagsComponentProps> = ({ component }
     // 如果没有开启从标签表加载，则使用普通输入框模式
     if (!component.fromTagTable) {
         return (
-            <div style={{ width: '100%' }}>
+            <div style={{
+                width: '100%',
+                ...component.style
+            }}>
                 <Input
                     placeholder={component.placeholder || '请输入文章标签，多个标签用逗号分隔'}
                     disabled={component.disabled}
@@ -72,7 +75,7 @@ const ArticleTagsComponent: React.FC<ArticleTagsComponentProps> = ({ component }
                         marginTop: '4px',
                         lineHeight: '1.4'
                     }}>
-                        {component.fieldDescription}
+                        提示：{component.fieldDescription}
                     </div>
                 )}
 
@@ -108,8 +111,7 @@ const ArticleTagsComponent: React.FC<ArticleTagsComponentProps> = ({ component }
                         top: 'calc(50% + 2px)',
                         transform: 'translateY(-50%)',
                         zIndex: 10,
-                        pointerEvents: 'none',
-                        color: '#8c8c8c'
+                        pointerEvents: 'none'
                     }}>
                         {getSelectPrefix()}
                     </div>
@@ -166,7 +168,10 @@ const ArticleTagsComponent: React.FC<ArticleTagsComponentProps> = ({ component }
     );
 
     return (
-        <div style={{ width: '100%' }}>
+        <div style={{
+            width: '100%',
+            ...component.style
+        }}>
             {renderSelectWithIcon(selectComponent)}
             {component.fieldDescription && (
                 <div style={{
@@ -175,7 +180,7 @@ const ArticleTagsComponent: React.FC<ArticleTagsComponentProps> = ({ component }
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

@@ -22,7 +22,9 @@ const ColumnContainerComponent: React.FC<ColumnContainerComponentProps> = ({ com
     // 构建边框样式
     const borderStyle = component.style?.borderStyle || 'solid';
     const borderWidth = component.style?.borderWidth || '1px';
-    const borderColor = component.style?.borderColor || '#d9d9d9';
+    const { theme } = useFormDesignerStore();
+    const themeBorderColor = theme.borderColor || '#d9d9d9';
+    const borderColor = component.style?.borderColor || themeBorderColor;
     const border = borderStyle === 'none' ? 'none' : `${borderWidth} ${borderStyle} ${borderColor}`;
 
     return (

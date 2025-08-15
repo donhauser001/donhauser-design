@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, Form, Tabs, Collapse, ColorPicker, Select, Switch, Input, InputNumber } from 'antd';
-import { SettingOutlined, AppstoreOutlined, FormatPainterOutlined } from '@ant-design/icons';
+import { Card, Form, Tabs, Collapse, ColorPicker, Select, Switch, Input, InputNumber, Button } from 'antd';
+import { SettingOutlined, AppstoreOutlined, FormatPainterOutlined, BranchesOutlined } from '@ant-design/icons';
 import { useFormDesignerStore } from '../../stores/formDesignerStore';
 
 // 导入各种属性面板组件
@@ -14,6 +14,7 @@ import ProjectComponents from './PropertyPanels/ProjectComponents';
 import ContractComponents from './PropertyPanels/ContractComponents';
 import ArticleComponents from './PropertyPanels/ArticleComponents';
 import FinanceComponents from './PropertyPanels/FinanceComponents';
+import StyleProperties from './PropertyPanels/StyleProperties';
 
 const { Option } = Select;
 
@@ -193,8 +194,8 @@ const PropertyPanel: React.FC = () => {
                 )
             },
 
-            // 样式属性面板（仅特定组件显示）
-            ...(['presetText', 'image', 'countdown', 'quotation'].includes(selectedComponentData.type) ? [{
+            // 样式属性面板（所有组件都显示）
+            ...([{
                 key: 'style',
                 label: (
                     <div style={{
@@ -223,7 +224,7 @@ const PropertyPanel: React.FC = () => {
                         </Form>
                     </div>
                 )
-            }] : [])
+            }])
         ];
 
         return (
@@ -823,213 +824,496 @@ const PropertyPanel: React.FC = () => {
             );
         }
 
-        // 其他组件的通用样式设置
+        // 其他组件使用通用样式设置组件
         return (
-            <>
-                {/* 背景色 */}
-                <Form.Item label="背景颜色">
-                    <ColorPicker
-                        value={selectedComponentData.style?.backgroundColor || 'transparent'}
-                        onChange={(color) => handlePropertyChange('style', {
-                            ...selectedComponentData.style,
-                            backgroundColor: color.toHexString()
-                        })}
-                        showText
-                        allowClear
-                    />
-                </Form.Item>
-
-                {/* 内边距 */}
-                <Form.Item label="内边距">
-                    <Select
-                        value={selectedComponentData.style?.padding || '0'}
-                        onChange={(value) => handlePropertyChange('style', {
-                            ...selectedComponentData.style,
-                            padding: value
-                        })}
-                    >
-                        <Option value="0">0px</Option>
-                        <Option value="4px">4px</Option>
-                        <Option value="8px">8px</Option>
-                        <Option value="12px">12px</Option>
-                        <Option value="16px">16px</Option>
-                        <Option value="20px">20px</Option>
-                    </Select>
-                </Form.Item>
-
-                {/* 外边距 */}
-                <Form.Item label="外边距">
-                    <Select
-                        value={selectedComponentData.style?.margin || '0'}
-                        onChange={(value) => handlePropertyChange('style', {
-                            ...selectedComponentData.style,
-                            margin: value
-                        })}
-                    >
-                        <Option value="0">0px</Option>
-                        <Option value="4px">4px</Option>
-                        <Option value="8px">8px</Option>
-                        <Option value="12px">12px</Option>
-                        <Option value="16px">16px</Option>
-                        <Option value="20px">20px</Option>
-                    </Select>
-                </Form.Item>
-
-                {/* 边框设置 */}
-                <Form.Item label="边框宽度">
-                    <Select
-                        value={selectedComponentData.style?.borderWidth || '0'}
-                        onChange={(value) => handlePropertyChange('style', {
-                            ...selectedComponentData.style,
-                            borderWidth: value
-                        })}
-                    >
-                        <Option value="0">无边框</Option>
-                        <Option value="1px">1px</Option>
-                        <Option value="2px">2px</Option>
-                        <Option value="3px">3px</Option>
-                        <Option value="4px">4px</Option>
-                    </Select>
-                </Form.Item>
-
-                {showBorderSettings && (
-                    <>
-                        <Form.Item label="边框样式">
-                            <Select
-                                value={selectedComponentData.style?.borderStyle || 'solid'}
-                                onChange={(value) => handlePropertyChange('style', {
-                                    ...selectedComponentData.style,
-                                    borderStyle: value
-                                })}
-                            >
-                                <Option value="solid">实线</Option>
-                                <Option value="dashed">虚线</Option>
-                                <Option value="dotted">点线</Option>
-                            </Select>
-                        </Form.Item>
-
-                        <Form.Item label="边框颜色">
-                            <ColorPicker
-                                value={selectedComponentData.style?.borderColor || '#d9d9d9'}
-                                onChange={(color) => handlePropertyChange('style', {
-                                    ...selectedComponentData.style,
-                                    borderColor: color.toHexString()
-                                })}
-                                showText
-                            />
-                        </Form.Item>
-                    </>
-                )}
-
-                {/* 圆角 */}
-                <Form.Item label="圆角">
-                    <Select
-                        value={selectedComponentData.style?.borderRadius || '4px'}
-                        onChange={(value) => handlePropertyChange('style', {
-                            ...selectedComponentData.style,
-                            borderRadius: value
-                        })}
-                    >
-                        <Option value="0">无圆角</Option>
-                        <Option value="2px">2px</Option>
-                        <Option value="4px">4px</Option>
-                        <Option value="6px">6px</Option>
-                        <Option value="8px">8px</Option>
-                        <Option value="12px">12px</Option>
-                        <Option value="16px">16px</Option>
-                        <Option value="50%">圆形</Option>
-                    </Select>
-                </Form.Item>
-            </>
+            <StyleProperties
+                component={selectedComponentData}
+                onPropertyChange={handlePropertyChange}
+            />
         );
     };
 
-    const renderLayoutProperties = () => (
+    // 合并布局设置和主题设置
+    const renderLayoutAndThemeProperties = () => (
         <Form layout="vertical" size="small">
-            <Form.Item label="栅格列数">
-                <Select
-                    value={layout.columns}
-                    onChange={(value) => updateLayout({ columns: value })}
-                >
-                    <Option value={1}>1列</Option>
-                    <Option value={2}>2列</Option>
-                    <Option value={3}>3列</Option>
-                    <Option value={4}>4列</Option>
-                </Select>
-            </Form.Item>
+            {/* 布局设置 */}
+            <div style={{ marginBottom: '24px' }}>
+                <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 600, color: '#262626' }}>
+                    布局设置
+                </h4>
 
-            <Form.Item label="栅格间距">
-                <Select
-                    value={layout.gutter}
-                    onChange={(value) => updateLayout({ gutter: value })}
-                >
-                    <Option value={8}>8px</Option>
-                    <Option value={16}>16px</Option>
-                    <Option value={24}>24px</Option>
-                    <Option value={32}>32px</Option>
-                </Select>
-            </Form.Item>
+                <Form.Item label="表单内边距">
+                    <Select
+                        value={layout.padding || '16px'}
+                        onChange={(value) => updateLayout({ padding: value })}
+                    >
+                        <Option value="8px">紧凑 (8px)</Option>
+                        <Option value="16px">标准 (16px)</Option>
+                        <Option value="24px">宽松 (24px)</Option>
+                        <Option value="32px">很宽松 (32px)</Option>
+                    </Select>
+                </Form.Item>
 
-            <Form.Item label="响应式">
-                <Switch
-                    checked={layout.responsive}
-                    onChange={(checked) => updateLayout({ responsive: checked })}
-                />
-            </Form.Item>
+                <Form.Item label="组件间距">
+                    <Select
+                        value={layout.componentSpacing || '16px'}
+                        onChange={(value) => updateLayout({ componentSpacing: value })}
+                    >
+                        <Option value="8px">紧凑 (8px)</Option>
+                        <Option value="12px">较紧凑 (12px)</Option>
+                        <Option value="16px">标准 (16px)</Option>
+                        <Option value="20px">较宽松 (20px)</Option>
+                        <Option value="24px">宽松 (24px)</Option>
+                    </Select>
+                </Form.Item>
+
+                <Form.Item label="标签位置">
+                    <Select
+                        value={layout.labelPosition || 'top'}
+                        onChange={(value) => updateLayout({ labelPosition: value })}
+                    >
+                        <Option value="top">顶部</Option>
+                        <Option value="left">左侧</Option>
+                        <Option value="right">右侧</Option>
+                    </Select>
+                </Form.Item>
+
+                <Form.Item label="标签宽度" style={{ display: layout.labelPosition === 'left' || layout.labelPosition === 'right' ? 'block' : 'none' }}>
+                    <Select
+                        value={layout.labelWidth || '100px'}
+                        onChange={(value) => updateLayout({ labelWidth: value })}
+                    >
+                        <Option value="80px">80px</Option>
+                        <Option value="100px">100px</Option>
+                        <Option value="120px">120px</Option>
+                        <Option value="150px">150px</Option>
+                        <Option value="200px">200px</Option>
+                    </Select>
+                </Form.Item>
+
+                <Form.Item label="表单最大宽度">
+                    <Select
+                        value={layout.maxWidth || 'none'}
+                        onChange={(value) => updateLayout({ maxWidth: value })}
+                    >
+                        <Option value="none">不限制</Option>
+                        <Option value="600px">600px</Option>
+                        <Option value="800px">800px</Option>
+                        <Option value="1000px">1000px</Option>
+                        <Option value="1200px">1200px</Option>
+                    </Select>
+                </Form.Item>
+
+                <Form.Item label="表单对齐">
+                    <Select
+                        value={layout.alignment || 'left'}
+                        onChange={(value) => updateLayout({ alignment: value })}
+                    >
+                        <Option value="left">左对齐</Option>
+                        <Option value="center">居中</Option>
+                        <Option value="right">右对齐</Option>
+                    </Select>
+                </Form.Item>
+            </div>
+
+            {/* 主题设置 */}
+            <div>
+                <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 600, color: '#262626' }}>
+                    主题设置
+                </h4>
+
+                <Form.Item label="主色调">
+                    <ColorPicker
+                        value={theme.primaryColor || '#1890ff'}
+                        onChange={(color) => updateTheme({ primaryColor: color?.toHexString() || '#1890ff' })}
+                        showText
+                    />
+                </Form.Item>
+
+                <Form.Item label="表单背景色">
+                    <ColorPicker
+                        value={theme.backgroundColor || '#ffffff'}
+                        onChange={(color) => updateTheme({ backgroundColor: color?.toHexString() || '#ffffff' })}
+                        showText
+                    />
+                </Form.Item>
+
+                <Form.Item label="组件边框色">
+                    <ColorPicker
+                        value={theme.borderColor || '#d9d9d9'}
+                        onChange={(color) => updateTheme({ borderColor: color?.toHexString() || '#d9d9d9' })}
+                        showText
+                    />
+                </Form.Item>
+
+                <Form.Item label="文字颜色">
+                    <ColorPicker
+                        value={theme.textColor || '#000000'}
+                        onChange={(color) => updateTheme({ textColor: color?.toHexString() || '#000000' })}
+                        showText
+                    />
+                </Form.Item>
+
+                <Form.Item label="标签颜色">
+                    <ColorPicker
+                        value={theme.labelColor || '#262626'}
+                        onChange={(color) => updateTheme({ labelColor: color?.toHexString() || '#262626' })}
+                        showText
+                    />
+                </Form.Item>
+
+                <Form.Item label="组件圆角">
+                    <Select
+                        value={theme.borderRadius || '6px'}
+                        onChange={(value) => updateTheme({ borderRadius: value })}
+                    >
+                        <Option value="0px">无圆角</Option>
+                        <Option value="2px">很小 (2px)</Option>
+                        <Option value="4px">小 (4px)</Option>
+                        <Option value="6px">标准 (6px)</Option>
+                        <Option value="8px">大 (8px)</Option>
+                        <Option value="12px">很大 (12px)</Option>
+                    </Select>
+                </Form.Item>
+
+                <Form.Item label="字体大小">
+                    <Select
+                        value={theme.fontSize || '14px'}
+                        onChange={(value) => updateTheme({ fontSize: value })}
+                    >
+                        <Option value="12px">小 (12px)</Option>
+                        <Option value="13px">较小 (13px)</Option>
+                        <Option value="14px">标准 (14px)</Option>
+                        <Option value="15px">较大 (15px)</Option>
+                        <Option value="16px">大 (16px)</Option>
+                        <Option value="18px">很大 (18px)</Option>
+                    </Select>
+                </Form.Item>
+
+                <Form.Item label="标签字体大小">
+                    <Select
+                        value={theme.labelFontSize || '14px'}
+                        onChange={(value) => updateTheme({ labelFontSize: value })}
+                    >
+                        <Option value="12px">小 (12px)</Option>
+                        <Option value="13px">较小 (13px)</Option>
+                        <Option value="14px">标准 (14px)</Option>
+                        <Option value="15px">较大 (15px)</Option>
+                        <Option value="16px">大 (16px)</Option>
+                    </Select>
+                </Form.Item>
+
+                <Form.Item label="组件阴影">
+                    <Select
+                        value={theme.boxShadow || 'none'}
+                        onChange={(value) => updateTheme({ boxShadow: value })}
+                    >
+                        <Option value="none">无阴影</Option>
+                        <Option value="0 1px 2px rgba(0,0,0,0.1)">轻微阴影</Option>
+                        <Option value="0 2px 4px rgba(0,0,0,0.1)">标准阴影</Option>
+                        <Option value="0 4px 8px rgba(0,0,0,0.15)">明显阴影</Option>
+                        <Option value="0 8px 16px rgba(0,0,0,0.2)">强烈阴影</Option>
+                    </Select>
+                </Form.Item>
+
+                <Form.Item label="表单边框">
+                    <Switch
+                        checked={theme.showFormBorder || false}
+                        onChange={(checked) => updateTheme({ showFormBorder: checked })}
+                    />
+                </Form.Item>
+
+                <Form.Item label="紧凑模式">
+                    <Switch
+                        checked={theme.compactMode || false}
+                        onChange={(checked) => updateTheme({ compactMode: checked })}
+                    />
+                </Form.Item>
+            </div>
+
+            {/* 说明文字设置 */}
+            <div style={{ marginBottom: '24px' }}>
+                <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 600, color: '#262626' }}>
+                    说明文字设置
+                </h4>
+
+                <Form.Item label="说明文字位置">
+                    <Select
+                        value={theme.descriptionPosition || 'bottom'}
+                        onChange={(value) => updateTheme({ descriptionPosition: value })}
+                    >
+                        <Option value="bottom">底部</Option>
+                        <Option value="top">顶部</Option>
+                        <Option value="right">右侧</Option>
+                    </Select>
+                </Form.Item>
+
+                <Form.Item label="说明文字大小">
+                    <Select
+                        value={theme.descriptionFontSize || '12px'}
+                        onChange={(value) => updateTheme({ descriptionFontSize: value })}
+                    >
+                        <Option value="10px">很小 (10px)</Option>
+                        <Option value="11px">小 (11px)</Option>
+                        <Option value="12px">标准 (12px)</Option>
+                        <Option value="13px">较大 (13px)</Option>
+                        <Option value="14px">大 (14px)</Option>
+                        <Option value="15px">很大 (15px)</Option>
+                    </Select>
+                </Form.Item>
+
+                <Form.Item label="说明文字颜色">
+                    <ColorPicker
+                        value={theme.descriptionColor || '#8c8c8c'}
+                        onChange={(color) => updateTheme({ descriptionColor: color?.toHexString() || '#8c8c8c' })}
+                        showText
+                    />
+                </Form.Item>
+            </div>
         </Form>
     );
 
-    const renderThemeProperties = () => (
-        <Form layout="vertical" size="small">
-            <Form.Item label="主色调">
-                <ColorPicker
-                    value={theme.primaryColor}
-                    onChange={(color) => updateTheme({ primaryColor: color?.toHexString() || '#1890ff' })}
-                    showText
-                />
-            </Form.Item>
+    // 新增逻辑设置
+    const renderLogicProperties = () => {
+        // 获取全局逻辑规则（从store或layout中获取）
+        const logicRules = layout.logicRules || [];
 
-            <Form.Item label="背景色">
-                <ColorPicker
-                    value={theme.backgroundColor}
-                    onChange={(color) => updateTheme({ backgroundColor: color?.toHexString() || '#ffffff' })}
-                    showText
-                />
-            </Form.Item>
+        // 获取所有可用的组件选项（用于选择源组件和目标组件）
+        const getComponentOptions = () => {
+            return components.map(comp => ({
+                value: comp.id,
+                label: `${comp.label || comp.type} (${comp.id})`
+            }));
+        };
 
-            <Form.Item label="边框色">
-                <ColorPicker
-                    value={theme.borderColor}
-                    onChange={(color) => updateTheme({ borderColor: color?.toHexString() || '#d9d9d9' })}
-                    showText
-                />
-            </Form.Item>
+        // 添加新的逻辑规则
+        const addLogicRule = (type: 'linkage' | 'visibility') => {
+            const newRule = {
+                id: Date.now().toString(),
+                type,
+                sourceComponent: '',
+                condition: 'equals',
+                value: '',
+                targetComponent: '',
+                action: type === 'linkage' ? 'setValue' : 'hidden',
+                targetValue: type === 'linkage' ? '' : undefined
+            };
 
-            <Form.Item label="圆角">
-                <Select
-                    value={theme.borderRadius}
-                    onChange={(value) => updateTheme({ borderRadius: value })}
-                >
-                    <Option value="0px">无圆角</Option>
-                    <Option value="4px">小圆角</Option>
-                    <Option value="6px">中圆角</Option>
-                    <Option value="8px">大圆角</Option>
-                </Select>
-            </Form.Item>
+            const updatedRules = [...logicRules, newRule];
+            updateLayout({ ...layout, logicRules: updatedRules });
+        };
 
-            <Form.Item label="字体大小">
-                <Select
-                    value={theme.fontSize}
-                    onChange={(value) => updateTheme({ fontSize: value })}
-                >
-                    <Option value="12px">12px</Option>
-                    <Option value="14px">14px</Option>
-                    <Option value="16px">16px</Option>
-                    <Option value="18px">18px</Option>
-                </Select>
-            </Form.Item>
-        </Form>
-    );
+        // 删除逻辑规则
+        const removeLogicRule = (ruleId: string) => {
+            const updatedRules = logicRules.filter((rule: any) => rule.id !== ruleId);
+            updateLayout({ ...layout, logicRules: updatedRules });
+        };
+
+        // 更新逻辑规则
+        const updateLogicRule = (ruleId: string, field: string, value: any) => {
+            const updatedRules = logicRules.map((rule: any) =>
+                rule.id === ruleId ? { ...rule, [field]: value } : rule
+            );
+            updateLayout({ ...layout, logicRules: updatedRules });
+        };
+
+        // 渲染单个逻辑规则
+        const renderLogicRule = (rule: any, index: number) => {
+            const isLinkage = rule.type === 'linkage';
+            const componentOptions = getComponentOptions();
+
+            return (
+                <div key={rule.id} style={{
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '6px',
+                    padding: '16px',
+                    marginBottom: '12px',
+                    backgroundColor: '#fafafa'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '12px'
+                    }}>
+                        <span style={{ fontWeight: 500, color: '#262626' }}>
+                            {isLinkage ? '联动性逻辑' : '可见性逻辑'} #{index + 1}
+                        </span>
+                        <Button
+                            type="text"
+                            danger
+                            size="small"
+                            onClick={() => removeLogicRule(rule.id)}
+                        >
+                            删除
+                        </Button>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {/* 条件设置 */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ minWidth: '30px' }}>当</span>
+                            <Select
+                                style={{ minWidth: '120px' }}
+                                value={rule.sourceComponent}
+                                onChange={(value) => updateLogicRule(rule.id, 'sourceComponent', value)}
+                                placeholder="选择组件"
+                                size="small"
+                            >
+                                {componentOptions.map(option => (
+                                    <Option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </Option>
+                                ))}
+                            </Select>
+                            <span>的值</span>
+                            <Select
+                                style={{ minWidth: '80px' }}
+                                value={rule.condition}
+                                onChange={(value) => updateLogicRule(rule.id, 'condition', value)}
+                                size="small"
+                            >
+                                <Option value="equals">等于</Option>
+                                <Option value="greater">大于</Option>
+                                <Option value="less">小于</Option>
+                                <Option value="notEquals">不等于</Option>
+                                <Option value="contains">包含</Option>
+                                <Option value="notContains">不包含</Option>
+                            </Select>
+                            {(() => {
+                                // 检查源组件是否为选择类组件，如果是则显示选项选择器
+                                const sourceComponent = components.find(c => c.id === rule.sourceComponent);
+                                if (sourceComponent && ['select', 'radio'].includes(sourceComponent.type) && sourceComponent.options) {
+                                    return (
+                                        <Select
+                                            style={{ minWidth: '100px' }}
+                                            value={rule.value}
+                                            onChange={(value) => updateLogicRule(rule.id, 'value', value)}
+                                            placeholder="选择值"
+                                            size="small"
+                                        >
+                                            {sourceComponent.options.map(option => (
+                                                <Option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                    );
+                                } else {
+                                    return (
+                                        <Input
+                                            style={{ minWidth: '100px' }}
+                                            value={rule.value}
+                                            onChange={(e) => updateLogicRule(rule.id, 'value', e.target.value)}
+                                            placeholder="输入值"
+                                            size="small"
+                                        />
+                                    );
+                                }
+                            })()}
+                            <span>时</span>
+                        </div>
+
+                        {/* 动作设置 */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ minWidth: '30px' }}>设置</span>
+                            {isLinkage ? (
+                                <>
+                                    <Select
+                                        style={{ minWidth: '120px' }}
+                                        value={rule.targetComponent}
+                                        onChange={(value) => updateLogicRule(rule.id, 'targetComponent', value)}
+                                        placeholder="选择组件"
+                                        size="small"
+                                    >
+                                        {componentOptions.map(option => (
+                                            <Option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                    <span>的值为</span>
+                                    <Input
+                                        style={{ minWidth: '100px' }}
+                                        value={rule.targetValue || ''}
+                                        onChange={(e) => updateLogicRule(rule.id, 'targetValue', e.target.value)}
+                                        placeholder="输入值"
+                                        size="small"
+                                    />
+                                </>
+                            ) : (
+                                <>
+                                    <Select
+                                        style={{ minWidth: '120px' }}
+                                        value={rule.targetComponent}
+                                        onChange={(value) => updateLogicRule(rule.id, 'targetComponent', value)}
+                                        placeholder="选择组件"
+                                        size="small"
+                                    >
+                                        {componentOptions.map(option => (
+                                            <Option key={option.value} value={option.value}>
+                                                {option.label}
+                                            </Option>
+                                        ))}
+                                    </Select>
+                                    <Select
+                                        style={{ minWidth: '80px' }}
+                                        value={rule.action}
+                                        onChange={(value) => updateLogicRule(rule.id, 'action', value)}
+                                        size="small"
+                                    >
+                                        <Option value="visible">显示</Option>
+                                        <Option value="hidden">隐藏</Option>
+                                        <Option value="admin">管理员可见</Option>
+                                    </Select>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        return (
+            <Form layout="vertical" size="small">
+                {/* 逻辑规则列表 */}
+                <div style={{ marginBottom: '16px' }}>
+                    {logicRules.map((rule: any, index: number) => renderLogicRule(rule, index))}
+                </div>
+
+                {/* 添加逻辑按钮 */}
+                <div style={{ display: 'flex', gap: '8px' }}>
+                    <Button
+                        type="dashed"
+                        onClick={() => addLogicRule('linkage')}
+                        style={{ flex: 1 }}
+                        size="small"
+                    >
+                        + 添加联动性逻辑
+                    </Button>
+                    <Button
+                        type="dashed"
+                        onClick={() => addLogicRule('visibility')}
+                        style={{ flex: 1 }}
+                        size="small"
+                    >
+                        + 添加可见性逻辑
+                    </Button>
+                </div>
+
+                {logicRules.length === 0 && (
+                    <div style={{
+                        textAlign: 'center',
+                        padding: '20px',
+                        color: '#8c8c8c',
+                        fontSize: '13px'
+                    }}>
+                        暂无全局逻辑规则，点击上方按钮添加
+                    </div>
+                )}
+            </Form>
+        );
+    };
 
     return (
         <Card
@@ -1076,30 +1360,30 @@ const PropertyPanel: React.FC = () => {
                         label: (
                             <span style={{ fontWeight: 500 }}>
                                 <AppstoreOutlined style={{ marginRight: 6 }} />
-                                组件属性
+                                组件设置
                             </span>
                         ),
                         children: renderComponentProperties()
                     },
                     {
-                        key: 'layout',
+                        key: 'logic',
                         label: (
                             <span style={{ fontWeight: 500 }}>
-                                <SettingOutlined style={{ marginRight: 6 }} />
-                                布局设置
+                                <BranchesOutlined style={{ marginRight: 6 }} />
+                                逻辑设置
                             </span>
                         ),
-                        children: renderLayoutProperties()
+                        children: renderLogicProperties()
                     },
                     {
-                        key: 'theme',
+                        key: 'layout-theme',
                         label: (
                             <span style={{ fontWeight: 500 }}>
                                 <FormatPainterOutlined style={{ marginRight: 6 }} />
-                                主题设置
+                                布局主题
                             </span>
                         ),
-                        children: renderThemeProperties()
+                        children: renderLayoutAndThemeProperties()
                     }
                 ]}
             />

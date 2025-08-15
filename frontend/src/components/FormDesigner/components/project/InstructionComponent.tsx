@@ -48,7 +48,7 @@ const InstructionComponent: React.FC<InstructionComponentProps> = ({ component }
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

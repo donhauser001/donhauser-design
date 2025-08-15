@@ -5,9 +5,10 @@ import { getIconPrefix } from '../../utils/iconUtils';
 
 interface ArticleTitleComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const ArticleTitleComponent: React.FC<ArticleTitleComponentProps> = ({ component }) => {
+const ArticleTitleComponent: React.FC<ArticleTitleComponentProps> = ({ component, isDesignMode = false }) => {
     // 获取图标，始终返回一个prefix以避免DOM结构变化
     const getPrefix = () => {
         return getIconPrefix(component.icon);
@@ -23,7 +24,7 @@ const ArticleTitleComponent: React.FC<ArticleTitleComponentProps> = ({ component
                 maxLength={component.maxLength || 100}
                 showCount={component.showCharCount}
                 prefix={getPrefix()}
-                readOnly={true}
+                readOnly={isDesignMode}
             />
             {component.fieldDescription && (
                 <div style={{
@@ -32,7 +33,7 @@ const ArticleTitleComponent: React.FC<ArticleTitleComponentProps> = ({ component
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

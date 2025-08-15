@@ -83,6 +83,18 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                 </Form.Item>
             )}
 
+            {/* 字段说明（对所有非布局组件可见） */}
+            {!isLayoutComponent && (
+                <Form.Item label="字段说明">
+                    <TextArea
+                        value={component.fieldDescription || ''}
+                        onChange={(e) => onPropertyChange('fieldDescription', e.target.value)}
+                        placeholder="请输入字段说明"
+                        rows={2}
+                    />
+                </Form.Item>
+            )}
+
             {/* 通用属性（排除布局组件和特殊组件） */}
             {!isLayoutComponent && !isSpecialComponent && !isOurCertificateComponent && (
                 <>
@@ -196,15 +208,6 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                             </div>
                         </Form.Item>
                     )}
-
-                    <Form.Item label="字段说明">
-                        <TextArea
-                            value={component.fieldDescription || ''}
-                            onChange={(e) => onPropertyChange('fieldDescription', e.target.value)}
-                            placeholder="请输入字段说明"
-                            rows={2}
-                        />
-                    </Form.Item>
 
                     {!isRadioComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTextAreaComponent && !isTaskListComponent && !isNumberComponent && !isDateComponent && !isContractPartyComponent && !isArticleCategoryComponent && !isArticleTagsComponent && !isArticleSeoComponent && !isArticleContentComponent && !isArticleSummaryComponent && !isArticleCoverImageComponent && !isAmountComponent && !isInvoiceTypeComponent && !isPaymentMethodComponent && !isInvoiceInfoComponent && !isAmountInWordsComponent && component.type !== 'upload' && component.type !== 'signature' && (
                         <Form.Item label="默认值">

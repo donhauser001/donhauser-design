@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { FormComponent } from '../../../../types/formDesigner';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 interface CountdownComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const CountdownComponent: React.FC<CountdownComponentProps> = ({ component }) => {
+const CountdownComponent: React.FC<CountdownComponentProps> = ({ component, isDesignMode = false }) => {
+    const { theme } = useFormDesignerStore();
     const [timeLeft, setTimeLeft] = useState<{
         days: number;
         hours: number;
@@ -61,22 +64,26 @@ const CountdownComponent: React.FC<CountdownComponentProps> = ({ component }) =>
             .replace('ss', timeLeft.seconds.toString().padStart(2, '0'));
     };
 
+    // 获取主题颜色
+    const primaryColor = theme.primaryColor || '#1890ff';
+
     const containerStyle = {
         width: '100%',
         padding: component.style?.padding || '16px',
         margin: component.style?.margin || '0',
-        backgroundColor: component.style?.backgroundColor || '#f0f8ff',
+        backgroundColor: component.style?.backgroundColor || `${primaryColor}10`,
         borderRadius: component.style?.borderRadius || '8px',
         border: component.style?.borderWidth ?
-            `${component.style.borderWidth} ${component.style.borderStyle || 'solid'} ${component.style.borderColor || '#1890ff'}` :
-            '2px solid #1890ff',
-        textAlign: 'center' as const
+            `${component.style.borderWidth} ${component.style.borderStyle || 'solid'} ${component.style.borderColor || primaryColor}` :
+            `2px solid ${primaryColor}`,
+        textAlign: 'center' as const,
+        ...component.style
     };
 
     const timeStyle = {
         fontSize: component.style?.fontSize || '24px',
         fontWeight: component.style?.fontWeight || 'bold',
-        color: timeLeft.total <= 0 ? '#ff4d4f' : (component.style?.color || '#1890ff'),
+        color: timeLeft.total <= 0 ? '#ff4d4f' : (component.style?.color || primaryColor),
         lineHeight: component.style?.lineHeight || '1.2',
         marginBottom: '8px'
     };
@@ -154,7 +161,7 @@ const CountdownComponent: React.FC<CountdownComponentProps> = ({ component }) =>
                     marginTop: '4px',
                     lineHeight: '1.4'
                 }}>
-                    {component.fieldDescription}
+                    提示：{component.fieldDescription}
                 </div>
             )}
         </div>

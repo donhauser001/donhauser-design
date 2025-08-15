@@ -1,11 +1,15 @@
 import React from 'react';
 import { FormComponent } from '../../../../types/formDesigner';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 
 interface PresetTextComponentProps {
     component: FormComponent;
+    isDesignMode?: boolean;
 }
 
-const PresetTextComponent: React.FC<PresetTextComponentProps> = ({ component }) => {
+const PresetTextComponent: React.FC<PresetTextComponentProps> = ({ component, isDesignMode = false }) => {
+    const { theme } = useFormDesignerStore();
+    const borderColor = theme.borderColor || '#d9d9d9';
     // 默认样式
     const defaultStyle = {
         fontSize: '14px',
@@ -18,7 +22,7 @@ const PresetTextComponent: React.FC<PresetTextComponentProps> = ({ component }) 
         backgroundColor: 'transparent',
         borderWidth: '0px',
         borderStyle: 'solid',
-        borderColor: '#d9d9d9',
+        borderColor: borderColor,
         borderRadius: '0px',
         minHeight: 'auto',
         whiteSpace: 'pre-wrap' as const, // 保持换行和空格
