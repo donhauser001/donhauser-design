@@ -65,6 +65,8 @@ interface FormDesignerStore extends FormDesignerState {
     updateTheme: (theme: Partial<ThemeConfig>) => void;
     loadFormConfig: (config: any) => void;
     clearForm: () => void;
+    exportFormConfig: () => any;
+    saveFormToAPI: (formId: string) => Promise<void>;
 
     // 运行时值管理
     setComponentValue: (componentId: string, value: any) => void;
@@ -595,10 +597,53 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
     },
 
     loadFormConfig: (config: any) => {
+        // 兼容新旧数据格式
+        let components = [];
+        let layout = defaultLayout;
+        let theme = defaultTheme;
+        let componentValues = {};
+        let selectedServices = {};
+        let orderItems = {};
+
+        if (config) {
+            // 新格式：有metadata和config结构
+            if (config.metadata && config.config) {
+                components = config.config.components || [];
+                layout = { ...defaultLayout, ...config.config.layout };
+                theme = { ...defaultTheme, ...config.config.theme };
+
+                // 恢复运行时状态
+                if (config.runtime) {
+                    componentValues = config.runtime.componentValues || {};
+                    selectedServices = config.runtime.selectedServices || {};
+                    orderItems = config.runtime.orderItems || {};
+                }
+            }
+            // 旧格式：直接是components、layout、theme
+            else {
+                components = config.components || [];
+                layout = { ...defaultLayout, ...config.layout };
+                theme = { ...defaultTheme, ...config.theme };
+            }
+        }
+
+        // 验证和修复组件数据
+        components = components.map((comp: FormComponent) => ({
+            ...comp,
+            // 确保必要属性存在
+            id: comp.id || `component_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            type: comp.type || 'input',
+            label: comp.label || '未命名组件',
+            order: comp.order !== undefined ? comp.order : 0
+        }));
+
         set({
-            components: config.components || [],
-            layout: config.layout || defaultLayout,
-            theme: config.theme || defaultTheme,
+            components,
+            layout,
+            theme,
+            componentValues,
+            selectedServices,
+            orderItems,
             selectedComponent: null,
             clipboard: null,
             history: [],
@@ -617,6 +662,42 @@ export const useFormDesignerStore = create<FormDesignerStore>((set, get) => ({
             theme: defaultTheme,
             componentValues: {}
         });
+    },
+
+    exportFormConfig: () => {
+        const state = get();
+        return {
+            metadata: {
+                version: '1.0.0',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                designerVersion: '1.0.0'
+            },
+            config: {
+                components: state.components,
+                layout: state.layout,
+                theme: state.theme
+            },
+            runtime: {
+                componentValues: state.componentValues,
+                selectedServices: state.selectedServices,
+                orderItems: state.orderItems
+            }
+        };
+    },
+
+    saveFormToAPI: async (formId: string) => {
+        const { updateForm } = await import('../api/forms');
+        const formConfig = get().exportFormConfig();
+
+        try {
+            await updateForm(formId, {
+                content: formConfig
+            });
+        } catch (error) {
+            console.error('保存表单失败:', error);
+            throw error;
+        }
     },
 
     // 运行时值管理

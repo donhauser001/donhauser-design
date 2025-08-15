@@ -49,6 +49,8 @@ const FormEditor: React.FC = () => {
     const [isNewForm] = useState(!id)
     const [activeId, setActiveId] = useState<string | null>(null)
     const [isPreviewMode, setIsPreviewMode] = useState(false)
+    const [isSaving, setIsSaving] = useState(false)
+    const [lastSaved, setLastSaved] = useState<Date | null>(null)
 
     const {
         components,
@@ -61,7 +63,8 @@ const FormEditor: React.FC = () => {
         addComponentToColumn,
         moveComponent,
         moveComponentToColumn,
-        batchUpdateComponents
+        batchUpdateComponents,
+        saveFormToAPI
     } = useFormDesignerStore()
 
     const sensors = useSensors(
@@ -80,6 +83,21 @@ const FormEditor: React.FC = () => {
             loadFormData()
         }
     }, [id])
+
+    // 键盘快捷键
+    useEffect(() => {
+        const handleKeyPress = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault()
+                if (id && !isSaving) {
+                    handleSave()
+                }
+            }
+        }
+
+        document.addEventListener('keydown', handleKeyPress)
+        return () => document.removeEventListener('keydown', handleKeyPress)
+    }, [id, isSaving])
 
     const loadFormData = async () => {
         if (!id) return
@@ -101,7 +119,24 @@ const FormEditor: React.FC = () => {
         }
     }
 
-    // 删除handleSave函数，因为不再需要保存基础信息
+    const handleSave = async () => {
+        if (!id) {
+            message.error('无法保存：表单ID不存在');
+            return;
+        }
+
+        setIsSaving(true);
+        try {
+            await saveFormToAPI(id);
+            setLastSaved(new Date());
+            message.success('表单保存成功');
+        } catch (error) {
+            console.error('保存失败:', error);
+            message.error('表单保存失败');
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     const handlePreview = () => {
         setIsPreviewMode(!isPreviewMode)
@@ -297,10 +332,19 @@ const FormEditor: React.FC = () => {
                     <Title level={2} style={{ margin: 0 }}>
                         {isNewForm ? '创建表单' : '表单设计器'}
                     </Title>
-                    <Text type="secondary">
-                        {isNewForm ? '创建新的表单并设计表单内容' : '深度设计表单内容和布局'}
-                        {formData ? ` ｜ 表单: ${formData.name}` : ''}
-                    </Text>
+                    <div>
+                        <Text type="secondary">
+                            {isNewForm ? '创建新的表单并设计表单内容' : '深度设计表单内容和布局'}
+                            {formData ? ` ｜ 表单: ${formData.name}` : ''}
+                        </Text>
+                        {lastSaved && (
+                            <div style={{ marginTop: '4px' }}>
+                                <Text type="secondary" style={{ fontSize: '12px' }}>
+                                    上次保存：{lastSaved.toLocaleTimeString()}
+                                </Text>
+                            </div>
+                        )}
+                    </div>
                 </div>
                 <Space>
                     <Button
@@ -316,10 +360,15 @@ const FormEditor: React.FC = () => {
                         title="重做"
                     />
                     <Button
+                        type="primary"
                         icon={<SaveOutlined />}
-                        onClick={() => message.info('保存功能开发中...')}
-                        title="保存"
-                    />
+                        onClick={handleSave}
+                        loading={isSaving}
+                        disabled={!id}
+                        title={!id ? '新表单请先在表单列表中创建' : '保存表单 (Ctrl+S)'}
+                    >
+                        {isSaving ? '保存中...' : '保存'}
+                    </Button>
                     <Button
                         type={isPreviewMode ? "primary" : "default"}
                         icon={isPreviewMode ? <FormOutlined /> : <EyeOutlined />}
