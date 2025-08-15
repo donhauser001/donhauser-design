@@ -262,6 +262,7 @@ export interface FormComponent {
     steps?: Array<{ title: string; description: string }>; // 用于steps
     direction?: 'horizontal' | 'vertical'; // 用于steps - 步骤方向
     size?: 'small' | 'default'; // 用于steps - 步骤大小
+    titleAlign?: 'left' | 'center' | 'right'; // 标题对齐方式
     status?: 'wait' | 'process' | 'finish' | 'error'; // 用于steps - 步骤状态
     // 分割线属性
     dividerStyle?: 'solid' | 'dashed' | 'dotted'; // 用于divider - 线条样式

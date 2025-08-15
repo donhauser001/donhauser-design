@@ -4,6 +4,7 @@ import { FormComponent } from '../../../../types/formDesigner';
 import { getIconPrefix } from '../../utils/iconUtils';
 import { projectService, ProjectItem } from '../../services/projectService';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 const { Option } = Select;
 
@@ -294,18 +295,15 @@ const ProjectNameComponent: React.FC<ProjectNameComponentProps> = ({ component, 
     };
 
     return (
-        <div style={{ width: '100%' }}>
-            {component.fromProjectTable ? renderSelectMode() : renderInputMode()}
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
+
+            <div style={getComponentContentStyle(theme)}>
+                {component.fromProjectTable ? renderSelectMode() : renderInputMode()}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

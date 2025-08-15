@@ -4,6 +4,7 @@ import { FormComponent } from '../../../../types/formDesigner';
 import { getIconPrefix, getSmallLinearIcon } from '../../utils/iconUtils';
 import { contactService, ContactItem } from '../../services/contactService';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 const { Option } = Select;
 
@@ -19,7 +20,7 @@ const ContactComponent: React.FC<ContactComponentProps> = ({ component, isDesign
     const [allContacts, setAllContacts] = useState<ContactItem[]>([]); // 存储所有联系人数据
 
     // 从store获取所有组件信息
-    const { components, getComponentValue, componentValues } = useFormDesignerStore();
+    const { components, getComponentValue, componentValues, theme } = useFormDesignerStore();
 
     // 获取图标，始终返回一个prefix以避免DOM结构变化
     const getPrefix = () => {
@@ -432,30 +433,26 @@ const ContactComponent: React.FC<ContactComponentProps> = ({ component, isDesign
     const companyFilterStatus = getCompanyFilterStatus();
 
     return (
-        <div style={{ width: '100%' }}>
-            {component.fromContactTable ? renderSelectMode() : renderInputMode()}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
 
-            {/* 公司过滤错误提示 */}
-            {component.enableCompanyFilter && !companyFilterStatus.valid && (
-                <Alert
-                    message="公司过滤配置错误"
-                    description={companyFilterStatus.message}
-                    type="warning"
-                    showIcon
-                    style={{ marginTop: '8px' }}
-                />
-            )}
+            <div style={getComponentContentStyle(theme)}>
+                {component.fromContactTable ? renderSelectMode() : renderInputMode()}
 
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+                {/* 公司过滤错误提示 */}
+                {component.enableCompanyFilter && !companyFilterStatus.valid && (
+                    <Alert
+                        message="公司过滤配置错误"
+                        description={companyFilterStatus.message}
+                        type="warning"
+                        showIcon
+                        style={{ marginTop: '8px' }}
+                    />
+                )}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

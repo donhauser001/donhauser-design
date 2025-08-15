@@ -18,7 +18,7 @@ const StyleProperties: React.FC<StylePropertiesProps> = ({ component, onProperty
     const getStyleOptions = () => {
         const isTextComponent = ['input', 'textarea', 'articleTitle', 'articleSummary', 'articleContent', 'contractName'].includes(component.type);
         const isSelectComponent = ['select', 'radio', 'articleCategory', 'articleTags', 'author', 'invoiceType', 'paymentMethod'].includes(component.type);
-        const isContainerComponent = ['order', 'taskList', 'quotation', 'signature', 'ourCertificate'].includes(component.type);
+        const isContainerComponent = ['order', 'taskList', 'quotation', 'signature', 'ourCertificate', 'group'].includes(component.type);
         const isInputLikeComponent = ['number', 'date', 'articlePublishTime', 'client', 'projectName', 'contact', 'amount', 'total'].includes(component.type);
 
         return {

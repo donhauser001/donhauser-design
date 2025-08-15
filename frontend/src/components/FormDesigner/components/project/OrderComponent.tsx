@@ -4,6 +4,7 @@ import { ExclamationCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore, OrderItem } from '../../../../stores/formDesignerStore';
 import { convertToRMB } from '../../../RMBAmountConverter';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 const { Text } = Typography;
 
@@ -411,7 +412,7 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
         }
     };
 
-    return (
+    const orderContent = (
         <div style={{
             width: '100%',
             ...component.style
@@ -478,17 +479,19 @@ const OrderComponent: React.FC<OrderComponentProps> = ({ component }) => {
                     </>
                 )}
             </Card>
+        </div>
+    );
 
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+    return (
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
+
+            <div style={getComponentContentStyle(theme)}>
+                {orderContent}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

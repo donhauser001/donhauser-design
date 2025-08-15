@@ -3,6 +3,7 @@ import { Table, Alert, Typography, Tag, Card } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 const { Text } = Typography;
 
@@ -216,7 +217,7 @@ const TaskListComponent: React.FC<TaskListComponentProps> = ({ component }) => {
     }
 
     // 列表模式：显示完整的卡片和表格
-    return (
+    const taskListContent = (
         <div style={{
             width: '100%',
             ...component.style
@@ -258,19 +259,19 @@ const TaskListComponent: React.FC<TaskListComponentProps> = ({ component }) => {
                     />
                 )}
             </Card>
+        </div>
+    );
 
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+    return (
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
 
+            <div style={getComponentContentStyle(theme)}>
+                {taskListContent}
+            </div>
 
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

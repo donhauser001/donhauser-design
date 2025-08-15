@@ -2,12 +2,15 @@ import React from 'react';
 import { Select } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { getLinearIcon } from '../../utils/iconUtils';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 interface InvoiceTypeComponentProps {
     component: FormComponent;
 }
 
 const InvoiceTypeComponent: React.FC<InvoiceTypeComponentProps> = ({ component }) => {
+    const { theme } = useFormDesignerStore();
     const getOptions = () => {
         if (component.invoiceOptions && component.invoiceOptions.length > 0) {
             return component.invoiceOptions.map(option => ({
@@ -91,13 +94,15 @@ const InvoiceTypeComponent: React.FC<InvoiceTypeComponentProps> = ({ component }
     );
 
     return (
-        <div style={{ width: '100%' }}>
-            {renderSelectWithIcon(selectComponent)}
-            {component.fieldDescription && (
-                <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
+
+            <div style={getComponentContentStyle(theme)}>
+                {renderSelectWithIcon(selectComponent)}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

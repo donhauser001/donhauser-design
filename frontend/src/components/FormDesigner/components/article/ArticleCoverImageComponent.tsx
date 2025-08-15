@@ -3,6 +3,7 @@ import { Upload, Image, Button, message } from 'antd';
 import { PlusOutlined, UploadOutlined, EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 interface ArticleCoverImageComponentProps {
     component: FormComponent;
@@ -111,10 +112,13 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
     if (uploadType === 'card') {
         const cardContainerId = `cover-card-${component.id}`;
         return (
-            <div style={{ width: '100%' }}>
-                <div id={cardContainerId} style={component.style}>
-                    <style>
-                        {`
+            <div style={getDescriptionContainerStyle(theme)}>
+                {renderTopDescription({ component, theme })}
+
+                <div style={getComponentContentStyle(theme)}>
+                    <div id={cardContainerId} style={component.style}>
+                        <style>
+                            {`
                         /* 卡片上传区域边框和悬停效果 */
                         #${cardContainerId} .ant-upload-select {
                             border-color: ${borderColor} !important;
@@ -142,36 +146,35 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
                             color: ${primaryColor} !important;
                         }
                         `}
-                    </style>
-                    <Upload
-                        listType="picture-card"
-                        fileList={fileList}
-                        onPreview={handlePreview}
-                        onChange={handleChange}
-                        beforeUpload={beforeUpload}
-                        disabled={component.disabled}
-                        maxCount={1}
-                        accept={getAcceptAttribute()}
-                    >
-                        {fileList.length >= 1 ? null : uploadButton}
-                    </Upload>
-                    {previewImage && (
-                        <Image
-                            wrapperStyle={{ display: 'none' }}
-                            preview={{
-                                visible: previewOpen,
-                                onVisibleChange: (visible) => setPreviewOpen(visible),
-                                afterOpenChange: (visible) => !visible && setPreviewImage(''),
-                            }}
-                            src={previewImage}
-                        />
-                    )}
-                </div>
-                {component.fieldDescription && (
-                    <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                        提示：{component.fieldDescription}
+                        </style>
+                        <Upload
+                            listType="picture-card"
+                            fileList={fileList}
+                            onPreview={handlePreview}
+                            onChange={handleChange}
+                            beforeUpload={beforeUpload}
+                            disabled={component.disabled}
+                            maxCount={1}
+                            accept={getAcceptAttribute()}
+                        >
+                            {fileList.length >= 1 ? null : uploadButton}
+                        </Upload>
+                        {previewImage && (
+                            <Image
+                                wrapperStyle={{ display: 'none' }}
+                                preview={{
+                                    visible: previewOpen,
+                                    onVisibleChange: (visible) => setPreviewOpen(visible),
+                                    afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                                }}
+                                src={previewImage}
+                            />
+                        )}
                     </div>
-                )}
+                </div>
+
+                {renderBottomDescription({ component, theme })}
+                {renderRightDescription({ component, theme })}
             </div>
         );
     }
@@ -181,10 +184,13 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
         const { Dragger } = Upload;
         const dragContainerId = `cover-drag-${component.id}`;
         return (
-            <div style={{ width: '100%' }}>
-                <div id={dragContainerId} style={component.style}>
-                    <style>
-                        {`
+            <div style={getDescriptionContainerStyle(theme)}>
+                {renderTopDescription({ component, theme })}
+
+                <div style={getComponentContentStyle(theme)}>
+                    <div id={dragContainerId} style={component.style}>
+                        <style>
+                            {`
                         /* 拖拽区域边框和悬停效果 */
                         #${dragContainerId} .ant-upload-drag {
                             border-color: ${borderColor} !important;
@@ -205,76 +211,80 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
                             border-color: ${primaryColor} !important;
                         }
                         `}
-                    </style>
-                    <Dragger
-                        fileList={fileList}
-                        onChange={handleChange}
-                        beforeUpload={beforeUpload}
-                        disabled={component.disabled}
-                        maxCount={1}
-                        accept={getAcceptAttribute()}
-                        style={{ padding: '20px' }}
-                    >
-                        <p className="ant-upload-drag-icon">
-                            <UploadOutlined style={{ fontSize: '48px', color: primaryColor }} />
-                        </p>
-                        <p className="ant-upload-text">
-                            {component.uploadButtonText || '点击或拖拽文件到此区域上传'}
-                        </p>
-                        <p className="ant-upload-hint">
-                            {component.fieldDescription || (() => {
-                                const acceptedFormats = component.acceptedFormats || ['jpeg', 'jpg', 'png', 'webp'];
-                                const formatNames = acceptedFormats.map(f => f.toUpperCase()).join('、');
-                                return `支持 ${formatNames} 格式，文件大小不超过 ${component.maxFileSize || 5}MB`;
-                            })()}
-                        </p>
-                    </Dragger>
+                        </style>
+                        <Dragger
+                            fileList={fileList}
+                            onChange={handleChange}
+                            beforeUpload={beforeUpload}
+                            disabled={component.disabled}
+                            maxCount={1}
+                            accept={getAcceptAttribute()}
+                            style={{ padding: '20px' }}
+                        >
+                            <p className="ant-upload-drag-icon">
+                                <UploadOutlined style={{ fontSize: '48px', color: primaryColor }} />
+                            </p>
+                            <p className="ant-upload-text">
+                                {component.uploadButtonText || '点击或拖拽文件到此区域上传'}
+                            </p>
+                            <p className="ant-upload-hint">
+                                {component.fieldDescription || (() => {
+                                    const acceptedFormats = component.acceptedFormats || ['jpeg', 'jpg', 'png', 'webp'];
+                                    const formatNames = acceptedFormats.map(f => f.toUpperCase()).join('、');
+                                    return `支持 ${formatNames} 格式，文件大小不超过 ${component.maxFileSize || 5}MB`;
+                                })()}
+                            </p>
+                        </Dragger>
 
-                    {fileList.length > 0 && (
-                        <div style={{ marginTop: '16px' }}>
-                            {fileList.map((file, index) => (
-                                <div key={index} style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    padding: '8px',
-                                    border: `1px solid ${borderColor}`,
-                                    borderRadius: '4px',
-                                    marginBottom: '8px'
-                                }}>
-                                    <Image
-                                        width={60}
-                                        height={60}
-                                        src={file.url || file.thumbUrl}
-                                        style={{ marginRight: '12px', objectFit: 'cover' }}
-                                    />
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontWeight: 500 }}>{file.name}</div>
-                                        <div style={{ color: '#666', fontSize: '12px' }}>
-                                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                        {fileList.length > 0 && (
+                            <div style={{ marginTop: '16px' }}>
+                                {fileList.map((file, index) => (
+                                    <div key={index} style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        padding: '8px',
+                                        border: `1px solid ${borderColor}`,
+                                        borderRadius: '4px',
+                                        marginBottom: '8px'
+                                    }}>
+                                        <Image
+                                            width={60}
+                                            height={60}
+                                            src={file.url || file.thumbUrl}
+                                            style={{ marginRight: '12px', objectFit: 'cover' }}
+                                        />
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ fontWeight: 500 }}>{file.name}</div>
+                                            <div style={{ color: '#666', fontSize: '12px' }}>
+                                                {(file.size / 1024 / 1024).toFixed(2)} MB
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <Button
+                                                type="text"
+                                                icon={<EyeOutlined />}
+                                                onClick={() => handlePreview(file)}
+                                                style={{ marginRight: '8px' }}
+                                            />
+                                            <Button
+                                                type="text"
+                                                danger
+                                                icon={<DeleteOutlined />}
+                                                onClick={() => {
+                                                    const newFileList = fileList.filter((_, i) => i !== index);
+                                                    setFileList(newFileList);
+                                                }}
+                                            />
                                         </div>
                                     </div>
-                                    <div>
-                                        <Button
-                                            type="text"
-                                            icon={<EyeOutlined />}
-                                            onClick={() => handlePreview(file)}
-                                            style={{ marginRight: '8px' }}
-                                        />
-                                        <Button
-                                            type="text"
-                                            danger
-                                            icon={<DeleteOutlined />}
-                                            onClick={() => {
-                                                const newFileList = fileList.filter((_, i) => i !== index);
-                                                setFileList(newFileList);
-                                            }}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
+
+                {renderBottomDescription({ component, theme })}
+                {renderRightDescription({ component, theme })}
             </div>
         );
     }
@@ -282,10 +292,13 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
     // 按钮上传（默认）
     const buttonContainerId = `cover-button-${component.id}`;
     return (
-        <div style={{ width: '100%' }}>
-            <div id={buttonContainerId} style={component.style}>
-                <style>
-                    {`
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
+
+            <div style={getComponentContentStyle(theme)}>
+                <div id={buttonContainerId} style={component.style}>
+                    <style>
+                        {`
                     /* 按钮上传样式 */
                     #${buttonContainerId} .ant-btn {
                         border-color: ${primaryColor} !important;
@@ -309,30 +322,29 @@ const ArticleCoverImageComponent: React.FC<ArticleCoverImageComponentProps> = ({
                         color: ${primaryColor} !important;
                     }
                     `}
-                </style>
-                <Upload
-                    fileList={fileList}
-                    onChange={handleChange}
-                    beforeUpload={beforeUpload}
-                    disabled={component.disabled}
-                    maxCount={1}
-                    accept={getAcceptAttribute()}
-                    showUploadList={{
-                        showPreviewIcon: true,
-                        showRemoveIcon: true,
-                    }}
-                    onPreview={handlePreview}
-                >
-                    <Button icon={<UploadOutlined />} disabled={component.disabled || fileList.length >= 1}>
-                        {component.uploadButtonText || '上传封面图'}
-                    </Button>
-                </Upload>
-            </div>
-            {component.fieldDescription && (
-                <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                    提示：{component.fieldDescription}
+                    </style>
+                    <Upload
+                        fileList={fileList}
+                        onChange={handleChange}
+                        beforeUpload={beforeUpload}
+                        disabled={component.disabled}
+                        maxCount={1}
+                        accept={getAcceptAttribute()}
+                        showUploadList={{
+                            showPreviewIcon: true,
+                            showRemoveIcon: true,
+                        }}
+                        onPreview={handlePreview}
+                    >
+                        <Button icon={<UploadOutlined />} disabled={component.disabled || fileList.length >= 1}>
+                            {component.uploadButtonText || '上传封面图'}
+                        </Button>
+                    </Upload>
                 </div>
-            )}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

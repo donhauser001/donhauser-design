@@ -8,6 +8,7 @@ import { TabsMode } from './QuotationComponent/TabsMode';
 import { ListMode } from './QuotationComponent/ListMode';
 import { PolicyModal } from './QuotationComponent/PolicyModal';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 const { Text } = Typography;
 
@@ -23,7 +24,7 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
         handlePolicyClick
     } = useQuotationData(component);
 
-    const { components, addServiceToOrder, isServiceSelected, clearOrderItems } = useFormDesignerStore();
+    const { components, addServiceToOrder, isServiceSelected, clearOrderItems, theme } = useFormDesignerStore();
     const [orderComponentState, setOrderComponentState] = useState<any>(null);
 
     // 监听组件变化，检查是否存在订单组件
@@ -182,18 +183,15 @@ const QuotationComponent: React.FC<QuotationComponentProps> = ({ component }) =>
     };
 
     return (
-        <div style={{ width: '100%' }}>
-            {renderQuotationDetails()}
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
+
+            <div style={getComponentContentStyle(theme)}>
+                {renderQuotationDetails()}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
 
             {/* 政策详情弹窗 */}
             <PolicyModal

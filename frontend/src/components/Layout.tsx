@@ -421,10 +421,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           style={{
             margin: '16px',
             padding: 24,
-            minHeight: 280,
+            minHeight: 'calc(100vh - 112px)', // 减去顶部边距、header高度和底部边距
             background: '#fff',
             borderRadius: '12px',
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+            overflow: 'auto' // 添加滚动条处理内容溢出
           }}
         >
           {children}

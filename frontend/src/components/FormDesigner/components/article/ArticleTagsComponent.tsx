@@ -3,6 +3,8 @@ import { Select, Tag, Input } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { getTags } from '../../../../api/articleTags';
 import { getIconPrefix, getLinearIcon } from '../../utils/iconUtils';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 const { Option } = Select;
 
@@ -11,6 +13,7 @@ interface ArticleTagsComponentProps {
 }
 
 const ArticleTagsComponent: React.FC<ArticleTagsComponentProps> = ({ component }) => {
+    const { theme } = useFormDesignerStore();
     const [tags, setTags] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
@@ -56,29 +59,26 @@ const ArticleTagsComponent: React.FC<ArticleTagsComponentProps> = ({ component }
     // 如果没有开启从标签表加载，则使用普通输入框模式
     if (!component.fromTagTable) {
         return (
-            <div style={{
-                width: '100%',
-                ...component.style
-            }}>
-                <Input
-                    placeholder={component.placeholder || '请输入文章标签，多个标签用逗号分隔'}
-                    disabled={component.disabled}
-                    style={{ width: '100%' }}
-                    maxLength={component.maxLength || 200}
-                    showCount={component.showCharCount !== false}
-                    prefix={getInputPrefix()}
-                />
-                {component.fieldDescription && (
-                    <div style={{
-                        fontSize: '12px',
-                        color: '#8c8c8c',
-                        marginTop: '4px',
-                        lineHeight: '1.4'
-                    }}>
-                        提示：{component.fieldDescription}
-                    </div>
-                )}
+            <div style={getDescriptionContainerStyle(theme)}>
+                {renderTopDescription({ component, theme })}
 
+                <div style={{
+                    ...getComponentContentStyle(theme),
+                    width: '100%',
+                    ...component.style
+                }}>
+                    <Input
+                        placeholder={component.placeholder || '请输入文章标签，多个标签用逗号分隔'}
+                        disabled={component.disabled}
+                        style={{ width: '100%' }}
+                        maxLength={component.maxLength || 200}
+                        showCount={component.showCharCount !== false}
+                        prefix={getInputPrefix()}
+                    />
+                </div>
+
+                {renderBottomDescription({ component, theme })}
+                {renderRightDescription({ component, theme })}
             </div>
         );
     }
@@ -168,21 +168,19 @@ const ArticleTagsComponent: React.FC<ArticleTagsComponentProps> = ({ component }
     );
 
     return (
-        <div style={{
-            width: '100%',
-            ...component.style
-        }}>
-            {renderSelectWithIcon(selectComponent)}
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
+
+            <div style={{
+                ...getComponentContentStyle(theme),
+                width: '100%',
+                ...component.style
+            }}>
+                {renderSelectWithIcon(selectComponent)}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

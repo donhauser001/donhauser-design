@@ -83,12 +83,14 @@ const FormComponentRenderer: React.FC<FormComponentRendererProps> = ({ component
     // 注意：逻辑引擎的初始化现在由 LogicEngineProvider 处理
 
     // 获取计算后的组件属性（应用逻辑规则）
+    const logicEngineStateVersion = isDesignMode ? 0 : globalLogicEngine.getStateVersion();
+
     const computedProps = useMemo(() => {
         if (isDesignMode || !layout.logicRules) {
             return {};
         }
         return globalLogicEngine.getComputedComponentProps(component);
-    }, [component, layout.logicRules, isDesignMode]);
+    }, [component, layout.logicRules, isDesignMode, layout, logicEngineStateVersion]);
 
     // 合并原始组件属性和计算后的属性
     const finalComponent = useMemo(() => {
@@ -124,7 +126,7 @@ const FormComponentRenderer: React.FC<FormComponentRendererProps> = ({ component
     // 渲染组件标签
     const renderLabel = () => {
         // 不需要显示标签的组件类型
-        const noLabelComponents = ['group', 'columnContainer', 'divider', 'pagination', 'steps', 'presetText', 'image', 'html', 'countdown', 'ourCertificate'];
+        const noLabelComponents = ['columnContainer', 'divider', 'pagination', 'steps', 'presetText', 'image', 'html', 'countdown', 'ourCertificate'];
 
         if (noLabelComponents.includes(finalComponent.type) || finalComponent.hideLabel) {
             return null;
@@ -190,7 +192,7 @@ const FormComponentRenderer: React.FC<FormComponentRendererProps> = ({ component
 
             // 布局组件
             case 'group':
-                return <GroupComponent component={finalComponent} />;
+                return <GroupComponent component={finalComponent} isDesignMode={isDesignMode} />;
             case 'divider':
                 return <DividerComponent component={finalComponent} />;
             case 'columnContainer':

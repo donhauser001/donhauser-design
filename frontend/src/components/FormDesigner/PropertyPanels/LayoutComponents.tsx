@@ -288,6 +288,47 @@ const LayoutComponents: React.FC<LayoutComponentsProps> = ({ component, onProper
         </>
     );
 
+    // 分组组件属性
+    const renderGroupProperties = () => (
+        <>
+            <Form.Item label="标题显示">
+                <Select
+                    value={component.titleDisplay || 'show'}
+                    onChange={(value) => onPropertyChange('titleDisplay', value)}
+                    style={{ width: '100%' }}
+                >
+                    <Option value="show">显示标题</Option>
+                    <Option value="hide">隐藏标题</Option>
+                    <Option value="custom">自定义标题</Option>
+                </Select>
+            </Form.Item>
+
+            {component.titleDisplay === 'custom' && (
+                <Form.Item label="自定义标题">
+                    <Input
+                        value={component.customTitle || ''}
+                        onChange={(e) => onPropertyChange('customTitle', e.target.value)}
+                        placeholder="请输入自定义标题"
+                    />
+                </Form.Item>
+            )}
+
+            {component.titleDisplay !== 'hide' && (
+                <Form.Item label="标题对齐">
+                    <Select
+                        value={component.titleAlign || 'left'}
+                        onChange={(value) => onPropertyChange('titleAlign', value)}
+                        style={{ width: '100%' }}
+                    >
+                        <Option value="left">左对齐</Option>
+                        <Option value="center">居中对齐</Option>
+                        <Option value="right">右对齐</Option>
+                    </Select>
+                </Form.Item>
+            )}
+        </>
+    );
+
     // 分割线组件属性
     const renderDividerProperties = () => (
         <>
@@ -442,6 +483,7 @@ const LayoutComponents: React.FC<LayoutComponentsProps> = ({ component, onProper
     return (
         <>
             {component.type === 'columnContainer' && renderColumnContainerProperties()}
+            {component.type === 'group' && renderGroupProperties()}
             {component.type === 'pagination' && renderPaginationProperties()}
             {component.type === 'steps' && renderStepsProperties()}
             {component.type === 'divider' && renderDividerProperties()}

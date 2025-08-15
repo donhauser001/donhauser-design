@@ -3,6 +3,7 @@ import { Input, Collapse, Form } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { SearchOutlined } from '@ant-design/icons';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 const { TextArea } = Input;
 
@@ -84,30 +85,35 @@ const ArticleSeoComponent: React.FC<ArticleSeoComponentProps> = ({ component }) 
     ];
 
     return (
-        <div style={{ width: '100%' }}>
-            <div style={component.style}>
-                <style>
-                    {`
-                        .hide-count .ant-input-show-count-suffix,
-                        .hide-count .ant-input-data-count {
-                            display: none !important;
-                        }
-                    `}
-                </style>
-                <Collapse
-                    items={items}
-                    activeKey={activeKey}
-                    onChange={(keys) => setActiveKey(Array.isArray(keys) ? keys : [keys])}
-                    size="small"
-                    ghost={component.ghost}
-                    expandIconPosition={component.expandIconPosition || 'start'}
-                />
-            </div>
-            {component.fieldDescription && (
-                <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                    提示：{component.fieldDescription}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
+
+            <div style={{
+                ...getComponentContentStyle(theme),
+                width: '100%'
+            }}>
+                <div style={component.style}>
+                    <style>
+                        {`
+                            .hide-count .ant-input-show-count-suffix,
+                            .hide-count .ant-input-data-count {
+                                display: none !important;
+                            }
+                        `}
+                    </style>
+                    <Collapse
+                        items={items}
+                        activeKey={activeKey}
+                        onChange={(keys) => setActiveKey(Array.isArray(keys) ? keys : [keys])}
+                        size="small"
+                        ghost={component.ghost}
+                        expandIconPosition={component.expandIconPosition || 'start'}
+                    />
                 </div>
-            )}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

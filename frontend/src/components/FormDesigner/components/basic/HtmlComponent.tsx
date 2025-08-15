@@ -1,6 +1,7 @@
 import React from 'react';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle } from '../../utils/descriptionUtils';
 
 interface HtmlComponentProps {
     component: FormComponent;
@@ -35,37 +36,33 @@ const HtmlComponent: React.FC<HtmlComponentProps> = ({ component, isDesignMode =
     };
 
     return (
-        <div style={{ width: '100%' }}>
-            {component.htmlContent ? (
-                <div
-                    style={containerStyle}
-                    dangerouslySetInnerHTML={{ __html: component.htmlContent }}
-                />
-            ) : (
-                <div style={placeholderStyle}>
-                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="16,18 22,12 16,6"></polyline>
-                            <polyline points="8,6 2,12 8,18"></polyline>
-                        </svg>
-                    </div>
-                    <div>请设置HTML内容</div>
-                    <div style={{ fontSize: '12px', marginTop: '4px', color: '#999' }}>
-                        支持HTML标签和内联样式
-                    </div>
-                </div>
-            )}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
 
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+            <div style={getComponentContentStyle(theme)}>
+                {component.htmlContent ? (
+                    <div
+                        style={containerStyle}
+                        dangerouslySetInnerHTML={{ __html: component.htmlContent }}
+                    />
+                ) : (
+                    <div style={placeholderStyle}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="16,18 22,12 16,6"></polyline>
+                                <polyline points="8,6 2,12 8,18"></polyline>
+                            </svg>
+                        </div>
+                        <div>请设置HTML内容</div>
+                        <div style={{ fontSize: '12px', marginTop: '4px', color: '#999' }}>
+                            支持HTML标签和内联样式
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

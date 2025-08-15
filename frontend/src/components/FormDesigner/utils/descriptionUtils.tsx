@@ -97,3 +97,36 @@ export const getComponentContentStyle = (theme: ThemeConfig): React.CSSPropertie
 
     return {};
 };
+
+/**
+ * 渲染顶部说明文字
+ */
+export const renderTopDescription = ({ component, theme }: { component: FormComponent; theme: ThemeConfig }) => {
+    const position = theme.descriptionPosition || 'bottom';
+    if (position === 'top') {
+        return renderDescription({ component, theme });
+    }
+    return null;
+};
+
+/**
+ * 渲染底部说明文字
+ */
+export const renderBottomDescription = ({ component, theme }: { component: FormComponent; theme: ThemeConfig }) => {
+    const position = theme.descriptionPosition || 'bottom';
+    if (position === 'bottom') {
+        return renderDescription({ component, theme });
+    }
+    return null;
+};
+
+/**
+ * 渲染右侧说明文字
+ */
+export const renderRightDescription = ({ component, theme }: { component: FormComponent; theme: ThemeConfig }) => {
+    const position = theme.descriptionPosition || 'bottom';
+    if (position === 'right') {
+        return renderDescription({ component, theme });
+    }
+    return null;
+};

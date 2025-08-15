@@ -4,7 +4,7 @@ import { FormComponent } from '../../../../types/formDesigner';
 import dayjs from 'dayjs';
 import { useLogicEngine } from '../../hooks/useLogicEngine';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
-import { renderDescription, getDescriptionContainerStyle, getComponentContentStyle } from '../../utils/descriptionUtils';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 interface DateComponentProps {
     component: FormComponent;
@@ -81,14 +81,14 @@ const DateComponent: React.FC<DateComponentProps> = ({ component, isDesignMode =
 
     return (
         <div style={getDescriptionContainerStyle(theme)}>
-            {theme.descriptionPosition === 'top' && renderDescription({ component, theme })}
+            {renderTopDescription({ component, theme })}
 
             <div style={getComponentContentStyle(theme)}>
                 {renderDatePicker()}
             </div>
 
-            {theme.descriptionPosition === 'bottom' && renderDescription({ component, theme })}
-            {theme.descriptionPosition === 'right' && renderDescription({ component, theme })}
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

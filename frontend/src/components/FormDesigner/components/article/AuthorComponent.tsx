@@ -4,6 +4,8 @@ import { FormComponent } from '../../../../types/formDesigner';
 import { getUsers } from '../../../../api/users';
 import { getIconPrefix, getLinearIcon } from '../../utils/iconUtils';
 import { useAuth } from '../../../../contexts/AuthContext';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 interface AuthorComponentProps {
     component: FormComponent;
@@ -14,6 +16,7 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component, isDesignMo
     const [authors, setAuthors] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const { userInfo } = useAuth();
+    const { theme } = useFormDesignerStore();
 
     // 获取输入框模式的图标前缀（向上调整3px）
     const getInputPrefix = () => {
@@ -168,21 +171,19 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component, isDesignMo
             );
 
             return (
-                <div style={{
-                    width: '100%',
-                    ...component.style
-                }}>
-                    {renderSelectWithIcon(selectComponent)}
-                    {component.fieldDescription && (
-                        <div style={{
-                            fontSize: '12px',
-                            color: '#8c8c8c',
-                            marginTop: '4px',
-                            lineHeight: '1.4'
-                        }}>
-                            提示：{component.fieldDescription}
-                        </div>
-                    )}
+                <div style={getDescriptionContainerStyle(theme)}>
+                    {renderTopDescription({ component, theme })}
+
+                    <div style={{
+                        ...getComponentContentStyle(theme),
+                        width: '100%',
+                        ...component.style
+                    }}>
+                        {renderSelectWithIcon(selectComponent)}
+                    </div>
+
+                    {renderBottomDescription({ component, theme })}
+                    {renderRightDescription({ component, theme })}
                 </div>
             );
         } else {
@@ -205,21 +206,19 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component, isDesignMo
             );
 
             return (
-                <div style={{
-                    width: '100%',
-                    ...component.style
-                }}>
-                    {renderSelectWithIcon(autoCompleteComponent)}
-                    {component.fieldDescription && (
-                        <div style={{
-                            fontSize: '12px',
-                            color: '#8c8c8c',
-                            marginTop: '4px',
-                            lineHeight: '1.4'
-                        }}>
-                            提示：{component.fieldDescription}
-                        </div>
-                    )}
+                <div style={getDescriptionContainerStyle(theme)}>
+                    {renderTopDescription({ component, theme })}
+
+                    <div style={{
+                        ...getComponentContentStyle(theme),
+                        width: '100%',
+                        ...component.style
+                    }}>
+                        {renderSelectWithIcon(autoCompleteComponent)}
+                    </div>
+
+                    {renderBottomDescription({ component, theme })}
+                    {renderRightDescription({ component, theme })}
                 </div>
             );
         }
@@ -230,29 +229,27 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component, isDesignMo
     const defaultValue = currentUserAuthor || component.defaultValue;
 
     return (
-        <div style={{
-            width: '100%',
-            ...component.style
-        }}>
-            <Input
-                placeholder={component.placeholder || '请输入作者真实姓名'}
-                disabled={component.disabled}
-                maxLength={component.maxLength || 50}
-                showCount={component.showCharCount}
-                prefix={getInputPrefix()}
-                value={defaultValue}
-                readOnly={isDesignMode}
-            />
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
+
+            <div style={{
+                ...getComponentContentStyle(theme),
+                width: '100%',
+                ...component.style
+            }}>
+                <Input
+                    placeholder={component.placeholder || '请输入作者真实姓名'}
+                    disabled={component.disabled}
+                    maxLength={component.maxLength || 50}
+                    showCount={component.showCharCount}
+                    prefix={getInputPrefix()}
+                    value={defaultValue}
+                    readOnly={isDesignMode}
+                />
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

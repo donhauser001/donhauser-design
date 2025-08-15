@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle } from '../../utils/descriptionUtils';
 
 interface CountdownComponentProps {
     component: FormComponent;
@@ -117,53 +118,49 @@ const CountdownComponent: React.FC<CountdownComponentProps> = ({ component, isDe
     };
 
     return (
-        <div style={{ width: '100%' }}>
-            {shouldShowCountdown ? (
-                <div style={containerStyle}>
-                    {/* 前缀文本 */}
-                    {component.countdownPrefix && timeLeft.total > 0 && (
-                        <div style={prefixStyle}>
-                            {component.countdownPrefix}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
+            
+            <div style={getComponentContentStyle(theme)}>
+                {shouldShowCountdown ? (
+                    <div style={containerStyle}>
+                        {/* 前缀文本 */}
+                        {component.countdownPrefix && timeLeft.total > 0 && (
+                            <div style={prefixStyle}>
+                                {component.countdownPrefix}
+                            </div>
+                        )}
+
+                        {/* 倒计时主体 */}
+                        <div style={timeStyle}>
+                            {formatTime()}
                         </div>
-                    )}
 
-                    {/* 倒计时主体 */}
-                    <div style={timeStyle}>
-                        {formatTime()}
+                        {/* 后缀文本 */}
+                        {component.countdownSuffix && timeLeft.total > 0 && (
+                            <div style={suffixStyle}>
+                                {component.countdownSuffix}
+                            </div>
+                        )}
                     </div>
-
-                    {/* 后缀文本 */}
-                    {component.countdownSuffix && timeLeft.total > 0 && (
-                        <div style={suffixStyle}>
-                            {component.countdownSuffix}
+                ) : (
+                    <div style={placeholderStyle}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12,6 12,12 16,14"></polyline>
+                            </svg>
                         </div>
-                    )}
-                </div>
-            ) : (
-                <div style={placeholderStyle}>
-                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12,6 12,12 16,14"></polyline>
-                        </svg>
+                        <div>请设置目标日期或启用表单有效期同步</div>
+                        <div style={{ fontSize: '12px', marginTop: '4px', color: '#999' }}>
+                            设置一个未来的日期和时间，或开启与表单有效期同步
+                        </div>
                     </div>
-                    <div>请设置目标日期或启用表单有效期同步</div>
-                    <div style={{ fontSize: '12px', marginTop: '4px', color: '#999' }}>
-                        设置一个未来的日期和时间，或开启与表单有效期同步
-                    </div>
-                </div>
-            )}
-
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+                )}
+            </div>
+            
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

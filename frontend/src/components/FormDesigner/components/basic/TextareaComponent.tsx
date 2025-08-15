@@ -4,7 +4,7 @@ import { FormComponent } from '../../../../types/formDesigner';
 import SimpleRichTextEditor from '../../../SimpleRichTextEditor';
 import { useLogicEngine } from '../../hooks/useLogicEngine';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
-import { renderDescription, getDescriptionContainerStyle, getComponentContentStyle } from '../../utils/descriptionUtils';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 const { TextArea } = Input;
 
@@ -35,7 +35,7 @@ const TextareaComponent: React.FC<TextareaComponentProps> = ({ component, isDesi
 
     return (
         <div style={getDescriptionContainerStyle(theme)}>
-            {theme.descriptionPosition === 'top' && renderDescription({ component, theme })}
+            {renderTopDescription({ component, theme })}
 
             <div style={{
                 ...getComponentContentStyle(theme),
@@ -67,8 +67,8 @@ const TextareaComponent: React.FC<TextareaComponentProps> = ({ component, isDesi
                 )}
             </div>
 
-            {theme.descriptionPosition === 'bottom' && renderDescription({ component, theme })}
-            {theme.descriptionPosition === 'right' && renderDescription({ component, theme })}
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

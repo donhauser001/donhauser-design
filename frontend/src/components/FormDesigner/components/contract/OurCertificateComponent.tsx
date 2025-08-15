@@ -3,12 +3,15 @@ import { Card, Space, Image } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { getOrganizationEnterprises, Enterprise } from '../../../../api/enterprises';
 import { getLinearIcon } from '../../utils/iconUtils';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 interface OurCertificateComponentProps {
     component: FormComponent;
 }
 
 const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ component }) => {
+    const { theme } = useFormDesignerStore();
     const [enterprises, setEnterprises] = useState<Enterprise[]>([]);
     const [selectedEnterprise, setSelectedEnterprise] = useState<Enterprise | null>(null);
 
@@ -75,200 +78,193 @@ const OurCertificateComponent: React.FC<OurCertificateComponentProps> = ({ compo
     };
 
     return (
-        <div style={{ width: '100%' }}>
-            <Card
-                size="small"
-                style={{
-                    border: '1px solid #d9d9d9',
-                    borderRadius: '8px',
-                    ...component.style
-                }}
-            >
-                {selectedEnterprise ? (
-                    <div style={{ padding: '20px' }}>
-                        <Space direction="vertical" style={{ width: '100%' }} size="large">
-                            {/* 营业执照 */}
-                            {component.showBusinessLicense !== false && (
-                                <div>
-                                    <div style={{
-                                        fontSize: '14px',
-                                        fontWeight: 500,
-                                        marginBottom: '8px',
-                                        color: '#262626'
-                                    }}>
-                                        {selectedEnterprise.enterpriseName}营业执照
-                                    </div>
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
 
-                                    {/* 营业执照图片 */}
-                                    {getBusinessLicenseInfo().hasImage ? (
+            <div style={getComponentContentStyle(theme)}>
+                <Card
+                    size="small"
+                    style={{
+                        border: '1px solid #d9d9d9',
+                        borderRadius: '8px',
+                        ...component.style
+                    }}
+                >
+                    {selectedEnterprise ? (
+                        <div style={{ padding: '20px' }}>
+                            <Space direction="vertical" style={{ width: '100%' }} size="large">
+                                {/* 营业执照 */}
+                                {component.showBusinessLicense !== false && (
+                                    <div>
                                         <div style={{
-                                            width: '100%',
-                                            marginBottom: '8px'
+                                            fontSize: '14px',
+                                            fontWeight: 500,
+                                            marginBottom: '8px',
+                                            color: '#262626'
                                         }}>
-                                            <Image
-                                                src={getBusinessLicenseInfo().image}
-                                                width="100%"
-                                                style={{
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #d9d9d9',
-                                                    width: '100%',
-                                                    height: 'auto'
-                                                }}
-                                                preview={false}
-                                            />
+                                            {selectedEnterprise.enterpriseName}营业执照
                                         </div>
-                                    ) : (
-                                        <div style={{
-                                            width: '100%',
-                                            marginBottom: '8px'
-                                        }}>
+
+                                        {/* 营业执照图片 */}
+                                        {getBusinessLicenseInfo().hasImage ? (
                                             <div style={{
                                                 width: '100%',
-                                                height: '120px',
-                                                borderRadius: '6px',
-                                                border: '2px dashed #d9d9d9',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                backgroundColor: '#fafafa',
-                                                color: '#8c8c8c',
-                                                fontSize: '12px'
+                                                marginBottom: '8px'
                                             }}>
-                                                <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'center' }}>
-                                                    <div style={{ width: '16px', height: '16px', color: '#8c8c8c' }}>
-                                                        {getLinearIcon('certificate')}
-                                                    </div>
-                                                </div>
-                                                <div>营业执照</div>
-                                                <div style={{ fontSize: '10px', marginTop: '4px' }}>
-                                                    暂无图片
-                                                </div>
+                                                <Image
+                                                    src={getBusinessLicenseInfo().image}
+                                                    width="100%"
+                                                    style={{
+                                                        borderRadius: '6px',
+                                                        border: '1px solid #d9d9d9',
+                                                        width: '100%',
+                                                        height: 'auto'
+                                                    }}
+                                                    preview={false}
+                                                />
                                             </div>
-                                        </div>
-                                    )}
-
-                                    <div style={{
-                                        fontSize: '12px',
-                                        color: '#8c8c8c',
-                                        textAlign: 'center',
-                                        padding: '8px',
-                                        backgroundColor: '#f5f5f5',
-                                        borderRadius: '4px'
-                                    }}>
-                                        {getBusinessLicenseInfo().number}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* 开户许可证 */}
-                            {component.showBankPermit === true && (
-                                <div>
-                                    <div style={{
-                                        fontSize: '14px',
-                                        fontWeight: 500,
-                                        marginBottom: '8px',
-                                        color: '#262626'
-                                    }}>
-                                        {selectedEnterprise.enterpriseName}开户许可证
-                                    </div>
-
-                                    {/* 开户许可证图片 */}
-                                    {getBankPermitInfo().hasImage ? (
-                                        <div style={{
-                                            width: '100%',
-                                            marginBottom: '8px'
-                                        }}>
-                                            <Image
-                                                src={getBankPermitInfo().image}
-                                                width="100%"
-                                                style={{
-                                                    borderRadius: '6px',
-                                                    border: '1px solid #d9d9d9',
-                                                    width: '100%',
-                                                    height: 'auto'
-                                                }}
-                                                preview={false}
-                                            />
-                                        </div>
-                                    ) : (
-                                        <div style={{
-                                            width: '100%',
-                                            marginBottom: '8px'
-                                        }}>
+                                        ) : (
                                             <div style={{
                                                 width: '100%',
-                                                height: '120px',
-                                                borderRadius: '6px',
-                                                border: '2px dashed #d9d9d9',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                backgroundColor: '#fafafa',
-                                                color: '#8c8c8c',
-                                                fontSize: '12px'
+                                                marginBottom: '8px'
                                             }}>
-                                                <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'center' }}>
-                                                    <div style={{ width: '16px', height: '16px', color: '#8c8c8c' }}>
-                                                        {getLinearIcon('certificate')}
+                                                <div style={{
+                                                    width: '100%',
+                                                    height: '120px',
+                                                    borderRadius: '6px',
+                                                    border: '2px dashed #d9d9d9',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    backgroundColor: '#fafafa',
+                                                    color: '#8c8c8c',
+                                                    fontSize: '12px'
+                                                }}>
+                                                    <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'center' }}>
+                                                        <div style={{ width: '16px', height: '16px', color: '#8c8c8c' }}>
+                                                            {getLinearIcon('certificate')}
+                                                        </div>
+                                                    </div>
+                                                    <div>营业执照</div>
+                                                    <div style={{ fontSize: '10px', marginTop: '4px' }}>
+                                                        暂无图片
                                                     </div>
                                                 </div>
-                                                <div>开户许可证</div>
-                                                <div style={{ fontSize: '10px', marginTop: '4px' }}>
-                                                    暂无图片
+                                            </div>
+                                        )}
+
+                                        <div style={{
+                                            fontSize: '12px',
+                                            color: '#8c8c8c',
+                                            textAlign: 'center',
+                                            padding: '8px',
+                                            backgroundColor: '#f5f5f5',
+                                            borderRadius: '4px'
+                                        }}>
+                                            {getBusinessLicenseInfo().number}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 开户许可证 */}
+                                {component.showBankPermit === true && (
+                                    <div>
+                                        <div style={{
+                                            fontSize: '14px',
+                                            fontWeight: 500,
+                                            marginBottom: '8px',
+                                            color: '#262626'
+                                        }}>
+                                            {selectedEnterprise.enterpriseName}开户许可证
+                                        </div>
+
+                                        {/* 开户许可证图片 */}
+                                        {getBankPermitInfo().hasImage ? (
+                                            <div style={{
+                                                width: '100%',
+                                                marginBottom: '8px'
+                                            }}>
+                                                <Image
+                                                    src={getBankPermitInfo().image}
+                                                    width="100%"
+                                                    style={{
+                                                        borderRadius: '6px',
+                                                        border: '1px solid #d9d9d9',
+                                                        width: '100%',
+                                                        height: 'auto'
+                                                    }}
+                                                    preview={false}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div style={{
+                                                width: '100%',
+                                                marginBottom: '8px'
+                                            }}>
+                                                <div style={{
+                                                    width: '100%',
+                                                    height: '120px',
+                                                    borderRadius: '6px',
+                                                    border: '2px dashed #d9d9d9',
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    backgroundColor: '#fafafa',
+                                                    color: '#8c8c8c',
+                                                    fontSize: '12px'
+                                                }}>
+                                                    <div style={{ marginBottom: '4px', display: 'flex', justifyContent: 'center' }}>
+                                                        <div style={{ width: '16px', height: '16px', color: '#8c8c8c' }}>
+                                                            {getLinearIcon('certificate')}
+                                                        </div>
+                                                    </div>
+                                                    <div>开户许可证</div>
+                                                    <div style={{ fontSize: '10px', marginTop: '4px' }}>
+                                                        暂无图片
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
 
-                                    <div style={{
-                                        fontSize: '12px',
-                                        color: '#8c8c8c',
-                                        textAlign: 'center',
-                                        padding: '8px',
-                                        backgroundColor: '#f5f5f5',
-                                        borderRadius: '4px'
-                                    }}>
-                                        {getBankPermitInfo().number}
+                                        <div style={{
+                                            fontSize: '12px',
+                                            color: '#8c8c8c',
+                                            textAlign: 'center',
+                                            padding: '8px',
+                                            backgroundColor: '#f5f5f5',
+                                            borderRadius: '4px'
+                                        }}>
+                                            {getBankPermitInfo().number}
+                                        </div>
                                     </div>
+                                )}
+                            </Space>
+                        </div>
+                    ) : (
+                        <div style={{
+                            textAlign: 'center',
+                            padding: '40px 20px',
+                            color: '#8c8c8c',
+                            fontSize: '14px'
+                        }}>
+                            <div style={{ fontSize: '24px', marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+                                <div style={{ width: '24px', height: '24px', color: '#8c8c8c' }}>
+                                    {getLinearIcon('certificate')}
                                 </div>
-                            )}
-                        </Space>
-                    </div>
-                ) : (
-                    <div style={{
-                        textAlign: 'center',
-                        padding: '40px 20px',
-                        color: '#8c8c8c',
-                        fontSize: '14px'
-                    }}>
-                        <div style={{ fontSize: '24px', marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-                            <div style={{ width: '24px', height: '24px', color: '#8c8c8c' }}>
-                                {getLinearIcon('certificate')}
+                            </div>
+                            <div>请在属性面板中选择企业</div>
+                            <div style={{ fontSize: '12px', marginTop: '4px' }}>
+                                选择后将显示企业证照信息
                             </div>
                         </div>
-                        <div>请在属性面板中选择企业</div>
-                        <div style={{ fontSize: '12px', marginTop: '4px' }}>
-                            选择后将显示企业证照信息
-                        </div>
-                    </div>
-                )}
-            </Card>
+                    )}
+                </Card>
+            </div>
 
-            {/* 字段说明 */}
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '8px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
-
-
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

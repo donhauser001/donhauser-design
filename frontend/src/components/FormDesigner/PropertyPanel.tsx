@@ -1,5 +1,6 @@
 import React from 'react';
 import { Card, Form, Tabs, Collapse, ColorPicker, Select, Switch, Input, InputNumber, Button } from 'antd';
+import { DeleteOutlined, EyeOutlined, SwapOutlined, ToolOutlined, ControlOutlined, BulbOutlined } from '@ant-design/icons';
 import { SettingOutlined, AppstoreOutlined, FormatPainterOutlined, BranchesOutlined } from '@ant-design/icons';
 import { useFormDesignerStore } from '../../stores/formDesignerStore';
 
@@ -74,8 +75,8 @@ const PropertyPanel: React.FC = () => {
 
         // 创建折叠面板项
         const collapseItems = [
-            // 基础属性面板（除布局组件外都有）
-            ...(!['columnContainer', 'group'].includes(selectedComponentData.type) ? [{
+            // 基础属性面板（除分栏容器外都有）
+            ...(!['columnContainer'].includes(selectedComponentData.type) ? [{
                 key: 'basic',
                 label: (
                     <div style={{
@@ -1124,150 +1125,252 @@ const PropertyPanel: React.FC = () => {
 
             return (
                 <div key={rule.id} style={{
-                    border: '1px solid #d9d9d9',
-                    borderRadius: '6px',
+                    border: '1px solid #e8e8e8',
+                    borderRadius: '8px',
                     padding: '16px',
                     marginBottom: '12px',
-                    backgroundColor: '#fafafa'
+                    backgroundColor: '#fafafa',
+                    position: 'relative',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
                 }}>
+                    {/* 规则类型标识 */}
+                    <div style={{
+                        position: 'absolute',
+                        top: '-8px',
+                        left: '12px',
+                        backgroundColor: isLinkage ? '#52c41a' : '#1890ff',
+                        color: 'white',
+                        padding: '2px 8px',
+                        borderRadius: '10px',
+                        fontSize: '12px',
+                        fontWeight: 500
+                    }}>
+                        {isLinkage ? (
+                            <>
+                                <SwapOutlined style={{ fontSize: '10px', marginRight: '4px' }} />
+                                联动
+                            </>
+                        ) : (
+                            <>
+                                <EyeOutlined style={{ fontSize: '10px', marginRight: '4px' }} />
+                                可见性
+                            </>
+                        )}
+                    </div>
+
                     <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
-                        marginBottom: '12px'
+                        marginBottom: '16px',
+                        marginTop: '8px'
                     }}>
-                        <span style={{ fontWeight: 500, color: '#262626' }}>
-                            {isLinkage ? '联动性逻辑' : '可见性逻辑'} #{index + 1}
+                        <span style={{ fontWeight: 600, color: '#262626', fontSize: '14px' }}>
+                            规则 #{index + 1}
                         </span>
                         <Button
                             type="text"
                             danger
                             size="small"
+                            icon={<DeleteOutlined />}
                             onClick={() => removeLogicRule(rule.id)}
-                        >
-                            删除
-                        </Button>
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                width: '28px',
+                                height: '28px',
+                                borderRadius: '50%',
+                                backgroundColor: '#f5f5f5',
+                                border: '1px solid #d9d9d9',
+                                transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#ff4d4f';
+                                e.currentTarget.style.borderColor = '#ff4d4f';
+                                e.currentTarget.style.color = 'white';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f5f5f5';
+                                e.currentTarget.style.borderColor = '#d9d9d9';
+                                e.currentTarget.style.color = '';
+                            }}
+                        />
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {/* 条件设置 */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <span style={{ minWidth: '30px' }}>当</span>
-                            <Select
-                                style={{ minWidth: '120px' }}
-                                value={rule.sourceComponent}
-                                onChange={(value) => updateLogicRule(rule.id, 'sourceComponent', value)}
-                                placeholder="选择组件"
-                                size="small"
-                            >
-                                {componentOptions.map(option => (
-                                    <Option key={option.value} value={option.value}>
-                                        {option.label}
-                                    </Option>
-                                ))}
-                            </Select>
-                            <span>的值</span>
-                            <Select
-                                style={{ minWidth: '80px' }}
-                                value={rule.condition}
-                                onChange={(value) => updateLogicRule(rule.id, 'condition', value)}
-                                size="small"
-                            >
-                                <Option value="equals">等于</Option>
-                                <Option value="greater">大于</Option>
-                                <Option value="less">小于</Option>
-                                <Option value="notEquals">不等于</Option>
-                                <Option value="contains">包含</Option>
-                                <Option value="notContains">不包含</Option>
-                            </Select>
-                            {(() => {
-                                // 检查源组件是否为选择类组件，如果是则显示选项选择器
-                                const sourceComponent = components.find(c => c.id === rule.sourceComponent);
-                                if (sourceComponent && ['select', 'radio'].includes(sourceComponent.type) && sourceComponent.options) {
-                                    return (
+                        <div style={{
+                            backgroundColor: '#f5f5f5',
+                            borderRadius: '6px',
+                            padding: '12px',
+                            border: '1px solid #e8e8e8'
+                        }}>
+                            <div style={{
+                                fontSize: '12px',
+                                fontWeight: 500,
+                                marginBottom: '8px',
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}>
+                                <ControlOutlined style={{ marginRight: '6px', fontSize: '12px' }} />
+                                触发条件
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <span style={{
+                                    minWidth: '24px',
+                                    fontSize: '13px',
+                                    fontWeight: 500,
+                                    color: '#595959'
+                                }}>当</span>
+                                <Select
+                                    style={{ minWidth: '140px' }}
+                                    value={rule.sourceComponent}
+                                    onChange={(value) => updateLogicRule(rule.id, 'sourceComponent', value)}
+                                    placeholder="选择源组件"
+                                    size="small"
+                                >
+                                    {componentOptions.map(option => (
+                                        <Option key={option.value} value={option.value}>
+                                            {option.label}
+                                        </Option>
+                                    ))}
+                                </Select>
+                                <span style={{ fontSize: '13px', color: '#595959' }}>的值</span>
+                                <Select
+                                    style={{ minWidth: '80px' }}
+                                    value={rule.condition}
+                                    onChange={(value) => updateLogicRule(rule.id, 'condition', value)}
+                                    size="small"
+                                >
+                                    <Option value="equals">等于</Option>
+                                    <Option value="greater">大于</Option>
+                                    <Option value="less">小于</Option>
+                                    <Option value="notEquals">不等于</Option>
+                                    <Option value="contains">包含</Option>
+                                    <Option value="notContains">不包含</Option>
+                                </Select>
+                                {(() => {
+                                    // 检查源组件是否为选择类组件，如果是则显示选项选择器
+                                    const sourceComponent = components.find(c => c.id === rule.sourceComponent);
+                                    if (sourceComponent && ['select', 'radio'].includes(sourceComponent.type) && sourceComponent.options) {
+                                        return (
+                                            <Select
+                                                style={{ minWidth: '120px' }}
+                                                value={rule.value}
+                                                onChange={(value) => updateLogicRule(rule.id, 'value', value)}
+                                                placeholder="选择值"
+                                                size="small"
+                                            >
+                                                {sourceComponent.options.map(option => (
+                                                    <Option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        );
+                                    } else {
+                                        return (
+                                            <Input
+                                                style={{ minWidth: '120px' }}
+                                                value={rule.value}
+                                                onChange={(e) => updateLogicRule(rule.id, 'value', e.target.value)}
+                                                placeholder="输入触发值"
+                                                size="small"
+                                            />
+                                        );
+                                    }
+                                })()}
+                                <span style={{ fontSize: '13px', color: '#595959' }}>时</span>
+                            </div>
+                        </div>
+
+                        {/* 动作设置 */}
+                        <div style={{
+                            backgroundColor: '#f0f0f0',
+                            borderRadius: '6px',
+                            padding: '12px',
+                            border: '1px solid #d9d9d9'
+                        }}>
+                            <div style={{
+                                fontSize: '12px',
+                                fontWeight: 500,
+                                marginBottom: '8px',
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}>
+                                {isLinkage ? (
+                                    <>
+                                        <SwapOutlined style={{ marginRight: '6px', fontSize: '12px' }} />
+                                        执行动作
+                                    </>
+                                ) : (
+                                    <>
+                                        <EyeOutlined style={{ marginRight: '6px', fontSize: '12px' }} />
+                                        可见性控制
+                                    </>
+                                )}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                <span style={{
+                                    minWidth: '30px',
+                                    fontSize: '13px',
+                                    fontWeight: 500,
+                                    color: '#595959'
+                                }}>设置</span>
+                                {isLinkage ? (
+                                    <>
                                         <Select
-                                            style={{ minWidth: '100px' }}
-                                            value={rule.value}
-                                            onChange={(value) => updateLogicRule(rule.id, 'value', value)}
-                                            placeholder="选择值"
+                                            style={{ minWidth: '140px' }}
+                                            value={rule.targetComponent}
+                                            onChange={(value) => updateLogicRule(rule.id, 'targetComponent', value)}
+                                            placeholder="选择目标组件"
                                             size="small"
                                         >
-                                            {sourceComponent.options.map(option => (
+                                            {componentOptions.map(option => (
                                                 <Option key={option.value} value={option.value}>
                                                     {option.label}
                                                 </Option>
                                             ))}
                                         </Select>
-                                    );
-                                } else {
-                                    return (
+                                        <span style={{ fontSize: '13px', color: '#595959' }}>的值为</span>
                                         <Input
-                                            style={{ minWidth: '100px' }}
-                                            value={rule.value}
-                                            onChange={(e) => updateLogicRule(rule.id, 'value', e.target.value)}
-                                            placeholder="输入值"
+                                            style={{ minWidth: '120px' }}
+                                            value={rule.targetValue || ''}
+                                            onChange={(e) => updateLogicRule(rule.id, 'targetValue', e.target.value)}
+                                            placeholder="输入目标值"
                                             size="small"
                                         />
-                                    );
-                                }
-                            })()}
-                            <span>时</span>
-                        </div>
-
-                        {/* 动作设置 */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <span style={{ minWidth: '30px' }}>设置</span>
-                            {isLinkage ? (
-                                <>
-                                    <Select
-                                        style={{ minWidth: '120px' }}
-                                        value={rule.targetComponent}
-                                        onChange={(value) => updateLogicRule(rule.id, 'targetComponent', value)}
-                                        placeholder="选择组件"
-                                        size="small"
-                                    >
-                                        {componentOptions.map(option => (
-                                            <Option key={option.value} value={option.value}>
-                                                {option.label}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                    <span>的值为</span>
-                                    <Input
-                                        style={{ minWidth: '100px' }}
-                                        value={rule.targetValue || ''}
-                                        onChange={(e) => updateLogicRule(rule.id, 'targetValue', e.target.value)}
-                                        placeholder="输入值"
-                                        size="small"
-                                    />
-                                </>
-                            ) : (
-                                <>
-                                    <Select
-                                        style={{ minWidth: '120px' }}
-                                        value={rule.targetComponent}
-                                        onChange={(value) => updateLogicRule(rule.id, 'targetComponent', value)}
-                                        placeholder="选择组件"
-                                        size="small"
-                                    >
-                                        {componentOptions.map(option => (
-                                            <Option key={option.value} value={option.value}>
-                                                {option.label}
-                                            </Option>
-                                        ))}
-                                    </Select>
-                                    <Select
-                                        style={{ minWidth: '80px' }}
-                                        value={rule.action}
-                                        onChange={(value) => updateLogicRule(rule.id, 'action', value)}
-                                        size="small"
-                                    >
-                                        <Option value="visible">显示</Option>
-                                        <Option value="hidden">隐藏</Option>
-                                        <Option value="admin">管理员可见</Option>
-                                    </Select>
-                                </>
-                            )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <Select
+                                            style={{ minWidth: '140px' }}
+                                            value={rule.targetComponent}
+                                            onChange={(value) => updateLogicRule(rule.id, 'targetComponent', value)}
+                                            placeholder="选择目标组件"
+                                            size="small"
+                                        >
+                                            {componentOptions.map(option => (
+                                                <Option key={option.value} value={option.value}>
+                                                    {option.label}
+                                                </Option>
+                                            ))}
+                                        </Select>
+                                        <Select
+                                            style={{ minWidth: '100px' }}
+                                            value={rule.action}
+                                            onChange={(value) => updateLogicRule(rule.id, 'action', value)}
+                                            size="small"
+                                        >
+                                            <Option value="visible">显示</Option>
+                                            <Option value="hidden">隐藏</Option>
+                                            <Option value="admin">管理员可见</Option>
+                                        </Select>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1275,43 +1378,89 @@ const PropertyPanel: React.FC = () => {
         };
 
         return (
-            <Form layout="vertical" size="small">
+            <div style={{ padding: '8px 0' }}>
                 {/* 逻辑规则列表 */}
                 <div style={{ marginBottom: '16px' }}>
                     {logicRules.map((rule: any, index: number) => renderLogicRule(rule, index))}
                 </div>
 
-                {/* 添加逻辑按钮 */}
-                <div style={{ display: 'flex', gap: '8px' }}>
-                    <Button
-                        type="dashed"
-                        onClick={() => addLogicRule('linkage')}
-                        style={{ flex: 1 }}
-                        size="small"
-                    >
-                        + 添加联动性逻辑
-                    </Button>
-                    <Button
-                        type="dashed"
-                        onClick={() => addLogicRule('visibility')}
-                        style={{ flex: 1 }}
-                        size="small"
-                    >
-                        + 添加可见性逻辑
-                    </Button>
-                </div>
-
                 {logicRules.length === 0 && (
                     <div style={{
                         textAlign: 'center',
-                        padding: '20px',
-                        color: '#8c8c8c',
-                        fontSize: '13px'
+                        padding: '32px 16px',
+                        backgroundColor: '#f5f5f5',
+                        borderRadius: '8px',
+                        border: '1px dashed #d9d9d9',
+                        marginBottom: '16px'
                     }}>
-                        暂无全局逻辑规则，点击上方按钮添加
+                        <div style={{
+                            fontSize: '48px',
+                            marginBottom: '12px',
+                            opacity: 0.3,
+                            display: 'flex',
+                            justifyContent: 'center'
+                        }}>
+                            <ToolOutlined />
+                        </div>
+                        <div style={{
+                            fontSize: '14px',
+                            marginBottom: '4px',
+                            fontWeight: 500
+                        }}>
+                            暂无逻辑规则
+                        </div>
+                        <div style={{
+                            fontSize: '12px'
+                        }}>
+                            点击下方按钮添加智能逻辑控制
+                        </div>
                     </div>
                 )}
-            </Form>
+
+                {/* 添加逻辑按钮 */}
+                <div style={{
+                    display: 'flex',
+                    gap: '8px',
+                    marginBottom: '8px'
+                }}>
+                    <Button
+                        type="dashed"
+                        onClick={() => addLogicRule('visibility')}
+                        style={{
+                            flex: 1,
+                            height: '36px'
+                        }}
+                        size="small"
+                    >
+                        <EyeOutlined style={{ fontSize: '12px' }} />
+                        <span style={{ marginLeft: '4px' }}>可见性逻辑</span>
+                    </Button>
+                    <Button
+                        type="dashed"
+                        onClick={() => addLogicRule('linkage')}
+                        style={{
+                            flex: 1,
+                            height: '36px'
+                        }}
+                        size="small"
+                    >
+                        <SwapOutlined style={{ fontSize: '12px' }} />
+                        <span style={{ marginLeft: '4px' }}>联动逻辑</span>
+                    </Button>
+                </div>
+
+                <div style={{
+                    fontSize: '11px',
+                    textAlign: 'center',
+                    fontStyle: 'italic',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}>
+                    <BulbOutlined style={{ marginRight: '4px', fontSize: '11px' }} />
+                    逻辑规则仅在预览模式下生效
+                </div>
+            </div>
         );
     };
 

@@ -4,7 +4,7 @@ import { FormComponent } from '../../../../types/formDesigner';
 import { getIconPrefix } from '../../utils/iconUtils';
 import { useLogicEngine } from '../../hooks/useLogicEngine';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
-import { renderDescription, getDescriptionContainerStyle, getComponentContentStyle } from '../../utils/descriptionUtils';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 interface SelectComponentProps {
     component: FormComponent;
@@ -72,7 +72,7 @@ const SelectComponent: React.FC<SelectComponentProps> = ({ component, isDesignMo
 
     return (
         <div style={getDescriptionContainerStyle(theme)}>
-            {theme.descriptionPosition === 'top' && renderDescription({ component, theme })}
+            {renderTopDescription({ component, theme })}
 
             <div style={{
                 ...getComponentContentStyle(theme),
@@ -115,8 +115,8 @@ const SelectComponent: React.FC<SelectComponentProps> = ({ component, isDesignMo
                 )}
             </div>
 
-            {theme.descriptionPosition === 'bottom' && renderDescription({ component, theme })}
-            {theme.descriptionPosition === 'right' && renderDescription({ component, theme })}
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

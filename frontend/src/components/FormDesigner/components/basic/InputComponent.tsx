@@ -4,7 +4,7 @@ import { FormComponent } from '../../../../types/formDesigner';
 import { getIconPrefix } from '../../utils/iconUtils';
 import { useLogicEngine } from '../../hooks/useLogicEngine';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
-import { renderDescription, getDescriptionContainerStyle, getComponentContentStyle } from '../../utils/descriptionUtils';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle } from '../../utils/descriptionUtils';
 
 interface InputComponentProps {
     component: FormComponent;
@@ -68,7 +68,7 @@ const InputComponent: React.FC<InputComponentProps> = ({ component, isDesignMode
 
     return (
         <div style={getDescriptionContainerStyle(theme)}>
-            {theme.descriptionPosition === 'top' && renderDescription({ component, theme })}
+            {renderTopDescription({ component, theme })}
 
             <div style={getComponentContentStyle(theme)}>
                 <Input
@@ -82,8 +82,8 @@ const InputComponent: React.FC<InputComponentProps> = ({ component, isDesignMode
                 />
             </div>
 
-            {theme.descriptionPosition === 'bottom' && renderDescription({ component, theme })}
-            {theme.descriptionPosition === 'right' && renderDescription({ component, theme })}
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

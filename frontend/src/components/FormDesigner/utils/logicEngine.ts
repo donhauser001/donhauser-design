@@ -5,6 +5,7 @@ export class LogicEngine {
     private componentValues: Record<string, any> = {};
     private logicRules: LogicRule[] = [];
     private valueChangeListeners: Record<string, ((value: any) => void)[]> = {};
+    private stateVersion: number = 0;
 
     constructor(logicRules: LogicRule[] = []) {
         this.logicRules = logicRules;
@@ -20,6 +21,11 @@ export class LogicEngine {
     // 获取组件值
     getComponentValue(componentId: string): any {
         return this.componentValues[componentId];
+    }
+
+    // 获取状态版本（用于触发React重新渲染）
+    getStateVersion(): number {
+        return this.stateVersion;
     }
 
     // 添加值变化监听器
@@ -50,7 +56,12 @@ export class LogicEngine {
 
     // 设置逻辑规则
     setLogicRules(rules: LogicRule[]) {
+        console.log('LogicEngine: 设置逻辑规则', {
+            rulesCount: rules.length,
+            rules: rules
+        });
         this.logicRules = rules;
+        console.log('LogicEngine: 规则设置完成，当前引擎中的规则数量:', this.logicRules.length);
     }
 
     // 检查条件是否满足
@@ -135,6 +146,10 @@ export class LogicEngine {
         }
 
         console.log('应用的变更:', appliedChanges);
+
+        // 递增状态版本以触发React重新渲染
+        this.stateVersion++;
+        console.log(`逻辑引擎状态版本更新: ${this.stateVersion}`);
 
         // 触发组件更新回调（如果有的话）
         if (Object.keys(appliedChanges).length > 0) {

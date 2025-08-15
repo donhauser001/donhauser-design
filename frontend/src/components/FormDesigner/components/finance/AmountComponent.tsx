@@ -4,6 +4,7 @@ import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 import { getLinearIcon } from '../../utils/iconUtils';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 interface AmountComponentProps {
     component: FormComponent;
@@ -59,26 +60,23 @@ const AmountComponent: React.FC<AmountComponentProps> = ({ component }) => {
     // 如果启用了关联订单总计但没有订单组件，显示提示
     if (component.linkOrderTotal && !hasOrderComponent) {
         return (
-            <div style={{ width: '100%' }}>
-                <Alert
-                    message="金额组件已启用关联订单总计，但画布中未找到订单组件，请先添加订单组件"
-                    type="warning"
-                    showIcon
-                    icon={<ExclamationCircleOutlined />}
-                    style={{
-                        fontSize: '12px'
-                    }}
-                />
-                {component.fieldDescription && (
-                    <div style={{
-                        fontSize: '12px',
-                        color: '#8c8c8c',
-                        marginTop: '4px',
-                        lineHeight: '1.4'
-                    }}>
-                        提示：{component.fieldDescription}
-                    </div>
-                )}
+            <div style={getDescriptionContainerStyle(theme)}>
+                {renderTopDescription({ component, theme })}
+
+                <div style={getComponentContentStyle(theme)}>
+                    <Alert
+                        message="金额组件已启用关联订单总计，但画布中未找到订单组件，请先添加订单组件"
+                        type="warning"
+                        showIcon
+                        icon={<ExclamationCircleOutlined />}
+                        style={{
+                            fontSize: '12px'
+                        }}
+                    />
+                </div>
+
+                {renderBottomDescription({ component, theme })}
+                {renderRightDescription({ component, theme })}
             </div>
         );
     }
@@ -112,86 +110,82 @@ const AmountComponent: React.FC<AmountComponentProps> = ({ component }) => {
     })();
 
     return (
-        <div style={{ width: '100%' }}>
-            <InputNumber
-                placeholder={component.placeholder || '请输入金额'}
-                disabled={component.disabled || (component.linkOrderTotal && hasOrderComponent)}
-                style={{ width: '100%', ...(component.style as React.CSSProperties) }}
-                min={component.min}
-                max={component.max}
-                step={component.step || 1}
-                precision={component.precision !== undefined ? component.precision : 2}
-                value={displayValue}
-                onChange={(value) => {
-                    // 将用户输入的值存储到store中
-                    setComponentValue(component.id, value);
-                }}
-                prefix={getPrefix()}
-                formatter={component.formatter !== false ?
-                    (value: any) => {
-                        if (value === undefined || value === null) return '';
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
 
-                        // 转换为字符串进行处理
-                        const valueStr = String(value);
+            <div style={getComponentContentStyle(theme)}>
+                <InputNumber
+                    placeholder={component.placeholder || '请输入金额'}
+                    disabled={component.disabled || (component.linkOrderTotal && hasOrderComponent)}
+                    style={{ width: '100%', ...(component.style as React.CSSProperties) }}
+                    min={component.min}
+                    max={component.max}
+                    step={component.step || 1}
+                    precision={component.precision !== undefined ? component.precision : 2}
+                    value={displayValue}
+                    onChange={(value) => {
+                        // 将用户输入的值存储到store中
+                        setComponentValue(component.id, value);
+                    }}
+                    prefix={getPrefix()}
+                    formatter={component.formatter !== false ?
+                        (value: any) => {
+                            if (value === undefined || value === null) return '';
 
-                        // 如果是空字符串，返回空字符串
-                        if (valueStr.trim() === '') return '';
+                            // 转换为字符串进行处理
+                            const valueStr = String(value);
 
-                        // 如果不是有效数字，返回原值（允许用户继续输入）
-                        if (isNaN(Number(valueStr)) && valueStr !== '') return valueStr;
+                            // 如果是空字符串，返回空字符串
+                            if (valueStr.trim() === '') return '';
 
-                        // 如果是空字符串或只有小数点，允许继续输入
-                        if (valueStr === '' || valueStr === '.') return valueStr;
+                            // 如果不是有效数字，返回原值（允许用户继续输入）
+                            if (isNaN(Number(valueStr)) && valueStr !== '') return valueStr;
 
-                        const numValue = parseFloat(valueStr);
-                        if (isNaN(numValue)) return valueStr;
+                            // 如果是空字符串或只有小数点，允许继续输入
+                            if (valueStr === '' || valueStr === '.') return valueStr;
 
-                        // 保持原始输入的小数位数，不强制格式化
-                        let formattedValue = valueStr;
+                            const numValue = parseFloat(valueStr);
+                            if (isNaN(numValue)) return valueStr;
 
-                        // 如果包含小数点，分离整数和小数部分
-                        if (formattedValue.includes('.')) {
-                            const parts = formattedValue.split('.');
-                            // 只对整数部分添加千分号（如果整数部分长度大于3）
-                            if (parts[0].length > 3) {
-                                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                            // 保持原始输入的小数位数，不强制格式化
+                            let formattedValue = valueStr;
+
+                            // 如果包含小数点，分离整数和小数部分
+                            if (formattedValue.includes('.')) {
+                                const parts = formattedValue.split('.');
+                                // 只对整数部分添加千分号（如果整数部分长度大于3）
+                                if (parts[0].length > 3) {
+                                    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                                }
+                                formattedValue = parts.join('.');
+                            } else {
+                                // 整数部分添加千分号（如果长度大于3）
+                                if (formattedValue.length > 3) {
+                                    formattedValue = formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                                }
                             }
-                            formattedValue = parts.join('.');
-                        } else {
-                            // 整数部分添加千分号（如果长度大于3）
-                            if (formattedValue.length > 3) {
-                                formattedValue = formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                            }
-                        }
 
-                        return `¥ ${formattedValue}`;
-                    } :
-                    undefined
-                }
-                parser={component.formatter !== false ?
-                    (value: string | undefined) => {
-                        if (!value || value.trim() === '' || value === '¥' || value === '¥ ') {
-                            return null as any;
-                        }
-                        const cleanValue = value.replace(/¥\s?|(,*)/g, '');
-                        const parsed = parseFloat(cleanValue);
-                        return isNaN(parsed) ? null as any : parsed;
-                    } :
-                    undefined
-                }
-                addonAfter="元"
-            />
-            {/* 字段说明 */}
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+                            return `¥ ${formattedValue}`;
+                        } :
+                        undefined
+                    }
+                    parser={component.formatter !== false ?
+                        (value: string | undefined) => {
+                            if (!value || value.trim() === '' || value === '¥' || value === '¥ ') {
+                                return null as any;
+                            }
+                            const cleanValue = value.replace(/¥\s?|(,*)/g, '');
+                            const parsed = parseFloat(cleanValue);
+                            return isNaN(parsed) ? null as any : parsed;
+                        } :
+                        undefined
+                    }
+                    addonAfter="元"
+                />
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

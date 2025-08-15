@@ -23,18 +23,10 @@ const LogicEngineProvider: React.FC<LogicEngineProviderProps> = ({ children, isP
             // 初始化组件值
             globalLogicEngine.initializeComponentValues(components);
 
-            // 设置规则执行回调
+            // 设置规则执行回调（仅用于日志记录，不更新store）
             globalLogicEngine.onRulesExecuted = (changes) => {
                 console.log('逻辑规则执行结果:', changes);
-
-                // 批量更新组件属性
-                Object.keys(changes).forEach(componentId => {
-                    const componentChanges = changes[componentId];
-                    if (componentChanges.visibility !== undefined) {
-                        console.log(`更新组件 ${componentId} 可见性为:`, componentChanges.visibility);
-                        updateComponent(componentId, { visibility: componentChanges.visibility });
-                    }
-                });
+                // 注意：不在这里更新store，让FormComponentRenderer通过getComputedComponentProps处理
             };
         } else if (!isPreviewMode) {
             // 非预览模式下重置逻辑引擎

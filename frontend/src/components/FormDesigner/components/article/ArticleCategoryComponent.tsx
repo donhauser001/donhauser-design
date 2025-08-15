@@ -3,6 +3,8 @@ import { Select, Spin, Tag } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { getCategories } from '../../../../api/articleCategories';
 import { getIconPrefix } from '../../utils/iconUtils';
+import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 const { Option } = Select;
 
@@ -12,6 +14,7 @@ interface ArticleCategoryComponentProps {
 }
 
 const ArticleCategoryComponent: React.FC<ArticleCategoryComponentProps> = ({ component, isDesignMode = false }) => {
+    const { theme } = useFormDesignerStore();
     const [categories, setCategories] = useState<any[]>([]);
     const [loading, setLoading] = useState(true); // 默认加载状态为true
 
@@ -128,21 +131,19 @@ const ArticleCategoryComponent: React.FC<ArticleCategoryComponentProps> = ({ com
         );
 
         return (
-            <div style={{
-                width: '100%',
-                ...component.style
-            }}>
-                {renderSelectWithIcon(loadingSelect)}
-                {component.fieldDescription && (
-                    <div style={{
-                        fontSize: '12px',
-                        color: '#8c8c8c',
-                        marginTop: '4px',
-                        lineHeight: '1.4'
-                    }}>
-                        提示：{component.fieldDescription}
-                    </div>
-                )}
+            <div style={getDescriptionContainerStyle(theme)}>
+                {renderTopDescription({ component, theme })}
+
+                <div style={{
+                    ...getComponentContentStyle(theme),
+                    width: '100%',
+                    ...component.style
+                }}>
+                    {renderSelectWithIcon(loadingSelect)}
+                </div>
+
+                {renderBottomDescription({ component, theme })}
+                {renderRightDescription({ component, theme })}
             </div>
         );
     }
@@ -171,21 +172,19 @@ const ArticleCategoryComponent: React.FC<ArticleCategoryComponentProps> = ({ com
     );
 
     return (
-        <div style={{
-            width: '100%',
-            ...component.style
-        }}>
-            {renderSelectWithIcon(selectComponent)}
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
+
+            <div style={{
+                ...getComponentContentStyle(theme),
+                width: '100%',
+                ...component.style
+            }}>
+                {renderSelectWithIcon(selectComponent)}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

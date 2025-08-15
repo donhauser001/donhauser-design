@@ -13,7 +13,8 @@ interface CommonPropertiesProps {
 }
 
 const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onPropertyChange }) => {
-    const isLayoutComponent = ['columnContainer', 'group'].includes(component.type);
+    const isLayoutComponent = ['columnContainer'].includes(component.type);
+    const isGroupComponent = component.type === 'group';
     const isSpecialComponent = ['divider', 'pagination', 'steps', 'presetText', 'image', 'html', 'countdown'].includes(component.type);
     const isRadioComponent = component.type === 'radio';
     const isSliderComponent = component.type === 'slider';
@@ -58,7 +59,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
     return (
         <>
             {/* 基础属性 */}
-            {!isLayoutComponent && !isOurCertificateComponent && (
+            {(!isLayoutComponent || isGroupComponent) && !isOurCertificateComponent && (
                 <Form.Item label="标签">
                     <Input
                         value={component.label}
@@ -69,7 +70,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
             )}
 
             {/* 可见性设置（所有非布局组件都可以设置） */}
-            {!isLayoutComponent && (
+            {(!isLayoutComponent || isGroupComponent) && (
                 <Form.Item label="可见性">
                     <Select
                         value={component.visibility || 'visible'}
@@ -83,8 +84,8 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                 </Form.Item>
             )}
 
-            {/* 字段说明（对所有非布局组件可见） */}
-            {!isLayoutComponent && (
+            {/* 字段说明（对所有非布局组件可见，但排除分割线、分页和步骤组件） */}
+            {(!isLayoutComponent || isGroupComponent) && component.type !== 'divider' && component.type !== 'pagination' && component.type !== 'steps' && (
                 <Form.Item label="字段说明">
                     <TextArea
                         value={component.fieldDescription || ''}
@@ -95,15 +96,19 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                 </Form.Item>
             )}
 
-            {/* 通用属性（排除布局组件和特殊组件） */}
-            {!isLayoutComponent && !isSpecialComponent && !isOurCertificateComponent && (
+            {/* 隐藏标签（分组组件也需要此功能） */}
+            {(!isLayoutComponent || isGroupComponent) && !isSpecialComponent && !isOurCertificateComponent && (
+                <Form.Item label="隐藏标签">
+                    <Switch
+                        checked={component.hideLabel || false}
+                        onChange={(checked) => onPropertyChange('hideLabel', checked)}
+                    />
+                </Form.Item>
+            )}
+
+            {/* 其他通用属性（排除布局组件、特殊组件和分组组件） */}
+            {!isLayoutComponent && !isSpecialComponent && !isOurCertificateComponent && !isGroupComponent && (
                 <>
-                    <Form.Item label="隐藏标签">
-                        <Switch
-                            checked={component.hideLabel || false}
-                            onChange={(checked) => onPropertyChange('hideLabel', checked)}
-                        />
-                    </Form.Item>
 
                     {!isOrderComponent && !isTaskListComponent && !isAmountInWordsComponent && !isTotalComponent && !isInvoiceInfoComponent && component.type !== 'signature' && (
                         <Form.Item label="必填字段">

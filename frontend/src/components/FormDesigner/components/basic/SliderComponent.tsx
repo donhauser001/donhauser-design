@@ -3,7 +3,7 @@ import { Slider, Rate } from 'antd';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useLogicEngine } from '../../hooks/useLogicEngine';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
-import { renderDescription, getDescriptionContainerStyle, getComponentContentStyle } from '../../utils/descriptionUtils';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 interface SliderComponentProps {
     component: FormComponent;
@@ -198,7 +198,7 @@ const SliderComponent: React.FC<SliderComponentProps> = ({ component, isDesignMo
                 }
                 `}
             </style>
-            {theme.descriptionPosition === 'top' && renderDescription({ component, theme })}
+            {renderTopDescription({ component, theme })}
 
             <div style={{
                 ...getComponentContentStyle(theme),
@@ -221,7 +221,7 @@ const SliderComponent: React.FC<SliderComponentProps> = ({ component, isDesignMo
                 customStyle: { textAlign: component.sliderAlign || 'left' }
             })}
 
-            {theme.descriptionPosition === 'right' && renderDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

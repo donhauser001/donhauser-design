@@ -4,6 +4,7 @@ import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
 import { convertToRMB } from '../../../../utils/rmbConverter';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 interface AmountInWordsComponentProps {
     component: FormComponent;
@@ -127,21 +128,23 @@ const AmountInWordsComponent: React.FC<AmountInWordsComponentProps> = ({ compone
     // 如果没有金额组件，显示提示
     if (!hasAmountComponent) {
         return (
-            <div style={{ width: '100%' }}>
-                <Alert
-                    message="金额大写组件需要关联金额，但画布中未找到金额组件，请先添加金额或总计组件"
-                    type="warning"
-                    showIcon
-                    icon={<ExclamationCircleOutlined />}
-                    style={{
-                        fontSize: '12px'
-                    }}
-                />
-                {component.fieldDescription && (
-                    <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                        提示：{component.fieldDescription}
-                    </div>
-                )}
+            <div style={getDescriptionContainerStyle(theme)}>
+                {renderTopDescription({ component, theme })}
+
+                <div style={getComponentContentStyle(theme)}>
+                    <Alert
+                        message="金额大写组件需要关联金额，但画布中未找到金额组件，请先添加金额或总计组件"
+                        type="warning"
+                        showIcon
+                        icon={<ExclamationCircleOutlined />}
+                        style={{
+                            fontSize: '12px'
+                        }}
+                    />
+                </div>
+
+                {renderBottomDescription({ component, theme })}
+                {renderRightDescription({ component, theme })}
             </div>
         );
     }
@@ -150,28 +153,30 @@ const AmountInWordsComponent: React.FC<AmountInWordsComponentProps> = ({ compone
     const displayContent = convertToRMB(linkedAmount, component.includePrefix !== false);
 
     return (
-        <div style={{ width: '100%' }}>
-            <div
-                style={{
-                    padding: '8px 12px',
-                    border: `1px solid ${borderColor}`,
-                    borderRadius: '6px',
-                    backgroundColor: getBackgroundColor(),
-                    minHeight: '40px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: '#262626',
-                    ...getFontStyle(),
-                    ...(component.style as React.CSSProperties)
-                }}
-            >
-                {displayContent}
-            </div>
-            {component.fieldDescription && (
-                <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
-                    提示：{component.fieldDescription}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
+
+            <div style={getComponentContentStyle(theme)}>
+                <div
+                    style={{
+                        padding: '8px 12px',
+                        border: `1px solid ${borderColor}`,
+                        borderRadius: '6px',
+                        backgroundColor: getBackgroundColor(),
+                        minHeight: '40px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        color: '#262626',
+                        ...getFontStyle(),
+                        ...(component.style as React.CSSProperties)
+                    }}
+                >
+                    {displayContent}
                 </div>
-            )}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

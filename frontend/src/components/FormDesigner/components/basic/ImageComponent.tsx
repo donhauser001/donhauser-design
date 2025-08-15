@@ -3,6 +3,7 @@ import { Carousel, Button, Space } from 'antd';
 import { LeftOutlined, RightOutlined, PlayCircleOutlined, PauseCircleOutlined } from '@ant-design/icons';
 import { FormComponent } from '../../../../types/formDesigner';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle } from '../../utils/descriptionUtils';
 
 interface ImageComponentProps {
     component: FormComponent;
@@ -171,39 +172,35 @@ const ImageComponent: React.FC<ImageComponentProps> = ({ component, isDesignMode
     };
 
     return (
-        <div style={containerStyle}>
-            {imageList.length === 0 ? (
-                <div style={placeholderStyle}>
-                    <div style={{ fontSize: '24px', marginBottom: '8px' }}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                            <polyline points="21,15 16,10 5,21"></polyline>
-                        </svg>
-                    </div>
-                    <span>请设置图片或上传图片</span>
-                    <span style={{ fontSize: '12px', color: '#bbb' }}>
-                        支持单图、多图和幻灯片模式
-                    </span>
-                </div>
-            ) : (
-                <>
-                    {component.imageMode === 'single' && renderSingleImage(imageList[0])}
-                    {component.imageMode === 'multiple' && renderMultipleImages()}
-                    {component.imageMode === 'slideshow' && renderSlideshow()}
-                </>
-            )}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
 
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+            <div style={{ ...getComponentContentStyle(theme), ...containerStyle }}>
+                {imageList.length === 0 ? (
+                    <div style={placeholderStyle}>
+                        <div style={{ fontSize: '24px', marginBottom: '8px' }}>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                <polyline points="21,15 16,10 5,21"></polyline>
+                            </svg>
+                        </div>
+                        <span>请设置图片或上传图片</span>
+                        <span style={{ fontSize: '12px', color: '#bbb' }}>
+                            支持单图、多图和幻灯片模式
+                        </span>
+                    </div>
+                ) : (
+                    <>
+                        {component.imageMode === 'single' && renderSingleImage(imageList[0])}
+                        {component.imageMode === 'multiple' && renderMultipleImages()}
+                        {component.imageMode === 'slideshow' && renderSlideshow()}
+                    </>
+                )}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };

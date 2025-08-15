@@ -4,6 +4,7 @@ import { FormComponent } from '../../../../types/formDesigner';
 import { getIconPrefix } from '../../utils/iconUtils';
 import { clientService, ClientItem } from '../../services/clientService';
 import { useFormDesignerStore } from '../../../../stores/formDesignerStore';
+import { renderTopDescription, renderBottomDescription, renderRightDescription, getDescriptionContainerStyle, getComponentContentStyle  } from '../../utils/descriptionUtils';
 
 const { Option } = Select;
 
@@ -16,7 +17,7 @@ const ClientComponent: React.FC<ClientComponentProps> = ({ component, isDesignMo
     const [clients, setClients] = useState<ClientItem[]>([]);
     const [loading, setLoading] = useState(false);
     const [searchLoading, setSearchLoading] = useState(false);
-    const { setComponentValue, getComponentValue } = useFormDesignerStore();
+    const { setComponentValue, getComponentValue, theme } = useFormDesignerStore();
 
     // 获取图标，始终返回一个prefix以避免DOM结构变化
     const getPrefix = () => {
@@ -258,18 +259,15 @@ const ClientComponent: React.FC<ClientComponentProps> = ({ component, isDesignMo
     };
 
     return (
-        <div style={{ width: '100%' }}>
-            {component.fromClientTable ? renderSelectMode() : renderInputMode()}
-            {component.fieldDescription && (
-                <div style={{
-                    fontSize: '12px',
-                    color: '#8c8c8c',
-                    marginTop: '4px',
-                    lineHeight: '1.4'
-                }}>
-                    提示：{component.fieldDescription}
-                </div>
-            )}
+        <div style={getDescriptionContainerStyle(theme)}>
+            {renderTopDescription({ component, theme })}
+
+            <div style={getComponentContentStyle(theme)}>
+                {component.fromClientTable ? renderSelectMode() : renderInputMode()}
+            </div>
+
+            {renderBottomDescription({ component, theme })}
+            {renderRightDescription({ component, theme })}
         </div>
     );
 };
