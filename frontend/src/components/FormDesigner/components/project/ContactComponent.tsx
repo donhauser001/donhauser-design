@@ -413,8 +413,8 @@ const ContactComponent: React.FC<ContactComponentProps> = ({ component }) => {
                     <div style={{
                         position: 'absolute',
                         left: '11px',
-                        top: '50%',
-                        transform: 'translateY(calc(-50% + 2px))',
+                        top: 'calc(50% + 2px)',
+                        transform: 'translateY(-50%)',
                         zIndex: 10,
                         pointerEvents: 'none',
                         color: '#8c8c8c'

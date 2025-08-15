@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Space, Popconfirm } from 'antd';
-import { DeleteOutlined, CopyOutlined, DragOutlined } from '@ant-design/icons';
+import { DeleteOutlined, CopyOutlined, DragOutlined, EyeInvisibleOutlined, CrownOutlined } from '@ant-design/icons';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FormComponent } from '../../../types/formDesigner';
@@ -15,6 +15,11 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
     const [isHovered, setIsHovered] = useState(false);
 
     const { selectedComponent, selectComponent, deleteComponent, duplicateComponent } = useFormDesignerStore();
+
+    // 检查组件可见性状态
+    const visibility = component.visibility || 'visible';
+    const isHidden = visibility === 'hidden';
+    const isAdminOnly = visibility === 'admin';
 
     const {
         attributes,
@@ -34,7 +39,7 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        opacity: isDragging ? 0.5 : 1,
+        opacity: isDragging ? 0.5 : (isHidden ? 0.6 : 1),
     };
 
     return (
@@ -47,15 +52,23 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
                 padding: '8px',
                 border: selectedComponent === component.id
                     ? '2px solid #1890ff'
-                    : isHovered
-                        ? '2px solid #d9d9d9'
-                        : '2px solid transparent',
+                    : isHidden
+                        ? '2px dashed #ff7875'
+                        : isAdminOnly
+                            ? '2px dashed #ffa940'
+                            : isHovered
+                                ? '2px solid #d9d9d9'
+                                : '2px solid transparent',
                 borderRadius: '6px',
                 backgroundColor: selectedComponent === component.id
                     ? '#f0f8ff'
-                    : isHovered
-                        ? '#fafafa'
-                        : 'transparent',
+                    : isHidden
+                        ? '#fff2f0'
+                        : isAdminOnly
+                            ? '#fff7e6'
+                            : isHovered
+                                ? '#fafafa'
+                                : 'transparent',
                 transition: isDragging ? 'none' : 'all 0.2s',
                 cursor: 'pointer',
                 boxShadow: isHovered ? '0 2px 8px rgba(0,0,0,0.1)' : 'none',
@@ -69,7 +82,7 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
             data-component-id={component.id}
             data-parent-id={component.parentId || ''}
         >
-            <FormComponentRenderer component={component} />
+            <FormComponentRenderer component={component} isDesignMode={true} />
 
             {/* 组件操作按钮（包含拖拽手柄） */}
             <div
@@ -83,11 +96,39 @@ const SortableComponent: React.FC<SortableComponentProps> = ({ component }) => {
                     padding: '4px',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                     zIndex: 10,
-                    opacity: selectedComponent === component.id || isHovered ? 1 : 0,
+                    opacity: selectedComponent === component.id || isHovered || isHidden || isAdminOnly ? 1 : 0,
                     transition: 'opacity 0.2s'
                 }}
             >
                 <Space size="small">
+                    {/* 可见性状态图标 */}
+                    {isHidden && (
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '4px',
+                            borderRadius: '2px',
+                            backgroundColor: '#ff7875',
+                            color: 'white'
+                        }}>
+                            <EyeInvisibleOutlined style={{ fontSize: '12px' }} title="隐藏组件" />
+                        </div>
+                    )}
+                    {isAdminOnly && (
+                        <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '4px',
+                            borderRadius: '2px',
+                            backgroundColor: '#ffa940',
+                            color: 'white'
+                        }}>
+                            <CrownOutlined style={{ fontSize: '12px' }} title="管理员可见" />
+                        </div>
+                    )}
+
                     {/* 拖拽手柄 */}
                     <div
                         {...attributes}

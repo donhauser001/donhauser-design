@@ -44,46 +44,67 @@ const InvoiceInfoComponent: React.FC<InvoiceInfoComponentProps> = ({ component }
     // 如果没有选择企业，显示提示
     if (!component.selectedEnterpriseId) {
         return (
-            <Alert
-                message="请在属性面板中选择开票企业"
-                description="开票信息将自动从企业设置模块获取"
-                type="warning"
-                showIcon
-                icon={<ExclamationCircleOutlined />}
-                style={{
-                    fontSize: '12px'
-                }}
-            />
+            <div style={{ width: '100%' }}>
+                <Alert
+                    message="请在属性面板中选择开票企业"
+                    description="开票信息将自动从企业设置模块获取"
+                    type="warning"
+                    showIcon
+                    icon={<ExclamationCircleOutlined />}
+                    style={{
+                        fontSize: '12px'
+                    }}
+                />
+                {component.fieldDescription && (
+                    <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
+                        {component.fieldDescription}
+                    </div>
+                )}
+            </div>
         );
     }
 
     // 如果正在加载，显示加载状态
     if (loading) {
         return (
-            <Card
-                size="small"
-                title="开票信息"
-                loading={true}
-                style={component.style}
-            >
-                加载中...
-            </Card>
+            <div style={{ width: '100%' }}>
+                <Card
+                    size="small"
+                    title="开票信息"
+                    loading={true}
+                    style={component.style}
+                >
+                    加载中...
+                </Card>
+                {component.fieldDescription && (
+                    <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
+                        {component.fieldDescription}
+                    </div>
+                )}
+            </div>
         );
     }
 
     // 如果没有找到企业信息，显示错误提示
     if (!selectedEnterprise) {
         return (
-            <Alert
-                message="未找到选择的企业信息"
-                description="请检查企业是否存在或重新选择"
-                type="warning"
-                showIcon
-                icon={<ExclamationCircleOutlined />}
-                style={{
-                    fontSize: '12px'
-                }}
-            />
+            <div style={{ width: '100%' }}>
+                <Alert
+                    message="未找到选择的企业信息"
+                    description="请检查企业是否存在或重新选择"
+                    type="warning"
+                    showIcon
+                    icon={<ExclamationCircleOutlined />}
+                    style={{
+                        fontSize: '12px'
+                    }}
+                />
+                {component.fieldDescription && (
+                    <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
+                        {component.fieldDescription}
+                    </div>
+                )}
+            </div>
         );
     }
 
@@ -102,31 +123,38 @@ const InvoiceInfoComponent: React.FC<InvoiceInfoComponentProps> = ({ component }
 
     // 显示企业开票信息
     return (
-        <Card
-            size="small"
-            title={getCardTitle()}
-            style={{ ...component.style }}
-        >
-            {selectedEnterprise.invoiceInfo ? (
-                <div style={{
-                    whiteSpace: 'pre-line',
-                    fontSize: '14px',
-                    lineHeight: '1.6',
-                    padding: '8px 0'
-                }}>
-                    {selectedEnterprise.invoiceInfo}
-                </div>
-            ) : (
-                <div style={{
-                    color: '#999',
-                    fontSize: '12px',
-                    textAlign: 'center',
-                    padding: '20px 0'
-                }}>
-                    该企业暂未配置开票信息
+        <div style={{ width: '100%' }}>
+            <Card
+                size="small"
+                title={getCardTitle()}
+                style={{ ...component.style }}
+            >
+                {selectedEnterprise.invoiceInfo ? (
+                    <div style={{
+                        whiteSpace: 'pre-line',
+                        fontSize: '14px',
+                        lineHeight: '1.6',
+                        padding: '8px 0'
+                    }}>
+                        {selectedEnterprise.invoiceInfo}
+                    </div>
+                ) : (
+                    <div style={{
+                        color: '#999',
+                        fontSize: '12px',
+                        textAlign: 'center',
+                        padding: '20px 0'
+                    }}>
+                        该企业暂未配置开票信息
+                    </div>
+                )}
+            </Card>
+            {component.fieldDescription && (
+                <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
+                    {component.fieldDescription}
                 </div>
             )}
-        </Card>
+        </div>
     );
 };
 

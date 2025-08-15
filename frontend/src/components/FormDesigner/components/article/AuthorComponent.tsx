@@ -22,8 +22,7 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
                 return <span style={{
                     opacity: 1,
                     display: 'inline-flex',
-                    alignItems: 'center',
-                    transform: 'translateY(-3px)' // 向上移动3px
+                    alignItems: 'center'
                 }}>{icon}</span>;
             }
         }
@@ -101,13 +100,53 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
         }
     };
 
+    // 渲染带图标的选择组件
+    const renderSelectWithIcon = (selectComponent: React.ReactElement) => {
+        if (component.icon) {
+            const containerClass = `author-select-with-icon-${component.id}`;
+            return (
+                <div className={containerClass} style={{ position: 'relative', width: '100%' }}>
+                    <style>
+                        {`
+                        .${containerClass} .ant-select .ant-select-selector {
+                            padding-left: 32px !important;
+                        }
+                        .${containerClass} .ant-select .ant-select-selection-search-input {
+                            padding-left: 32px !important;
+                        }
+                        .${containerClass} .ant-select .ant-select-selection-item {
+                            padding-left: 0 !important;
+                        }
+                        .${containerClass} .ant-select .ant-select-selection-placeholder {
+                            padding-left: 0 !important;
+                        }
+                        `}
+                    </style>
+                    <div style={{
+                        position: 'absolute',
+                        left: '11px',
+                        top: 'calc(50% + 2px)',
+                        transform: 'translateY(-50%)',
+                        zIndex: 10,
+                        pointerEvents: 'none',
+                        color: '#8c8c8c'
+                    }}>
+                        {getSelectPrefix()}
+                    </div>
+                    {selectComponent}
+                </div>
+            );
+        }
+        return selectComponent;
+    };
+
     // 如果启用了从用户表选择作者
     if (component.fromUserTable) {
         if (component.authorSelectMode === 'select') {
             const currentUserAuthor = getCurrentUserAuthor();
             const defaultValue = currentUserAuthor || component.defaultValue;
 
-            return (
+            const selectComponent = (
                 <Select
                     placeholder={component.placeholder || '请选择作者'}
                     disabled={component.disabled || loading}
@@ -115,7 +154,6 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
                     allowClear={component.allowClear}
                     showSearch={component.allowSearch}
                     loading={loading}
-                    prefix={getSelectPrefix()}
                     value={defaultValue}
                     filterOption={(input, option) =>
                         option?.children?.toString().toLowerCase().includes(input.toLowerCase()) || false
@@ -128,24 +166,55 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
                     ))}
                 </Select>
             );
+
+            return (
+                <div style={{ width: '100%' }}>
+                    {renderSelectWithIcon(selectComponent)}
+                    {component.fieldDescription && (
+                        <div style={{
+                            fontSize: '12px',
+                            color: '#8c8c8c',
+                            marginTop: '4px',
+                            lineHeight: '1.4'
+                        }}>
+                            {component.fieldDescription}
+                        </div>
+                    )}
+                </div>
+            );
         } else {
             // 自动完成模式
             const currentUserAuthor = getCurrentUserAuthor();
             const defaultValue = currentUserAuthor || component.defaultValue;
 
-            return (
+            const autoCompleteComponent = (
                 <AutoComplete
                     placeholder={component.placeholder || '请输入或选择作者'}
                     disabled={component.disabled || loading}
                     style={{ width: '100%' }}
                     options={authors}
-                    prefix={getSelectPrefix()}
                     value={defaultValue}
                     filterOption={(inputValue, option) =>
                         option?.value?.toString().toLowerCase().includes(inputValue.toLowerCase()) || false
                     }
                     allowClear={component.allowClear}
                 />
+            );
+
+            return (
+                <div style={{ width: '100%' }}>
+                    {renderSelectWithIcon(autoCompleteComponent)}
+                    {component.fieldDescription && (
+                        <div style={{
+                            fontSize: '12px',
+                            color: '#8c8c8c',
+                            marginTop: '4px',
+                            lineHeight: '1.4'
+                        }}>
+                            {component.fieldDescription}
+                        </div>
+                    )}
+                </div>
             );
         }
     }
@@ -155,14 +224,27 @@ const AuthorComponent: React.FC<AuthorComponentProps> = ({ component }) => {
     const defaultValue = currentUserAuthor || component.defaultValue;
 
     return (
-        <Input
-            placeholder={component.placeholder || '请输入作者真实姓名'}
-            disabled={component.disabled}
-            maxLength={component.maxLength || 50}
-            showCount={component.showCharCount}
-            prefix={getInputPrefix()}
-            value={defaultValue}
-        />
+        <div style={{ width: '100%' }}>
+            <Input
+                placeholder={component.placeholder || '请输入作者真实姓名'}
+                disabled={component.disabled}
+                maxLength={component.maxLength || 50}
+                showCount={component.showCharCount}
+                prefix={getInputPrefix()}
+                value={defaultValue}
+                readOnly={true}
+            />
+            {component.fieldDescription && (
+                <div style={{
+                    fontSize: '12px',
+                    color: '#8c8c8c',
+                    marginTop: '4px',
+                    lineHeight: '1.4'
+                }}>
+                    {component.fieldDescription}
+                </div>
+            )}
+        </div>
     );
 };
 

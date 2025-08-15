@@ -1,5 +1,6 @@
 import React from 'react';
 import { FormComponent } from '../../types/formDesigner';
+import { useAuth } from '../../contexts/AuthContext';
 
 // 导入基础组件
 import {
@@ -70,9 +71,38 @@ import {
 
 interface FormComponentRendererProps {
     component: FormComponent;
+    isDesignMode?: boolean; // 是否为设计模式
 }
 
-const FormComponentRenderer: React.FC<FormComponentRendererProps> = ({ component }) => {
+const FormComponentRenderer: React.FC<FormComponentRendererProps> = ({ component, isDesignMode = false }) => {
+    const { userInfo } = useAuth();
+
+    // 检查组件可见性
+    const isComponentVisible = () => {
+        // 在设计模式下，所有组件都显示（在SortableComponent中处理视觉效果）
+        if (isDesignMode) {
+            return true;
+        }
+
+        const visibility = component.visibility || 'visible';
+
+        switch (visibility) {
+            case 'hidden':
+                return false;
+            case 'admin':
+                // 只有超级管理员才能看到
+                return userInfo?.role === '超级管理员';
+            case 'visible':
+            default:
+                return true;
+        }
+    };
+
+    // 如果组件不可见，返回null
+    if (!isComponentVisible()) {
+        return null;
+    }
+
     const renderComponent = () => {
         switch (component.type) {
             // 基础组件

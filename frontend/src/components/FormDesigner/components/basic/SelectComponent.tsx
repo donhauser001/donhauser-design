@@ -32,22 +32,60 @@ const SelectComponent: React.FC<SelectComponentProps> = ({ component }) => {
         return getIconPrefix(component.icon);
     };
 
+    const selectComponent = (
+        <Select
+            placeholder={component.placeholder || '请选择'}
+            value={getDefaultValue()}
+            mode={component.selectMode === 'multiple' ? 'multiple' : undefined}
+            allowClear={component.allowClear}
+            showSearch={component.allowSearch}
+            disabled={true}
+            style={{ width: '100%' }}
+            options={component.options?.map(opt => ({
+                label: opt.label,
+                value: opt.value
+            }))}
+        />
+    );
+
     return (
         <div style={{ width: '100%' }}>
-            <Select
-                placeholder={component.placeholder || '请选择'}
-                value={getDefaultValue()}
-                mode={component.selectMode === 'multiple' ? 'multiple' : undefined}
-                allowClear={component.allowClear}
-                showSearch={component.allowSearch}
-                disabled={true}
-                style={{ width: '100%' }}
-                prefix={getPrefix()}
-                options={component.options?.map(opt => ({
-                    label: opt.label,
-                    value: opt.value
-                }))}
-            />
+            {component.icon ? (
+                <div style={{ position: 'relative', width: '100%' }}>
+                    <style>
+                        {`
+                        .select-with-icon-${component.id} .ant-select .ant-select-selector {
+                            padding-left: 32px !important;
+                        }
+                        .select-with-icon-${component.id} .ant-select .ant-select-selection-search-input {
+                            padding-left: 32px !important;
+                        }
+                        .select-with-icon-${component.id} .ant-select .ant-select-selection-item {
+                            padding-left: 0 !important;
+                        }
+                        .select-with-icon-${component.id} .ant-select .ant-select-selection-placeholder {
+                            padding-left: 0 !important;
+                        }
+                        `}
+                    </style>
+                    <div style={{
+                        position: 'absolute',
+                        left: '11px',
+                        top: 'calc(50% + 2px)',
+                        transform: 'translateY(-50%)',
+                        zIndex: 10,
+                        pointerEvents: 'none',
+                        color: '#8c8c8c'
+                    }}>
+                        {getPrefix()}
+                    </div>
+                    <div className={`select-with-icon-${component.id}`}>
+                        {selectComponent}
+                    </div>
+                </div>
+            ) : (
+                selectComponent
+            )}
             {component.fieldDescription && (
                 <div style={{
                     fontSize: '12px',

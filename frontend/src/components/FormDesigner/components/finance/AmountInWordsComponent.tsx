@@ -136,6 +136,11 @@ const AmountInWordsComponent: React.FC<AmountInWordsComponentProps> = ({ compone
                         fontSize: '12px'
                     }}
                 />
+                {component.fieldDescription && (
+                    <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
+                        {component.fieldDescription}
+                    </div>
+                )}
             </div>
         );
     }
@@ -144,21 +149,28 @@ const AmountInWordsComponent: React.FC<AmountInWordsComponentProps> = ({ compone
     const displayContent = convertToRMB(linkedAmount, component.includePrefix !== false);
 
     return (
-        <div
-            style={{
-                padding: '8px 12px',
-                border: '1px solid #d9d9d9',
-                borderRadius: '6px',
-                backgroundColor: getBackgroundColor(),
-                minHeight: '40px',
-                display: 'flex',
-                alignItems: 'center',
-                color: '#262626',
-                ...getFontStyle(),
-                ...(component.style as React.CSSProperties)
-            }}
-        >
-            {displayContent}
+        <div style={{ width: '100%' }}>
+            <div
+                style={{
+                    padding: '8px 12px',
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '6px',
+                    backgroundColor: getBackgroundColor(),
+                    minHeight: '40px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: '#262626',
+                    ...getFontStyle(),
+                    ...(component.style as React.CSSProperties)
+                }}
+            >
+                {displayContent}
+            </div>
+            {component.fieldDescription && (
+                <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
+                    {component.fieldDescription}
+                </div>
+            )}
         </div>
     );
 };

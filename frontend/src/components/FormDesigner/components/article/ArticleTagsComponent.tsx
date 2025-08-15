@@ -23,8 +23,7 @@ const ArticleTagsComponent: React.FC<ArticleTagsComponentProps> = ({ component }
                 return <span style={{
                     opacity: 1,
                     display: 'inline-flex',
-                    alignItems: 'center',
-                    transform: 'translateY(0px)' // 输入框模式不需要额外偏移（相对于之前已调整的3px上移3px）
+                    alignItems: 'center'
                 }}>{icon}</span>;
             }
         }
@@ -81,6 +80,46 @@ const ArticleTagsComponent: React.FC<ArticleTagsComponentProps> = ({ component }
         );
     }
 
+    // 渲染带图标的选择组件
+    const renderSelectWithIcon = (selectComponent: React.ReactElement) => {
+        if (component.icon) {
+            const containerClass = `article-tags-select-with-icon-${component.id}`;
+            return (
+                <div className={containerClass} style={{ position: 'relative', width: '100%' }}>
+                    <style>
+                        {`
+                        .${containerClass} .ant-select .ant-select-selector {
+                            padding-left: 32px !important;
+                        }
+                        .${containerClass} .ant-select .ant-select-selection-search-input {
+                            padding-left: 32px !important;
+                        }
+                        .${containerClass} .ant-select .ant-select-selection-item {
+                            padding-left: 0 !important;
+                        }
+                        .${containerClass} .ant-select .ant-select-selection-placeholder {
+                            padding-left: 0 !important;
+                        }
+                        `}
+                    </style>
+                    <div style={{
+                        position: 'absolute',
+                        left: '11px',
+                        top: 'calc(50% + 2px)',
+                        transform: 'translateY(-50%)',
+                        zIndex: 10,
+                        pointerEvents: 'none',
+                        color: '#8c8c8c'
+                    }}>
+                        {getSelectPrefix()}
+                    </div>
+                    {selectComponent}
+                </div>
+            );
+        }
+        return selectComponent;
+    };
+
     // 从标签表加载数据的选择模式
     const options = tags.map((tag: any) => ({
         label: tag.name || tag.label,
@@ -101,31 +140,34 @@ const ArticleTagsComponent: React.FC<ArticleTagsComponentProps> = ({ component }
         );
     };
 
+    const selectComponent = (
+        <Select
+            mode="multiple"
+            placeholder={component.placeholder || '请选择文章标签'}
+            disabled={component.disabled || loading}
+            style={{ width: '100%' }}
+            allowClear={component.allowClear !== false}
+            showSearch={component.allowSearch !== false}
+            maxTagCount={component.maxTagCount || 5}
+            maxTagTextLength={component.maxTagTextLength || 10}
+            tagRender={tagRender}
+            filterOption={(input, option) =>
+                option?.children?.toString().toLowerCase().includes(input.toLowerCase()) || false
+            }
+            notFoundContent={loading ? '加载中...' : '暂无数据'}
+            loading={loading}
+        >
+            {options.map((option: any) => (
+                <Option key={option.value} value={option.value}>
+                    {option.label}
+                </Option>
+            ))}
+        </Select>
+    );
+
     return (
         <div style={{ width: '100%' }}>
-            <Select
-                mode="multiple"
-                placeholder={component.placeholder || '请选择文章标签'}
-                disabled={component.disabled || loading}
-                style={{ width: '100%' }}
-                allowClear={component.allowClear !== false}
-                showSearch={component.allowSearch !== false}
-                maxTagCount={component.maxTagCount || 5}
-                maxTagTextLength={component.maxTagTextLength || 10}
-                tagRender={tagRender}
-                prefix={getSelectPrefix()}
-                filterOption={(input, option) =>
-                    option?.children?.toString().toLowerCase().includes(input.toLowerCase()) || false
-                }
-                notFoundContent={loading ? '加载中...' : '暂无数据'}
-                loading={loading}
-            >
-                {options.map((option: any) => (
-                    <Option key={option.value} value={option.value}>
-                        {option.label}
-                    </Option>
-                ))}
-            </Select>
+            {renderSelectWithIcon(selectComponent)}
             {component.fieldDescription && (
                 <div style={{
                     fontSize: '12px',

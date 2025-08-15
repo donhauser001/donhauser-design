@@ -234,6 +234,16 @@ const TotalComponent: React.FC<TotalComponentProps> = ({ component }) => {
             defaultValue: component.defaultValue
         });
 
+        // 1. 优先使用用户输入值（除非是自动计算模式）
+        const userValue = getComponentValue(component.id);
+        const hasAutoCalculation = (component.totalMode === 'order' && hasOrderComponent && orderComponentId) ||
+            (component.totalMode === 'amounts' && component.selectedAmountIds && component.selectedAmountIds.length > 0);
+
+        if (userValue !== undefined && !hasAutoCalculation) {
+            return userValue;
+        }
+
+        // 2. 自动计算模式
         if (component.totalMode === 'order') {
             // 订单总计模式：自动关联订单总计
             if (hasOrderComponent && orderComponentId) {
@@ -250,7 +260,12 @@ const TotalComponent: React.FC<TotalComponentProps> = ({ component }) => {
             }
         }
 
-        // 默认值或手动输入模式
+        // 3. 如果有用户输入值且没有自动计算，使用用户输入值
+        if (userValue !== undefined) {
+            return userValue;
+        }
+
+        // 4. 最后使用默认值
         if (component.defaultValue) {
             const parsed = parseFloat(component.defaultValue);
             return isNaN(parsed) ? undefined : parsed;
@@ -306,7 +321,7 @@ const TotalComponent: React.FC<TotalComponentProps> = ({ component }) => {
                     fontSize: `${component.fontSize || 16}px`,
                     ...(component.style as React.CSSProperties)
                 } as React.CSSProperties}
-                precision={component.precision || 2}
+                precision={component.precision !== undefined ? component.precision : 2}
                 value={displayValue}
                 onChange={(value) => {
                     // 将用户输入的值存储到store中
@@ -314,27 +329,40 @@ const TotalComponent: React.FC<TotalComponentProps> = ({ component }) => {
                 }}
                 prefix={getPrefix()}
                 formatter={component.formatter !== false ?
-                    (value) => {
-                        if (value === undefined || value === null ||
-                            (typeof value === 'string' && value === '') ||
-                            isNaN(Number(value))) return '';
+                    (value: any) => {
+                        if (value === undefined || value === null) return '';
 
-                        const numValue = parseFloat(value.toString());
-                        if (isNaN(numValue)) return '';
+                        // 转换为字符串进行处理
+                        const valueStr = String(value);
+
+                        // 如果是空字符串，返回空字符串
+                        if (valueStr.trim() === '') return '';
+
+                        // 如果不是有效数字，返回原值（允许用户继续输入）
+                        if (isNaN(Number(valueStr)) && valueStr !== '') return valueStr;
+
+                        // 如果是空字符串或只有小数点，允许继续输入
+                        if (valueStr === '' || valueStr === '.') return valueStr;
+
+                        const numValue = parseFloat(valueStr);
+                        if (isNaN(numValue)) return valueStr;
 
                         // 保持原始输入的小数位数，不强制格式化
-                        const valueStr = value.toString();
                         let formattedValue = valueStr;
 
                         // 如果包含小数点，分离整数和小数部分
                         if (formattedValue.includes('.')) {
                             const parts = formattedValue.split('.');
-                            // 只对整数部分添加千分号
-                            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                            // 只对整数部分添加千分号（如果整数部分长度大于3）
+                            if (parts[0].length > 3) {
+                                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                            }
                             formattedValue = parts.join('.');
                         } else {
-                            // 整数部分添加千分号
-                            formattedValue = formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                            // 整数部分添加千分号（如果长度大于3）
+                            if (formattedValue.length > 3) {
+                                formattedValue = formattedValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                            }
                         }
 
                         return `¥ ${formattedValue}`;
@@ -342,11 +370,13 @@ const TotalComponent: React.FC<TotalComponentProps> = ({ component }) => {
                     undefined
                 }
                 parser={component.formatter !== false ?
-                    (value) => {
-                        if (!value) return 0;
+                    (value: string | undefined) => {
+                        if (!value || value.trim() === '' || value === '¥' || value === '¥ ') {
+                            return null as any;
+                        }
                         const cleanValue = value.replace(/¥\s?|(,*)/g, '');
                         const parsed = parseFloat(cleanValue);
-                        return isNaN(parsed) ? 0 : parsed;
+                        return isNaN(parsed) ? null as any : parsed;
                     } :
                     undefined
                 }

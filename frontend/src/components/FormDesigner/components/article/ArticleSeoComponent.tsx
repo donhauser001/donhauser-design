@@ -81,23 +81,30 @@ const ArticleSeoComponent: React.FC<ArticleSeoComponentProps> = ({ component }) 
     ];
 
     return (
-        <div style={component.style}>
-            <style>
-                {`
-                    .hide-count .ant-input-show-count-suffix,
-                    .hide-count .ant-input-data-count {
-                        display: none !important;
-                    }
-                `}
-            </style>
-            <Collapse
-                items={items}
-                activeKey={activeKey}
-                onChange={(keys) => setActiveKey(Array.isArray(keys) ? keys : [keys])}
-                size="small"
-                ghost={component.ghost}
-                expandIconPosition={component.expandIconPosition || 'start'}
-            />
+        <div style={{ width: '100%' }}>
+            <div style={component.style}>
+                <style>
+                    {`
+                        .hide-count .ant-input-show-count-suffix,
+                        .hide-count .ant-input-data-count {
+                            display: none !important;
+                        }
+                    `}
+                </style>
+                <Collapse
+                    items={items}
+                    activeKey={activeKey}
+                    onChange={(keys) => setActiveKey(Array.isArray(keys) ? keys : [keys])}
+                    size="small"
+                    ghost={component.ghost}
+                    expandIconPosition={component.expandIconPosition || 'start'}
+                />
+            </div>
+            {component.fieldDescription && (
+                <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '4px', lineHeight: '1.4' }}>
+                    {component.fieldDescription}
+                </div>
+            )}
         </div>
     );
 };

@@ -3,7 +3,6 @@ import { Form, Input, Switch, Select, InputNumber } from 'antd';
 import { FormComponent } from '../../../types/formDesigner';
 
 const { Option } = Select;
-const { TextArea } = Input;
 
 interface ArticleComponentsProps {
     component: FormComponent;
@@ -448,19 +447,7 @@ const ArticleComponents: React.FC<ArticleComponentsProps> = ({ component, onProp
                 />
             </Form.Item>
 
-            <Form.Item label="显示今天按钮">
-                <Switch
-                    checked={component.showToday !== false}
-                    onChange={(checked) => onPropertyChange('showToday', checked)}
-                />
-            </Form.Item>
 
-            <Form.Item label="显示此刻按钮">
-                <Switch
-                    checked={component.showNow !== false}
-                    onChange={(checked) => onPropertyChange('showNow', checked)}
-                />
-            </Form.Item>
 
             <Form.Item label="禁止选择过去日期">
                 <Switch
@@ -496,6 +483,24 @@ const ArticleComponents: React.FC<ArticleComponentsProps> = ({ component, onProp
                 />
             </Form.Item>
 
+            <Form.Item label="支持的文件格式">
+                <Select
+                    mode="multiple"
+                    value={component.acceptedFormats || ['jpeg', 'jpg', 'png', 'webp']}
+                    onChange={(value) => onPropertyChange('acceptedFormats', value)}
+                    style={{ width: '100%' }}
+                    placeholder="选择支持的图片格式"
+                >
+                    <Option value="jpeg">JPEG</Option>
+                    <Option value="jpg">JPG</Option>
+                    <Option value="png">PNG</Option>
+                    <Option value="webp">WebP</Option>
+                    <Option value="gif">GIF</Option>
+                    <Option value="bmp">BMP</Option>
+                    <Option value="svg">SVG</Option>
+                </Select>
+            </Form.Item>
+
             <Form.Item label="上传按钮文字">
                 <Input
                     value={component.uploadButtonText || '上传封面图'}
@@ -504,14 +509,7 @@ const ArticleComponents: React.FC<ArticleComponentsProps> = ({ component, onProp
                 />
             </Form.Item>
 
-            <Form.Item label="上传提示文字">
-                <TextArea
-                    value={component.uploadTip || '支持 JPG、PNG、WebP 格式，文件大小不超过 5MB'}
-                    onChange={(e) => onPropertyChange('uploadTip', e.target.value)}
-                    placeholder="上传组件下方的提示文字"
-                    rows={2}
-                />
-            </Form.Item>
+
         </>
     );
 

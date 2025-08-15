@@ -1,7 +1,7 @@
 import React from 'react';
 import { Form, Input, Switch, Select, DatePicker, InputNumber } from 'antd';
 import { FormComponent } from '../../../types/formDesigner';
-import { getLinearIcon } from '../utils/iconUtils';
+import { getLinearIcon, getAllIconKeys } from '../utils/iconUtils';
 import dayjs from 'dayjs';
 
 const { Option } = Select;
@@ -24,7 +24,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
     const isTaskListComponent = component.type === 'taskList';
     // 数字组件有自己的特殊默认值/占位符处理逻辑，日期组件使用基础属性但不需要图标
     const isNumberComponent = component.type === 'number';
-    const isDateComponent = component.type === 'date';
+    const isDateComponent = component.type === 'date' || component.type === 'articlePublishTime';
     // 合同方组件不需要图标、默认值和占位符
     const isContractPartyComponent = component.type === 'contractParty';
     // 我方证照组件只保留字段说明
@@ -37,8 +37,22 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
     const isArticleSeoComponent = component.type === 'articleSeo';
     // 文章内容组件不需要图标和默认值设置
     const isArticleContentComponent = component.type === 'articleContent';
+    // 文章摘要组件不需要图标和默认值设置
+    const isArticleSummaryComponent = component.type === 'articleSummary';
+    // 文章封面图片组件不需要图标、默认值和占位符设置
+    const isArticleCoverImageComponent = component.type === 'articleCoverImage';
     // 金额组件需要数字类型的默认值处理
     const isAmountComponent = ['amount', 'total'].includes(component.type);
+    // 总计组件不需要必填和默认值设置
+    const isTotalComponent = component.type === 'total';
+    // 发票类型组件不需要默认值设置
+    const isInvoiceTypeComponent = component.type === 'invoiceType';
+    // 付款方式组件不需要默认值设置
+    const isPaymentMethodComponent = component.type === 'paymentMethod';
+    // 开票信息组件不需要必填、图标、默认值和占位符设置
+    const isInvoiceInfoComponent = component.type === 'invoiceInfo';
+    // 金额大写组件不需要必填、图标、默认值和占位符设置
+    const isAmountInWordsComponent = component.type === 'amountInWords';
 
 
     return (
@@ -54,7 +68,22 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                 </Form.Item>
             )}
 
-            {/* 通用属性（非布局组件和特殊组件） */}
+            {/* 可见性设置（所有非布局组件都可以设置） */}
+            {!isLayoutComponent && (
+                <Form.Item label="可见性">
+                    <Select
+                        value={component.visibility || 'visible'}
+                        onChange={(value) => onPropertyChange('visibility', value)}
+                        style={{ width: '100%' }}
+                    >
+                        <Option value="visible">正常显示</Option>
+                        <Option value="hidden">隐藏</Option>
+                        <Option value="admin">管理员可见</Option>
+                    </Select>
+                </Form.Item>
+            )}
+
+            {/* 通用属性（排除布局组件和特殊组件） */}
             {!isLayoutComponent && !isSpecialComponent && !isOurCertificateComponent && (
                 <>
                     <Form.Item label="隐藏标签">
@@ -64,7 +93,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         />
                     </Form.Item>
 
-                    {!isOrderComponent && !isTaskListComponent && (
+                    {!isOrderComponent && !isTaskListComponent && !isAmountInWordsComponent && !isTotalComponent && !isInvoiceInfoComponent && component.type !== 'signature' && (
                         <Form.Item label="必填字段">
                             <Switch
                                 checked={component.required || false}
@@ -73,123 +102,98 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         </Form.Item>
                     )}
 
-                    {!isTextAreaComponent && !isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTaskListComponent && !isDateComponent && !isContractPartyComponent && !isArticleSeoComponent && !isArticleContentComponent && (
+                    {!isTextAreaComponent && !isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTaskListComponent && !isDateComponent && !isContractPartyComponent && !isArticleSeoComponent && !isArticleContentComponent && !isArticleSummaryComponent && !isArticleCoverImageComponent && !isInvoiceInfoComponent && !isAmountInWordsComponent && component.type !== 'upload' && component.type !== 'signature' && component.type !== 'articlePublishTime' && (
                         <Form.Item label="图标">
-                            <Select
-                                value={component.icon || ''}
-                                onChange={(value) => onPropertyChange('icon', value)}
-                                placeholder="选择图标"
-                                allowClear
-                            >
-                                <Option value="user">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('user')}
-                                        <span>用户</span>
-                                    </div>
-                                </Option>
-                                <Option value="email">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('email')}
-                                        <span>邮箱</span>
-                                    </div>
-                                </Option>
-                                <Option value="phone">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('phone')}
-                                        <span>电话</span>
-                                    </div>
-                                </Option>
-                                <Option value="home">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('home')}
-                                        <span>地址</span>
-                                    </div>
-                                </Option>
-                                <Option value="company">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('company')}
-                                        <span>公司</span>
-                                    </div>
-                                </Option>
-                                <Option value="money">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('money')}
-                                        <span>金额</span>
-                                    </div>
-                                </Option>
-                                <Option value="calendar">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('calendar')}
-                                        <span>日期</span>
-                                    </div>
-                                </Option>
-                                <Option value="time">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('time')}
-                                        <span>时间</span>
-                                    </div>
-                                </Option>
-                                <Option value="number">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('number')}
-                                        <span>数字</span>
-                                    </div>
-                                </Option>
-                                <Option value="text">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('text')}
-                                        <span>文本</span>
-                                    </div>
-                                </Option>
-                                <Option value="search">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('search')}
-                                        <span>搜索</span>
-                                    </div>
-                                </Option>
-                                <Option value="link">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('link')}
-                                        <span>链接</span>
-                                    </div>
-                                </Option>
-                                <Option value="file">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('file')}
-                                        <span>文件</span>
-                                    </div>
-                                </Option>
-                                <Option value="image">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('image')}
-                                        <span>图片</span>
-                                    </div>
-                                </Option>
-                                <Option value="video">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('video')}
-                                        <span>视频</span>
-                                    </div>
-                                </Option>
-                                <Option value="heart">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('heart')}
-                                        <span>喜爱</span>
-                                    </div>
-                                </Option>
-                                <Option value="star">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('star')}
-                                        <span>星标</span>
-                                    </div>
-                                </Option>
-                                <Option value="message">
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        {getLinearIcon('message')}
-                                        <span>消息</span>
-                                    </div>
-                                </Option>
-                            </Select>
+                            <div style={{
+                                border: '1px solid #d9d9d9',
+                                borderRadius: '6px',
+                                padding: '8px',
+                                backgroundColor: '#fafafa'
+                            }}>
+                                {/* 当前选择的图标显示 */}
+                                <div style={{
+                                    marginBottom: '8px',
+                                    padding: '4px 8px',
+                                    backgroundColor: '#ffffff',
+                                    borderRadius: '4px',
+                                    border: '1px solid #e8e8e8',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    minHeight: '24px'
+                                }}>
+                                    {component.icon ? (
+                                        <>
+                                            {getLinearIcon(component.icon)}
+                                            <span style={{ fontSize: '12px', color: '#666' }}>
+                                                已选择图标
+                                            </span>
+                                        </>
+                                    ) : (
+                                        <span style={{ fontSize: '12px', color: '#999' }}>
+                                            未选择图标
+                                        </span>
+                                    )}
+                                    {component.icon && (
+                                        <button
+                                            type="button"
+                                            onClick={() => onPropertyChange('icon', '')}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                color: '#999',
+                                                cursor: 'pointer',
+                                                fontSize: '12px',
+                                                marginLeft: 'auto'
+                                            }}
+                                        >
+                                            清除
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* 图标网格 */}
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(6, 1fr)',
+                                    gap: '4px',
+                                    maxHeight: '120px',
+                                    overflowY: 'auto'
+                                }}>
+                                    {getAllIconKeys().map(iconKey => (
+                                        <div
+                                            key={iconKey}
+                                            onClick={() => onPropertyChange('icon', iconKey)}
+                                            style={{
+                                                width: '28px',
+                                                height: '28px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                border: component.icon === iconKey ? '2px solid #1890ff' : '1px solid #e8e8e8',
+                                                borderRadius: '4px',
+                                                backgroundColor: component.icon === iconKey ? '#e6f7ff' : '#ffffff',
+                                                cursor: 'pointer',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                if (component.icon !== iconKey) {
+                                                    e.currentTarget.style.backgroundColor = '#f0f0f0';
+                                                    e.currentTarget.style.borderColor = '#d9d9d9';
+                                                }
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                if (component.icon !== iconKey) {
+                                                    e.currentTarget.style.backgroundColor = '#ffffff';
+                                                    e.currentTarget.style.borderColor = '#e8e8e8';
+                                                }
+                                            }}
+                                        >
+                                            {getLinearIcon(iconKey)}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </Form.Item>
                     )}
 
@@ -202,7 +206,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         />
                     </Form.Item>
 
-                    {!isRadioComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTextAreaComponent && !isTaskListComponent && !isNumberComponent && !isDateComponent && !isContractPartyComponent && !isArticleCategoryComponent && !isArticleTagsComponent && !isArticleSeoComponent && !isArticleContentComponent && !isAmountComponent && (
+                    {!isRadioComponent && !isQuotationComponent && !isOrderComponent && !isInstructionComponent && !isTextAreaComponent && !isTaskListComponent && !isNumberComponent && !isDateComponent && !isContractPartyComponent && !isArticleCategoryComponent && !isArticleTagsComponent && !isArticleSeoComponent && !isArticleContentComponent && !isArticleSummaryComponent && !isArticleCoverImageComponent && !isAmountComponent && !isInvoiceTypeComponent && !isPaymentMethodComponent && !isInvoiceInfoComponent && !isAmountInWordsComponent && component.type !== 'upload' && component.type !== 'signature' && (
                         <Form.Item label="默认值">
                             <Input
                                 value={component.defaultValue || ''}
@@ -248,7 +252,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         </Form.Item>
                     )}
 
-                    {isAmountComponent && (
+                    {component.type === 'amount' && (
                         <Form.Item label="默认值">
                             <InputNumber
                                 value={component.defaultValue ? parseFloat(component.defaultValue) : undefined}
@@ -293,7 +297,7 @@ const CommonProperties: React.FC<CommonPropertiesProps> = ({ component, onProper
                         </Form.Item>
                     )}
 
-                    {!isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && !isTaskListComponent && !isNumberComponent && !isContractPartyComponent && !isArticleSeoComponent && (
+                    {!isRadioComponent && !isSliderComponent && !isQuotationComponent && !isOrderComponent && !isTaskListComponent && !isNumberComponent && !isContractPartyComponent && !isArticleSeoComponent && !isArticleCoverImageComponent && !isAmountComponent && !isInvoiceInfoComponent && !isAmountInWordsComponent && component.type !== 'upload' && component.type !== 'signature' && (
                         <Form.Item label="占位符">
                             <Input
                                 value={component.placeholder || ''}

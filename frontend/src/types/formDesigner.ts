@@ -90,6 +90,7 @@ export interface FormComponent {
     icon?: string; // 图标
     fieldDescription?: string; // 字段说明
     defaultValue?: any; // 默认值
+    visibility?: 'visible' | 'hidden' | 'admin'; // 可见性：正常显示、隐藏、管理员可见
     // 单行文本特有属性
     inputFormat?: 'text' | 'email' | 'name' | 'phone'; // 输入格式
     // 数字组件特有属性
@@ -102,6 +103,7 @@ export interface FormComponent {
     // 文件上传组件特有属性
     maxFileSize?: number; // 最大文件大小(MB)
     allowedFileTypes?: string[]; // 允许的文件类型
+    acceptedFormats?: string[]; // 支持的文件格式（文章封面图片组件）
     maxFileCount?: number; // 最大文件数量
     uploadButtonText?: string; // 上传按钮文本
     uploadTip?: string; // 上传提示文本
@@ -197,8 +199,6 @@ export interface FormComponent {
     showPricingPolicy?: boolean; // 显示价格政策标签
     policyDetailMode?: 'hover' | 'modal' | 'append'; // 政策详情呈现方式：悬停、弹窗、附加到价格说明
     // 订单组件特有属性
-    titleDisplay?: 'show' | 'hide' | 'custom'; // 标题显示模式：显示、隐藏、自定义
-    customTitle?: string; // 自定义标题文本
     associationMode?: 'quotation' | 'project' | 'auto' | 'select'; // 关联模式：关联报价单、关联项目、自动、请选择关联
     // 任务列表组件特有属性
     displayMode?: 'list' | 'text'; // 显示模式：列表模式、静态文本模式

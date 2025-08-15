@@ -78,26 +78,79 @@ const ArticleCategoryComponent: React.FC<ArticleCategoryComponentProps> = ({ com
         </div>
     );
 
+    const renderSelectWithIcon = (selectComponent: React.ReactElement) => {
+        if (component.icon) {
+            const containerClass = `article-category-select-with-icon-${component.id}`;
+            return (
+                <div className={containerClass} style={{ position: 'relative', width: '100%' }}>
+                    <style>
+                        {`
+                        .${containerClass} .ant-select .ant-select-selector {
+                            padding-left: 32px !important;
+                        }
+                        .${containerClass} .ant-select .ant-select-selection-search-input {
+                            padding-left: 32px !important;
+                        }
+                        .${containerClass} .ant-select .ant-select-selection-item {
+                            padding-left: 0 !important;
+                        }
+                        .${containerClass} .ant-select .ant-select-selection-placeholder {
+                            padding-left: 0 !important;
+                        }
+                        `}
+                    </style>
+                    <div style={{
+                        position: 'absolute',
+                        left: '11px',
+                        top: 'calc(50% + 2px)',
+                        transform: 'translateY(-50%)',
+                        zIndex: 10,
+                        pointerEvents: 'none',
+                        color: '#8c8c8c'
+                    }}>
+                        {getPrefix()}
+                    </div>
+                    {selectComponent}
+                </div>
+            );
+        }
+        return selectComponent;
+    };
+
     if (loading) {
-        return (
+        const loadingSelect = (
             <Select
                 placeholder="加载分类中..."
                 disabled={true}
                 style={{ width: '100%' }}
-                prefix={getPrefix()}
                 notFoundContent={<Spin size="small" />}
             />
         );
+
+        return (
+            <div style={{ width: '100%' }}>
+                {renderSelectWithIcon(loadingSelect)}
+                {component.fieldDescription && (
+                    <div style={{
+                        fontSize: '12px',
+                        color: '#8c8c8c',
+                        marginTop: '4px',
+                        lineHeight: '1.4'
+                    }}>
+                        {component.fieldDescription}
+                    </div>
+                )}
+            </div>
+        );
     }
 
-    return (
+    const selectComponent = (
         <Select
             placeholder={component.placeholder || '请选择文章分类'}
             disabled={component.disabled}
             style={{ width: '100%' }}
             allowClear={component.allowClear !== false}
             showSearch={component.allowSearch !== false}
-            prefix={getPrefix()}
             filterOption={(input, option) => {
                 const category = categories.find(cat => cat.value === option?.value);
                 if (!category) return false;
@@ -112,6 +165,22 @@ const ArticleCategoryComponent: React.FC<ArticleCategoryComponentProps> = ({ com
                 </Option>
             ))}
         </Select>
+    );
+
+    return (
+        <div style={{ width: '100%' }}>
+            {renderSelectWithIcon(selectComponent)}
+            {component.fieldDescription && (
+                <div style={{
+                    fontSize: '12px',
+                    color: '#8c8c8c',
+                    marginTop: '4px',
+                    lineHeight: '1.4'
+                }}>
+                    {component.fieldDescription}
+                </div>
+            )}
+        </div>
     );
 };
 
