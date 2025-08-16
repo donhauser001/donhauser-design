@@ -12,6 +12,12 @@ export * from './Specification';
 export * from './Project';
 export * from './Task';
 export * from './ProjectLog';
+export * from './Article';
+export * from './ArticleCategory';
+export * from './ArticleTag';
+export * from './FormCategory';
+export * from './Form';
+export * from './EmailSetting';
 export interface Client {
     id: string;
     name: string;

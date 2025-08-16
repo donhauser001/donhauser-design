@@ -39,6 +39,7 @@ import ContractElements from './pages/Contracts/ContractElements'
 import Forms from './pages/Forms'
 import FormList from './pages/Forms/FormList'
 import FormEditor from './pages/Forms/FormEditor'
+import FormDetail from './pages/Forms/FormDetail'
 import FormSettings from './pages/Forms/FormSettings'
 import FormCategories from './pages/Forms/FormCategories'
 
@@ -70,6 +71,7 @@ import Employee from './pages/Organization/Employee'
 import GeneralSettings from './pages/Settings/GeneralSettings'
 import AdvancedSettings from './pages/Settings/AdvancedSettings'
 import LoginSettings from './pages/Settings/LoginSettings'
+import EmailSettings from './pages/Settings/EmailSettings'
 import FileUploadTest from './components/FileUploadTest'
 import RichTextEditorTest from './components/RichTextEditorTest'
 import BasicEditorTest from './components/BasicEditorTest'
@@ -288,6 +290,13 @@ function App() {
               </Layout>
             </ProtectedRoute>
           } />
+          <Route path="/forms/view/:id" element={
+            <ProtectedRoute>
+              <Layout>
+                <FormDetail />
+              </Layout>
+            </ProtectedRoute>
+          } />
           <Route path="/forms/categories" element={
             <ProtectedRoute>
               <Layout>
@@ -456,6 +465,13 @@ function App() {
             <ProtectedRoute>
               <Layout>
                 <LoginSettings />
+              </Layout>
+            </ProtectedRoute>
+          } />
+          <Route path="/settings/email" element={
+            <ProtectedRoute>
+              <Layout>
+                <EmailSettings />
               </Layout>
             </ProtectedRoute>
           } />

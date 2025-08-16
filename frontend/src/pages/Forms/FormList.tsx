@@ -247,6 +247,12 @@ const FormList: React.FC = () => {
             render: (_: any, record: FormType) => {
                 const actions = [
                     {
+                        key: 'view',
+                        label: '查看表单',
+                        icon: <EyeOutlined />,
+                        onClick: () => navigate(`/forms/view/${record._id}`)
+                    },
+                    {
                         key: 'design',
                         label: '设计表单',
                         icon: <FormOutlined />,

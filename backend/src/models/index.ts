@@ -20,6 +20,7 @@ export * from './ArticleCategory';
 export * from './ArticleTag';
 export * from './FormCategory';
 export * from './Form';
+export * from './EmailSetting';
 
 export interface Client {
   id: string;

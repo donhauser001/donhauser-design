@@ -10,6 +10,9 @@ export * from './QuotationService';
 export * from './SpecificationService';
 export * from './ProjectService';
 export * from './TaskService';
+export * from './ArticleService';
+export * from './ArticleCategoryService';
+export * from './ArticleTagService';
 export declare const clientService: {};
 export declare const authService: {};
 //# sourceMappingURL=index.d.ts.map

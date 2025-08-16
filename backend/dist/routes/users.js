@@ -6,6 +6,7 @@ const router = (0, express_1.Router)();
 const userController = new UserController_1.UserController();
 router.get('/', userController.getUsers.bind(userController));
 router.get('/all', userController.getAllUsers.bind(userController));
+router.get('/employees-admins', userController.getEmployeesAndAdmins.bind(userController));
 router.get('/:id', userController.getUserById.bind(userController));
 router.post('/', userController.createUser.bind(userController));
 router.put('/:id', userController.updateUser.bind(userController));

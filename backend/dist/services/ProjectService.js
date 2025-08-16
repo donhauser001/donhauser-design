@@ -43,7 +43,25 @@ class ProjectService {
                 .lean(),
             Project_1.default.countDocuments(filter)
         ]);
-        return { projects, total };
+        const projectsWithTeamNames = await Promise.all(projects.map(async (project) => {
+            let undertakingTeamName = project.undertakingTeam;
+            if (project.undertakingTeam) {
+                try {
+                    const enterprise = await this.enterpriseService.getEnterpriseById(project.undertakingTeam);
+                    if (enterprise) {
+                        undertakingTeamName = enterprise.enterpriseAlias || enterprise.enterpriseName;
+                    }
+                }
+                catch (error) {
+                    console.error('获取企业信息失败:', error);
+                }
+            }
+            return {
+                ...project,
+                undertakingTeamName
+            };
+        }));
+        return { projects: projectsWithTeamNames, total };
     }
     async getProjectById(id) {
         const project = await Project_1.default.findById(id).lean();
@@ -55,7 +73,7 @@ class ProjectService {
             try {
                 const enterprise = await this.enterpriseService.getEnterpriseById(project.undertakingTeam);
                 if (enterprise) {
-                    undertakingTeamName = enterprise.enterpriseName;
+                    undertakingTeamName = enterprise.enterpriseAlias || enterprise.enterpriseName;
                 }
             }
             catch (error) {

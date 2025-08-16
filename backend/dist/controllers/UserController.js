@@ -234,6 +234,23 @@ class UserController {
             });
         }
     }
+    async getEmployeesAndAdmins(req, res) {
+        try {
+            const users = await this.userService.getEmployeesAndAdmins();
+            res.json({
+                success: true,
+                message: '获取员工和管理员成功',
+                data: users
+            });
+        }
+        catch (error) {
+            res.status(500).json({
+                success: false,
+                message: '获取员工和管理员失败',
+                error: error instanceof Error ? error.message : '未知错误'
+            });
+        }
+    }
     async checkUsernameExists(req, res) {
         try {
             const { username } = req.params;

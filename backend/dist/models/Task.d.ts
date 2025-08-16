@@ -3,7 +3,8 @@ export interface ITask extends Document {
     taskName: string;
     projectId: string;
     serviceId: string;
-    assignedDesigners: string[];
+    mainDesigners: string[];
+    assistantDesigners: string[];
     specificationId?: string;
     quantity: number;
     unit: string;
@@ -17,7 +18,9 @@ export interface ITask extends Document {
     }>;
     billingDescription: string;
     status: 'pending' | 'in-progress' | 'completed' | 'cancelled' | 'on-hold';
-    priority: 'low' | 'medium' | 'high' | 'urgent';
+    priority: 'low' | 'medium' | 'high' | 'urgent' | 'waiting' | 'on-hold' | 'completed';
+    processStepId?: string;
+    processStepName?: string;
     progress: number;
     startDate?: Date;
     dueDate?: Date;

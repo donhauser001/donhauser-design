@@ -320,6 +320,17 @@ export const getSmallLinearIcon = (iconKey: string): React.ReactElement | null =
     });
 };
 
+// 获取按钮图标（继承按钮文本颜色）
+export const getButtonIcon = (iconKey: string): React.ReactElement | null => {
+    const icon = LinearIcons[iconKey as keyof typeof LinearIcons];
+    if (!icon) return null;
+
+    // 克隆图标，使用 currentColor 让它继承父元素的文本颜色
+    return React.cloneElement(icon, {
+        style: { color: 'currentColor' }
+    });
+};
+
 // 获取所有可用图标的键名
 export const getAllIconKeys = (): string[] => {
     return Object.keys(LinearIcons);

@@ -54,6 +54,9 @@ const FormEditor: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false)
     const [lastSaved, setLastSaved] = useState<Date | null>(null)
     const [isSettingsModalVisible, setIsSettingsModalVisible] = useState(false)
+    const [autoSaveEnabled, setAutoSaveEnabled] = useState(true)
+    const [autoSaveInterval, setAutoSaveInterval] = useState(30)
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
     const {
         components,
@@ -86,6 +89,47 @@ const FormEditor: React.FC = () => {
             loadFormData()
         }
     }, [id])
+
+    // 监听组件变化，标记为有未保存的更改
+    useEffect(() => {
+        if (components.length > 0) {
+            setHasUnsavedChanges(true)
+        }
+    }, [components])
+
+    // 自动保存逻辑
+    useEffect(() => {
+        if (!autoSaveEnabled || !id || !hasUnsavedChanges || isSaving) {
+            return
+        }
+
+        const autoSaveTimer = setInterval(async () => {
+            if (hasUnsavedChanges && !isSaving) {
+                try {
+                    console.log('🔄 自动保存触发...')
+                    await saveFormToAPI(id)
+                    setLastSaved(new Date())
+                    setHasUnsavedChanges(false)
+                    console.log('✅ 自动保存成功')
+                } catch (error) {
+                    console.error('❌ 自动保存失败:', error)
+                }
+            }
+        }, autoSaveInterval * 1000)
+
+        return () => {
+            clearInterval(autoSaveTimer)
+        }
+    }, [autoSaveEnabled, autoSaveInterval, id, hasUnsavedChanges, isSaving, saveFormToAPI])
+
+    // 从表单设置中加载自动保存配置
+    useEffect(() => {
+        if (formData && (formData as any).settings?.security) {
+            const { autoSave, autoSaveInterval: interval } = (formData as any).settings.security
+            setAutoSaveEnabled(autoSave ?? true)
+            setAutoSaveInterval(interval ?? 30)
+        }
+    }, [formData])
 
     // 键盘快捷键
     useEffect(() => {
@@ -132,6 +176,7 @@ const FormEditor: React.FC = () => {
         try {
             await saveFormToAPI(id);
             setLastSaved(new Date());
+            setHasUnsavedChanges(false);
             message.success('表单保存成功');
         } catch (error) {
             console.error('保存失败:', error);
@@ -145,12 +190,79 @@ const FormEditor: React.FC = () => {
         setIsSettingsModalVisible(true);
     };
 
-    const handleSettingsSave = async () => {
+    const handleSettingsSave = async (settingsData?: any) => {
         try {
             if (id) {
-                // 保存表单基本信息
+                // 如果有设置数据，先更新表单基本信息
+                if (settingsData) {
+                    const { updateForm } = await import('../../api/forms');
+                    await updateForm(id, {
+                        name: settingsData.name,
+                        description: settingsData.description,
+                        status: settingsData.status,
+                        categoryId: settingsData.categoryId,
+                        allowGuestView: settingsData.allowGuestView,
+                        allowGuestSubmit: settingsData.allowGuestSubmit,
+                        showFormTitle: settingsData.showFormTitle,
+                        showFormDescription: settingsData.showFormDescription,
+                        submitButtonText: settingsData.submitButtonText,
+                        submitButtonPosition: settingsData.submitButtonPosition,
+                        submitButtonIcon: settingsData.submitButtonIcon,
+                        enableDraft: settingsData.enableDraft,
+                        requireConfirmation: settingsData.requireConfirmation,
+                        redirectAfterSubmit: settingsData.redirectAfterSubmit,
+                        redirectUrl: settingsData.redirectUrl,
+                        settings: settingsData.settings
+                    });
+
+                    // 更新本地表单数据
+                    setFormData(prev => prev ? ({
+                        ...prev,
+                        name: settingsData.name,
+                        description: settingsData.description,
+                        status: settingsData.status,
+                        categoryId: settingsData.categoryId,
+                        allowGuestView: settingsData.allowGuestView,
+                        allowGuestSubmit: settingsData.allowGuestSubmit,
+                        showFormTitle: settingsData.showFormTitle,
+                        showFormDescription: settingsData.showFormDescription,
+                        submitButtonText: settingsData.submitButtonText,
+                        submitButtonPosition: settingsData.submitButtonPosition,
+                        submitButtonIcon: settingsData.submitButtonIcon,
+                        enableDraft: settingsData.enableDraft,
+                        requireConfirmation: settingsData.requireConfirmation,
+                        redirectAfterSubmit: settingsData.redirectAfterSubmit,
+                        redirectUrl: settingsData.redirectUrl,
+                        settings: settingsData.settings
+                    }) : null);
+
+                    // 更新自动保存配置
+                    if (settingsData.settings?.security) {
+                        const { autoSave, autoSaveInterval: interval } = settingsData.settings.security;
+                        setAutoSaveEnabled(autoSave ?? true);
+                        setAutoSaveInterval(interval ?? 30);
+                    }
+                }
+
+                // 保存表单设计器配置
                 await saveFormToAPI(id);
                 setLastSaved(new Date());
+
+                // 如果当前是预览模式，重新加载表单数据以立即反映最新配置
+                if (isPreviewMode) {
+                    try {
+                        const updatedData = await getFormById(id);
+                        setFormData(updatedData);
+                        console.log('🔄 设置保存后：已刷新预览配置', {
+                            submitButtonText: updatedData.submitButtonText,
+                            submitButtonPosition: updatedData.submitButtonPosition,
+                            submitButtonIcon: updatedData.submitButtonIcon
+                        });
+                    } catch (error) {
+                        console.error('刷新预览配置失败:', error);
+                    }
+                }
+
                 message.success('表单设置保存成功');
             }
         } catch (error) {
@@ -159,9 +271,26 @@ const FormEditor: React.FC = () => {
         }
     };
 
-    const handlePreview = () => {
-        setIsPreviewMode(!isPreviewMode)
-        message.success(isPreviewMode ? '已切换到设计模式' : '已切换到预览模式')
+    const handlePreview = async () => {
+        const newPreviewMode = !isPreviewMode;
+        setIsPreviewMode(newPreviewMode);
+
+        // 如果切换到预览模式，重新加载表单数据以获取最新配置
+        if (newPreviewMode && id) {
+            try {
+                const data = await getFormById(id);
+                setFormData(data);
+                console.log('🔄 预览模式：已重新加载表单配置', {
+                    submitButtonText: data.submitButtonText,
+                    submitButtonPosition: data.submitButtonPosition,
+                    submitButtonIcon: data.submitButtonIcon
+                });
+            } catch (error) {
+                console.error('重新加载表单配置失败:', error);
+            }
+        }
+
+        message.success(isPreviewMode ? '已切换到设计模式' : '已切换到预览模式');
     }
 
     const handleBack = () => {
@@ -358,13 +487,24 @@ const FormEditor: React.FC = () => {
                             {isNewForm ? '创建新的表单并设计表单内容' : '深度设计表单内容和布局'}
                             {formData ? ` ｜ 表单: ${formData.name}` : ''}
                         </Text>
-                        {lastSaved && (
-                            <div style={{ marginTop: '4px' }}>
-                                <Text type="secondary" style={{ fontSize: '12px' }}>
-                                    上次保存：{lastSaved.toLocaleTimeString()}
+                        <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            {autoSaveEnabled && (
+                                <Text
+                                    type="secondary"
+                                    style={{
+                                        fontSize: '12px',
+                                        color: hasUnsavedChanges ? '#faad14' : '#52c41a'
+                                    }}
+                                >
+                                    🔄 自动保存: {hasUnsavedChanges ? `等待保存 (${autoSaveInterval}s)` : '已启用'}
                                 </Text>
-                            </div>
-                        )}
+                            )}
+                            {lastSaved && (
+                                <Text type="secondary" style={{ fontSize: '12px' }}>
+                                    📅 上次保存：{lastSaved.toLocaleTimeString()}
+                                </Text>
+                            )}
+                        </div>
                     </div>
                 </div>
                 <Space>
@@ -386,14 +526,18 @@ const FormEditor: React.FC = () => {
                         title="表单设置"
                     />
                     <Button
-                        type="primary"
+                        type={hasUnsavedChanges ? "primary" : "default"}
                         icon={<SaveOutlined />}
                         onClick={handleSave}
                         loading={isSaving}
                         disabled={!id}
-                        title={!id ? '新表单请先在表单列表中创建' : '保存表单 (Ctrl+S)'}
+                        title={!id ? '新表单请先在表单列表中创建' : '手动保存表单 (Ctrl+S)'}
+                        style={{
+                            backgroundColor: hasUnsavedChanges ? undefined : '#f0f0f0',
+                            borderColor: hasUnsavedChanges ? undefined : '#d9d9d9'
+                        }}
                     >
-                        {isSaving ? '保存中...' : '保存'}
+                        {isSaving ? '保存中...' : hasUnsavedChanges ? '保存' : '已保存'}
                     </Button>
                     <Button
                         type={isPreviewMode ? "primary" : "default"}
@@ -419,12 +563,12 @@ const FormEditor: React.FC = () => {
                 onDragEnd={handleDragEnd}
             >
                 <div style={{ width: '100%' }}>
-                    <Row gutter={16} style={{ height: 'calc(100vh - 300px)' }}>
+                    <Row gutter={16}>
                         <Col span={5}>
                             <ComponentLibrary />
                         </Col>
                         <Col span={13}>
-                            <DesignCanvas isPreviewMode={isPreviewMode} />
+                            <DesignCanvas isPreviewMode={isPreviewMode} formData={formData} />
                         </Col>
                         <Col span={6}>
                             <PropertyPanel />

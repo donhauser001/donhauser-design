@@ -6,7 +6,17 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TaskService = void 0;
 const Task_1 = __importDefault(require("../models/Task"));
 const ProjectLog_1 = __importDefault(require("../models/ProjectLog"));
+const UserService_1 = require("./UserService");
+const SpecificationService_1 = require("./SpecificationService");
+const ServicePricingService_1 = require("./ServicePricingService");
+const ServiceProcessService_1 = require("./ServiceProcessService");
 class TaskService {
+    constructor() {
+        this.userService = new UserService_1.UserService();
+        this.specificationService = new SpecificationService_1.SpecificationService();
+        this.servicePricingService = new ServicePricingService_1.ServicePricingService();
+        this.serviceProcessService = new ServiceProcessService_1.ServiceProcessService();
+    }
     async createTask(taskData) {
         try {
             const requiredFields = ['taskName', 'serviceId', 'projectId', 'quantity', 'unit', 'subtotal', 'billingDescription'];
@@ -41,10 +51,115 @@ class TaskService {
         return await Task_1.default.findById(id);
     }
     async getTasksByProject(projectId) {
-        return await Task_1.default.find({ projectId }).sort({ createdAt: 1 });
+        const tasks = await Task_1.default.find({ projectId }).sort({ createdAt: 1 });
+        const tasksWithDetails = await Promise.all(tasks.map(async (task) => {
+            let mainDesignerNames = [];
+            let assistantDesignerNames = [];
+            let specification = null;
+            let processSteps = [];
+            let currentProcessStep = null;
+            if (task.mainDesigners && task.mainDesigners.length > 0) {
+                try {
+                    const designerPromises = task.mainDesigners.map(async (designerId) => {
+                        const user = await this.userService.getUserById(designerId);
+                        return user ? user.realName || user.username : designerId;
+                    });
+                    mainDesignerNames = await Promise.all(designerPromises);
+                }
+                catch (error) {
+                    console.error('获取主创设计师信息失败:', error);
+                    mainDesignerNames = task.mainDesigners;
+                }
+            }
+            if (task.assistantDesigners && task.assistantDesigners.length > 0) {
+                try {
+                    const designerPromises = task.assistantDesigners.map(async (designerId) => {
+                        const user = await this.userService.getUserById(designerId);
+                        return user ? user.realName || user.username : designerId;
+                    });
+                    assistantDesignerNames = await Promise.all(designerPromises);
+                }
+                catch (error) {
+                    console.error('获取助理设计师信息失败:', error);
+                    assistantDesignerNames = task.assistantDesigners;
+                }
+            }
+            if (task.specificationId) {
+                try {
+                    const spec = await this.specificationService.getSpecificationById(task.specificationId);
+                    if (spec) {
+                        specification = {
+                            id: spec._id.toString(),
+                            name: spec.name,
+                            length: spec.length,
+                            width: spec.width,
+                            height: spec.height,
+                            unit: spec.unit,
+                            resolution: spec.resolution
+                        };
+                    }
+                }
+                catch (error) {
+                    console.error('获取规格信息失败:', error);
+                }
+            }
+            let categoryName = '默认类别';
+            let serviceName = '';
+            try {
+                const servicePricing = await ServicePricingService_1.ServicePricingService.getServicePricingById(task.serviceId);
+                if (servicePricing) {
+                    categoryName = servicePricing.categoryName || '默认类别';
+                    serviceName = servicePricing.serviceName || '';
+                    if (servicePricing.serviceProcessId) {
+                        const serviceProcess = await this.serviceProcessService.getProcessById(servicePricing.serviceProcessId);
+                        if (serviceProcess && serviceProcess.steps) {
+                            processSteps = serviceProcess.steps.map((step) => ({
+                                id: step.id,
+                                name: step.name,
+                                description: step.description,
+                                order: step.order,
+                                progressRatio: step.progressRatio,
+                                cycle: step.cycle
+                            }));
+                            if (!task.processStepId && processSteps.length > 0) {
+                                const firstStep = processSteps[0];
+                                currentProcessStep = firstStep;
+                                await Task_1.default.findByIdAndUpdate(task._id, {
+                                    processStepId: firstStep.id,
+                                    processStepName: firstStep.name
+                                });
+                            }
+                            else if (task.processStepId) {
+                                const foundStep = processSteps.find((step) => step.id === task.processStepId);
+                                currentProcessStep = foundStep || null;
+                            }
+                        }
+                    }
+                }
+            }
+            catch (error) {
+                console.error('获取服务信息失败:', error);
+            }
+            return {
+                ...task.toObject(),
+                mainDesignerNames,
+                assistantDesignerNames,
+                specification,
+                processSteps,
+                currentProcessStep,
+                categoryName,
+                serviceName
+            };
+        }));
+        return tasksWithDetails;
     }
     async getTasksByDesigner(designerId, status) {
-        const query = { assignedDesigners: designerId };
+        const query = {
+            $or: [
+                { mainDesigners: designerId },
+                { assistantDesigners: designerId }
+            ]
+        };
         if (status) {
             query.status = status;
         }
@@ -56,8 +171,12 @@ class TaskService {
         const filter = {};
         if (projectId)
             filter.projectId = projectId;
-        if (designerId)
-            filter.assignedDesigners = designerId;
+        if (designerId) {
+            filter.$or = [
+                { mainDesigners: designerId },
+                { assistantDesigners: designerId }
+            ];
+        }
         if (status)
             filter.status = status;
         if (priority)
@@ -137,12 +256,15 @@ class TaskService {
         }
         return updatedTask;
     }
-    async assignDesigners(taskId, designerIds, updatedBy) {
+    async assignDesigners(taskId, mainDesignerIds, assistantDesignerIds, updatedBy) {
         const task = await Task_1.default.findById(taskId);
         if (!task) {
             return null;
         }
-        const updatedTask = await Task_1.default.findByIdAndUpdate(taskId, { assignedDesigners: designerIds }, { new: true });
+        const updatedTask = await Task_1.default.findByIdAndUpdate(taskId, {
+            mainDesigners: mainDesignerIds,
+            assistantDesigners: assistantDesignerIds
+        }, { new: true });
         if (updatedTask) {
             await this.createTaskLog({
                 taskId,
@@ -152,8 +274,14 @@ class TaskService {
                 content: `任务设计师已重新分配`,
                 createdBy: updatedBy,
                 details: {
-                    oldValue: { assignedDesigners: task.assignedDesigners },
-                    newValue: { assignedDesigners: designerIds }
+                    oldValue: {
+                        mainDesigners: task.mainDesigners,
+                        assistantDesigners: task.assistantDesigners
+                    },
+                    newValue: {
+                        mainDesigners: mainDesignerIds,
+                        assistantDesigners: assistantDesignerIds
+                    }
                 }
             });
         }
@@ -183,8 +311,12 @@ class TaskService {
         const filter = {};
         if (projectId)
             filter.projectId = projectId;
-        if (designerId)
-            filter.assignedDesigners = designerId;
+        if (designerId) {
+            filter.$or = [
+                { mainDesigners: designerId },
+                { assistantDesigners: designerId }
+            ];
+        }
         const stats = await Task_1.default.aggregate([
             { $match: filter },
             {

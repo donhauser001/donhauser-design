@@ -4,6 +4,8 @@ export interface IEnterprise extends Document {
     enterpriseAlias?: string;
     creditCode: string;
     businessLicense: string;
+    bankPermit?: string;
+    bankPermitNumber?: string;
     legalRepresentative: string;
     legalRepresentativeId: string;
     companyAddress: string;
@@ -28,6 +30,8 @@ export interface Enterprise {
     enterpriseAlias?: string;
     creditCode: string;
     businessLicense: string;
+    bankPermit?: string;
+    bankPermitNumber?: string;
     legalRepresentative: string;
     legalRepresentativeId: string;
     companyAddress: string;
@@ -46,6 +50,8 @@ export interface CreateEnterpriseRequest {
     enterpriseAlias?: string;
     creditCode: string;
     businessLicense: string;
+    bankPermit?: string;
+    bankPermitNumber?: string;
     legalRepresentative: string;
     legalRepresentativeId: string;
     companyAddress: string;
@@ -63,6 +69,8 @@ export interface UpdateEnterpriseRequest {
     enterpriseAlias?: string;
     creditCode?: string;
     businessLicense?: string;
+    bankPermit?: string;
+    bankPermitNumber?: string;
     legalRepresentative?: string;
     legalRepresentativeId?: string;
     companyAddress?: string;

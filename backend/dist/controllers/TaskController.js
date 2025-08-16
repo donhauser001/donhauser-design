@@ -223,15 +223,21 @@ class TaskController {
     static async assignDesigners(req, res) {
         try {
             const { id } = req.params;
-            const { designerIds } = req.body;
+            const { mainDesignerIds, assistantDesignerIds } = req.body;
             const updatedBy = req.user?.id || 'system';
-            if (!Array.isArray(designerIds)) {
+            if (!Array.isArray(mainDesignerIds)) {
                 return res.status(400).json({
                     success: false,
-                    message: '设计师ID必须是数组'
+                    message: '主创设计师ID必须是数组'
                 });
             }
-            const task = await taskService.assignDesigners(id, designerIds, updatedBy);
+            if (!Array.isArray(assistantDesignerIds)) {
+                return res.status(400).json({
+                    success: false,
+                    message: '助理设计师ID必须是数组'
+                });
+            }
+            const task = await taskService.assignDesigners(id, mainDesignerIds, assistantDesignerIds, updatedBy);
             if (!task) {
                 return res.status(404).json({
                     success: false,

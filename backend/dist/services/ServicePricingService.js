@@ -29,7 +29,7 @@ class ServicePricingService {
             }
             if (service.pricingPolicyIds && service.pricingPolicyIds.length > 0) {
                 const policies = await PricingPolicy_1.default.find({ _id: { $in: service.pricingPolicyIds } });
-                const pricingPolicyNames = policies.map(policy => policy.alias);
+                const pricingPolicyNames = policies.map(policy => policy.name);
                 await ServicePricing_1.default.findByIdAndUpdate(service._id, {
                     pricingPolicyNames: pricingPolicyNames
                 });
@@ -53,7 +53,7 @@ class ServicePricingService {
                 }
                 if (service.pricingPolicyIds && service.pricingPolicyIds.length > 0) {
                     const policies = await PricingPolicy_1.default.find({ _id: { $in: service.pricingPolicyIds } });
-                    const pricingPolicyNames = policies.map(policy => policy.alias);
+                    const pricingPolicyNames = policies.map(policy => policy.name);
                     await ServicePricing_1.default.findByIdAndUpdate(service._id, {
                         pricingPolicyNames: pricingPolicyNames
                     });
@@ -78,7 +78,7 @@ class ServicePricingService {
             let pricingPolicyNames = [];
             if (data.pricingPolicyIds && data.pricingPolicyIds.length > 0) {
                 const policies = await PricingPolicy_1.default.find({ _id: { $in: data.pricingPolicyIds } });
-                pricingPolicyNames = policies.map(policy => policy.alias);
+                pricingPolicyNames = policies.map(policy => policy.name);
             }
             const servicePricing = new ServicePricing_1.default({
                 ...data,
@@ -103,7 +103,7 @@ class ServicePricingService {
             let pricingPolicyNames = [];
             if (data.pricingPolicyIds && data.pricingPolicyIds.length > 0) {
                 const policies = await PricingPolicy_1.default.find({ _id: { $in: data.pricingPolicyIds } });
-                pricingPolicyNames = policies.map(policy => policy.alias);
+                pricingPolicyNames = policies.map(policy => policy.name);
             }
             const updateData = {
                 ...data,

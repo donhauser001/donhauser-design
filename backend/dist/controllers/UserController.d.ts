@@ -10,6 +10,7 @@ export declare class UserController {
     updateUserPermissions(req: Request, res: Response): Promise<void>;
     toggleUserStatus(req: Request, res: Response): Promise<void>;
     getAllUsers(req: Request, res: Response): Promise<void>;
+    getEmployeesAndAdmins(req: Request, res: Response): Promise<void>;
     checkUsernameExists(req: Request, res: Response): Promise<void>;
     checkEmailExists(req: Request, res: Response): Promise<void>;
 }

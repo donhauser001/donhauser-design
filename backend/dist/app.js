@@ -28,6 +28,13 @@ const contractElements_1 = __importDefault(require("./routes/contractElements"))
 const specifications_1 = __importDefault(require("./routes/specifications"));
 const projects_1 = __importDefault(require("./routes/projects"));
 const tasks_1 = __importDefault(require("./routes/tasks"));
+const articles_1 = __importDefault(require("./routes/articles"));
+const articleCategories_1 = __importDefault(require("./routes/articleCategories"));
+const articleTags_1 = __importDefault(require("./routes/articleTags"));
+const formCategories_1 = __importDefault(require("./routes/formCategories"));
+const forms_1 = __importDefault(require("./routes/forms"));
+const emailSettings_1 = __importDefault(require("./routes/emailSettings"));
+const auth_1 = __importDefault(require("./routes/auth"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
@@ -42,7 +49,9 @@ const connectDB = async () => {
     }
 };
 connectDB();
-app.use((0, helmet_1.default)());
+app.use((0, helmet_1.default)({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use((0, cors_1.default)());
 app.use((0, morgan_1.default)('combined'));
 app.use(express_1.default.json({ limit: '50mb' }));
@@ -61,6 +70,7 @@ app.get('/', (req, res) => {
         version: '1.0.0',
         status: 'running',
         endpoints: {
+            auth: '/api/auth',
             users: '/api/users',
             enterprises: '/api/enterprises',
             departments: '/api/departments',
@@ -77,13 +87,19 @@ app.get('/', (req, res) => {
             contractElements: '/api/contract-elements',
             specifications: '/api/specifications',
             projects: '/api/projects',
-            tasks: '/api/tasks'
+            tasks: '/api/tasks',
+            articles: '/api/articles',
+            articleCategories: '/api/article-categories',
+            articleTags: '/api/article-tags',
+            formCategories: '/api/form-categories',
+            forms: '/api/forms'
         }
     });
 });
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+app.use('/api/auth', auth_1.default);
 app.use('/api/users', users_1.default);
 app.use('/api/enterprises', enterprises_1.default);
 app.use('/api/departments', departments_1.default);
@@ -102,6 +118,12 @@ app.use('/api/contract-elements', contractElements_1.default);
 app.use('/api/specifications', specifications_1.default);
 app.use('/api/projects', projects_1.default);
 app.use('/api/tasks', tasks_1.default);
+app.use('/api/articles', articles_1.default);
+app.use('/api/article-categories', articleCategories_1.default);
+app.use('/api/article-tags', articleTags_1.default);
+app.use('/api/form-categories', formCategories_1.default);
+app.use('/api/forms', forms_1.default);
+app.use('/api/email-settings', emailSettings_1.default);
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: '服务器内部错误' });

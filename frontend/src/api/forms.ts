@@ -1,5 +1,17 @@
 import axios from 'axios'
 
+export interface NotificationTemplate {
+    id: string
+    name: string
+    subject: string
+    content: string
+    to: 'admin' | 'submitter' | 'custom'
+    customEmails?: string
+    triggers: ('submit' | 'update' | 'delete')[]
+    enabled: boolean
+    createdAt: string
+}
+
 export interface Form {
     _id: string
     name: string
@@ -11,6 +23,17 @@ export interface Form {
     }
     content: any
     status: 'draft' | 'published' | 'disabled'
+    allowGuestView?: boolean
+    allowGuestSubmit?: boolean
+    showFormTitle?: boolean
+    showFormDescription?: boolean
+    submitButtonText?: string
+    submitButtonPosition?: 'left' | 'center' | 'right'
+    submitButtonIcon?: string
+    enableDraft?: boolean
+    requireConfirmation?: boolean
+    redirectAfterSubmit?: boolean
+    redirectUrl?: string
     createdBy?: {
         _id: string
         username: string
@@ -19,6 +42,35 @@ export interface Form {
     submissions: number
     createTime: string
     updateTime: string
+    settings?: {
+        security?: {
+            autoSave?: boolean
+            autoSaveInterval?: number
+            enableFormAutoSave?: boolean
+            formAutoSaveInterval?: number
+            saveTrigger?: 'interval' | 'change' | 'both'
+            saveLocation?: 'localStorage' | 'server' | 'both'
+            autoSaveNotification?: boolean
+        }
+        submission?: {
+            enableSubmissionLimit?: boolean
+            maxSubmissions?: number
+            limitType?: 'ip' | 'user'
+            resetPeriod?: 'never' | 'daily' | 'weekly' | 'monthly'
+            limitMessage?: string
+        }
+        expiry?: {
+            enableExpiry?: boolean
+            expiryType?: 'date' | 'duration' | 'submissions'
+            expiryDate?: string | null
+            expiryDuration?: number
+            expirySubmissions?: number
+            expiryMessage?: string
+        }
+        notification?: {
+            templates?: NotificationTemplate[]
+        }
+    }
 }
 
 export interface CreateFormRequest {
@@ -35,6 +87,46 @@ export interface UpdateFormRequest {
     categoryId?: string
     content?: any
     status?: 'draft' | 'published' | 'disabled'
+    allowGuestView?: boolean
+    allowGuestSubmit?: boolean
+    showFormTitle?: boolean
+    showFormDescription?: boolean
+    submitButtonText?: string
+    submitButtonPosition?: 'left' | 'center' | 'right'
+    submitButtonIcon?: string
+    enableDraft?: boolean
+    requireConfirmation?: boolean
+    redirectAfterSubmit?: boolean
+    redirectUrl?: string
+    settings?: {
+        security?: {
+            autoSave?: boolean
+            autoSaveInterval?: number
+            enableFormAutoSave?: boolean
+            formAutoSaveInterval?: number
+            saveTrigger?: 'interval' | 'change' | 'both'
+            saveLocation?: 'localStorage' | 'server' | 'both'
+            autoSaveNotification?: boolean
+        }
+        submission?: {
+            enableSubmissionLimit?: boolean
+            maxSubmissions?: number
+            limitType?: 'ip' | 'user'
+            resetPeriod?: 'never' | 'daily' | 'weekly' | 'monthly'
+            limitMessage?: string
+        }
+        expiry?: {
+            enableExpiry?: boolean
+            expiryType?: 'date' | 'duration' | 'submissions'
+            expiryDate?: string | null
+            expiryDuration?: number
+            expirySubmissions?: number
+            expiryMessage?: string
+        }
+        notification?: {
+            templates?: NotificationTemplate[]
+        }
+    }
 }
 
 export interface FormQuery {

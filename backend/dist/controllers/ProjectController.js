@@ -91,10 +91,11 @@ class ProjectController {
                             discountRatio: 100,
                             calculationDetails: '标准定价'
                         })) || [],
-                        billingDescription: `${service.serviceName} - ${service.quantity}${service.unit}`,
+                        billingDescription: service.billingDescription || `${service.serviceName} - ${service.quantity}${service.unit}`,
                         status: 'pending',
                         priority: 'medium',
-                        assignedDesigners: projectData.mainDesigners || [],
+                        mainDesigners: [],
+                        assistantDesigners: [],
                         settlementStatus: 'unpaid',
                         progress: 0
                     });

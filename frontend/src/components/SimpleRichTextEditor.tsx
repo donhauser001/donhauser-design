@@ -9,13 +9,15 @@ interface SimpleRichTextEditorProps {
     onChange?: (html: string) => void
     placeholder?: string
     height?: number
+    onEditorCreated?: (editor: IDomEditor) => void
 }
 
 const SimpleRichTextEditor: React.FC<SimpleRichTextEditorProps> = ({
     value = '',
     onChange,
     placeholder = '请输入内容...',
-    height = 400
+    height = 400,
+    onEditorCreated
 }) => {
     const [editor, setEditor] = useState<IDomEditor | null>(null)
     const [html, setHtml] = useState(value)
@@ -98,7 +100,7 @@ const SimpleRichTextEditor: React.FC<SimpleRichTextEditorProps> = ({
                 editor={editor}
                 defaultConfig={toolbarConfig}
                 mode="default"
-                style={{ 
+                style={{
                     borderBottom: '1px solid #d9d9d9',
                     backgroundColor: '#fafafa'
                 }}
@@ -106,10 +108,13 @@ const SimpleRichTextEditor: React.FC<SimpleRichTextEditorProps> = ({
             <Editor
                 defaultConfig={editorConfig}
                 value={html}
-                onCreated={setEditor}
+                onCreated={(editor) => {
+                    setEditor(editor);
+                    onEditorCreated?.(editor);
+                }}
                 onChange={handleChange}
                 mode="default"
-                style={{ 
+                style={{
                     height: height - 40,
                     backgroundColor: '#fff'
                 }}

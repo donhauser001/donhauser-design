@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, Form, Tabs, Collapse, ColorPicker, Select, Switch, Input, InputNumber, Button } from 'antd';
 import { DeleteOutlined, EyeOutlined, SwapOutlined, ToolOutlined, ControlOutlined, BulbOutlined } from '@ant-design/icons';
 import { SettingOutlined, AppstoreOutlined, FormatPainterOutlined, BranchesOutlined } from '@ant-design/icons';
+import { getLinearIcon } from './utils/iconUtils';
 import { useFormDesignerStore } from '../../stores/formDesignerStore';
 
 // 导入各种属性面板组件
@@ -229,7 +230,7 @@ const PropertyPanel: React.FC = () => {
         ];
 
         return (
-            <div style={{ padding: '4px' }}>
+            <div>
                 <style>
                     {`
                         .property-panel-collapse .ant-collapse-item {
@@ -836,242 +837,606 @@ const PropertyPanel: React.FC = () => {
 
     // 合并布局设置和主题设置
     const renderLayoutAndThemeProperties = () => (
-        <Form layout="vertical" size="small">
-            {/* 布局设置 */}
-            <div style={{ marginBottom: '24px' }}>
-                <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 600, color: '#262626' }}>
-                    布局设置
-                </h4>
+        <div>
+            <Form layout="vertical" size="small">
+                {/* 🎯 布局配置 */}
+                <div style={{
+                    marginBottom: '32px',
+                    background: '#fff',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    border: '1px solid #f0f0f0'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginBottom: '16px',
+                        paddingBottom: '8px',
+                        borderBottom: '1px solid #f0f0f0'
+                    }}>
+                        <span style={{
+                            fontSize: '16px',
+                            marginRight: '8px',
+                            color: '#1890ff',
+                            display: 'inline-flex',
+                            alignItems: 'center'
+                        }}>
+                            {getLinearIcon('settings')}
+                        </span>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#262626' }}>
+                            布局配置
+                        </h4>
+                    </div>
 
-                <Form.Item label="表单内边距">
-                    <Select
-                        value={layout.padding || '16px'}
-                        onChange={(value) => updateLayout({ padding: value })}
-                    >
-                        <Option value="8px">紧凑 (8px)</Option>
-                        <Option value="16px">标准 (16px)</Option>
-                        <Option value="24px">宽松 (24px)</Option>
-                        <Option value="32px">很宽松 (32px)</Option>
-                    </Select>
-                </Form.Item>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <Form.Item label="表单内边距" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={layout.padding || '16px'}
+                                onChange={(value) => updateLayout({ padding: value })}
+                                size="small"
+                            >
+                                <Option value="8px">紧凑 (8px)</Option>
+                                <Option value="16px">标准 (16px)</Option>
+                                <Option value="24px">宽松 (24px)</Option>
+                                <Option value="32px">很宽松 (32px)</Option>
+                            </Select>
+                        </Form.Item>
 
-                <Form.Item label="组件间距">
-                    <Select
-                        value={layout.componentSpacing || '16px'}
-                        onChange={(value) => updateLayout({ componentSpacing: value })}
-                    >
-                        <Option value="8px">紧凑 (8px)</Option>
-                        <Option value="12px">较紧凑 (12px)</Option>
-                        <Option value="16px">标准 (16px)</Option>
-                        <Option value="20px">较宽松 (20px)</Option>
-                        <Option value="24px">宽松 (24px)</Option>
-                    </Select>
-                </Form.Item>
+                        <Form.Item label="组件间距" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={layout.componentSpacing || '16px'}
+                                onChange={(value) => updateLayout({ componentSpacing: value })}
+                                size="small"
+                            >
+                                <Option value="8px">紧凑 (8px)</Option>
+                                <Option value="12px">较紧凑 (12px)</Option>
+                                <Option value="16px">标准 (16px)</Option>
+                                <Option value="20px">较宽松 (20px)</Option>
+                                <Option value="24px">宽松 (24px)</Option>
+                            </Select>
+                        </Form.Item>
 
-                <Form.Item label="标签位置">
-                    <Select
-                        value={layout.labelPosition || 'top'}
-                        onChange={(value) => updateLayout({ labelPosition: value })}
-                    >
-                        <Option value="top">顶部</Option>
-                        <Option value="left">左侧</Option>
-                        <Option value="right">右侧</Option>
-                    </Select>
-                </Form.Item>
+                        <Form.Item label="标签位置" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={layout.labelPosition || 'top'}
+                                onChange={(value) => updateLayout({ labelPosition: value })}
+                                size="small"
+                            >
+                                <Option value="top">顶部</Option>
+                                <Option value="left">左侧</Option>
+                                <Option value="right">右侧</Option>
+                            </Select>
+                        </Form.Item>
 
-                <Form.Item label="标签宽度" style={{ display: layout.labelPosition === 'left' || layout.labelPosition === 'right' ? 'block' : 'none' }}>
-                    <Select
-                        value={layout.labelWidth || '100px'}
-                        onChange={(value) => updateLayout({ labelWidth: value })}
-                    >
-                        <Option value="80px">80px</Option>
-                        <Option value="100px">100px</Option>
-                        <Option value="120px">120px</Option>
-                        <Option value="150px">150px</Option>
-                        <Option value="200px">200px</Option>
-                    </Select>
-                </Form.Item>
+                        {(layout.labelPosition === 'left' || layout.labelPosition === 'right') && (
+                            <Form.Item label="标签宽度" style={{ marginBottom: '12px' }}>
+                                <Select
+                                    value={layout.labelWidth || '100px'}
+                                    onChange={(value) => updateLayout({ labelWidth: value })}
+                                    size="small"
+                                >
+                                    <Option value="80px">80px</Option>
+                                    <Option value="100px">100px</Option>
+                                    <Option value="120px">120px</Option>
+                                    <Option value="150px">150px</Option>
+                                    <Option value="200px">200px</Option>
+                                </Select>
+                            </Form.Item>
+                        )}
 
-                <Form.Item label="表单最大宽度">
-                    <Select
-                        value={layout.maxWidth || 'none'}
-                        onChange={(value) => updateLayout({ maxWidth: value })}
-                    >
-                        <Option value="none">不限制</Option>
-                        <Option value="600px">600px</Option>
-                        <Option value="800px">800px</Option>
-                        <Option value="1000px">1000px</Option>
-                        <Option value="1200px">1200px</Option>
-                    </Select>
-                </Form.Item>
+                        <Form.Item label="表单最大宽度" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={layout.maxWidth || 'none'}
+                                onChange={(value) => updateLayout({ maxWidth: value })}
+                                size="small"
+                            >
+                                <Option value="none">不限制</Option>
+                                <Option value="600px">600px</Option>
+                                <Option value="800px">800px</Option>
+                                <Option value="1000px">1000px</Option>
+                                <Option value="1200px">1200px</Option>
+                            </Select>
+                        </Form.Item>
 
-                <Form.Item label="表单对齐">
-                    <Select
-                        value={layout.alignment || 'left'}
-                        onChange={(value) => updateLayout({ alignment: value })}
-                    >
-                        <Option value="left">左对齐</Option>
-                        <Option value="center">居中</Option>
-                        <Option value="right">右对齐</Option>
-                    </Select>
-                </Form.Item>
-            </div>
+                        <Form.Item label="表单对齐" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={layout.alignment || 'left'}
+                                onChange={(value) => updateLayout({ alignment: value })}
+                                size="small"
+                            >
+                                <Option value="left">左对齐</Option>
+                                <Option value="center">居中</Option>
+                                <Option value="right">右对齐</Option>
+                            </Select>
+                        </Form.Item>
+                    </div>
+                </div>
 
-            {/* 主题设置 */}
-            <div>
-                <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 600, color: '#262626' }}>
-                    主题设置
-                </h4>
+                {/* 🎨 颜色主题 */}
+                <div style={{
+                    marginBottom: '32px',
+                    background: '#fff',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    border: '1px solid #f0f0f0'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginBottom: '16px',
+                        paddingBottom: '8px',
+                        borderBottom: '1px solid #f0f0f0'
+                    }}>
+                        <span style={{
+                            fontSize: '16px',
+                            marginRight: '8px',
+                            color: '#1890ff',
+                            display: 'inline-flex',
+                            alignItems: 'center'
+                        }}>
+                            {getLinearIcon('eye')}
+                        </span>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#262626' }}>
+                            颜色主题
+                        </h4>
+                    </div>
 
-                <Form.Item label="主色调">
-                    <ColorPicker
-                        value={theme.primaryColor || '#1890ff'}
-                        onChange={(color) => updateTheme({ primaryColor: color?.toHexString() || '#1890ff' })}
-                        showText
-                    />
-                </Form.Item>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <Form.Item label="主色调" style={{ marginBottom: '12px' }}>
+                            <ColorPicker
+                                value={theme.primaryColor || '#1890ff'}
+                                onChange={(color) => updateTheme({ primaryColor: color?.toHexString() || '#1890ff' })}
+                                showText
+                                size="small"
+                            />
+                        </Form.Item>
 
-                <Form.Item label="表单背景色">
-                    <ColorPicker
-                        value={theme.backgroundColor || '#ffffff'}
-                        onChange={(color) => updateTheme({ backgroundColor: color?.toHexString() || '#ffffff' })}
-                        showText
-                    />
-                </Form.Item>
+                        <Form.Item label="表单背景色" style={{ marginBottom: '12px' }}>
+                            <ColorPicker
+                                value={theme.backgroundColor || '#ffffff'}
+                                onChange={(color) => updateTheme({ backgroundColor: color?.toHexString() || '#ffffff' })}
+                                showText
+                                size="small"
+                            />
+                        </Form.Item>
 
-                <Form.Item label="组件边框色">
-                    <ColorPicker
-                        value={theme.borderColor || '#d9d9d9'}
-                        onChange={(color) => updateTheme({ borderColor: color?.toHexString() || '#d9d9d9' })}
-                        showText
-                    />
-                </Form.Item>
+                        <Form.Item label="组件边框色" style={{ marginBottom: '12px' }}>
+                            <ColorPicker
+                                value={theme.borderColor || '#d9d9d9'}
+                                onChange={(color) => updateTheme({ borderColor: color?.toHexString() || '#d9d9d9' })}
+                                showText
+                                size="small"
+                            />
+                        </Form.Item>
 
-                <Form.Item label="文字颜色">
-                    <ColorPicker
-                        value={theme.textColor || '#000000'}
-                        onChange={(color) => updateTheme({ textColor: color?.toHexString() || '#000000' })}
-                        showText
-                    />
-                </Form.Item>
+                        <Form.Item label="文字颜色" style={{ marginBottom: '12px' }}>
+                            <ColorPicker
+                                value={theme.textColor || '#000000'}
+                                onChange={(color) => updateTheme({ textColor: color?.toHexString() || '#000000' })}
+                                showText
+                                size="small"
+                            />
+                        </Form.Item>
 
-                <Form.Item label="标签颜色">
-                    <ColorPicker
-                        value={theme.labelColor || '#262626'}
-                        onChange={(color) => updateTheme({ labelColor: color?.toHexString() || '#262626' })}
-                        showText
-                    />
-                </Form.Item>
+                        <Form.Item label="按钮文本颜色" style={{ marginBottom: '12px' }}>
+                            <ColorPicker
+                                value={theme.buttonTextColor || '#ffffff'}
+                                onChange={(color) => updateTheme({ buttonTextColor: color?.toHexString() || '#ffffff' })}
+                                showText
+                                size="small"
+                            />
+                        </Form.Item>
 
-                <Form.Item label="组件圆角">
-                    <Select
-                        value={theme.borderRadius || '6px'}
-                        onChange={(value) => updateTheme({ borderRadius: value })}
-                    >
-                        <Option value="0px">无圆角</Option>
-                        <Option value="2px">很小 (2px)</Option>
-                        <Option value="4px">小 (4px)</Option>
-                        <Option value="6px">标准 (6px)</Option>
-                        <Option value="8px">大 (8px)</Option>
-                        <Option value="12px">很大 (12px)</Option>
-                    </Select>
-                </Form.Item>
+                        <Form.Item label="标签颜色" style={{ marginBottom: '12px' }}>
+                            <ColorPicker
+                                value={theme.labelColor || '#262626'}
+                                onChange={(color) => updateTheme({ labelColor: color?.toHexString() || '#262626' })}
+                                showText
+                                size="small"
+                            />
+                        </Form.Item>
+                    </div>
+                </div>
 
-                <Form.Item label="字体大小">
-                    <Select
-                        value={theme.fontSize || '14px'}
-                        onChange={(value) => updateTheme({ fontSize: value })}
-                    >
-                        <Option value="12px">小 (12px)</Option>
-                        <Option value="13px">较小 (13px)</Option>
-                        <Option value="14px">标准 (14px)</Option>
-                        <Option value="15px">较大 (15px)</Option>
-                        <Option value="16px">大 (16px)</Option>
-                        <Option value="18px">很大 (18px)</Option>
-                    </Select>
-                </Form.Item>
+                {/* ✨ 视觉效果 */}
+                <div style={{
+                    marginBottom: '32px',
+                    background: '#fff',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    border: '1px solid #f0f0f0'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginBottom: '16px',
+                        paddingBottom: '8px',
+                        borderBottom: '1px solid #f0f0f0'
+                    }}>
+                        <span style={{
+                            fontSize: '16px',
+                            marginRight: '8px',
+                            color: '#1890ff',
+                            display: 'inline-flex',
+                            alignItems: 'center'
+                        }}>
+                            {getLinearIcon('star')}
+                        </span>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#262626' }}>
+                            视觉效果
+                        </h4>
+                    </div>
 
-                <Form.Item label="标签字体大小">
-                    <Select
-                        value={theme.labelFontSize || '14px'}
-                        onChange={(value) => updateTheme({ labelFontSize: value })}
-                    >
-                        <Option value="12px">小 (12px)</Option>
-                        <Option value="13px">较小 (13px)</Option>
-                        <Option value="14px">标准 (14px)</Option>
-                        <Option value="15px">较大 (15px)</Option>
-                        <Option value="16px">大 (16px)</Option>
-                    </Select>
-                </Form.Item>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <Form.Item label="组件圆角" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.borderRadius || '6px'}
+                                onChange={(value) => updateTheme({ borderRadius: value })}
+                                size="small"
+                            >
+                                <Option value="0px">无圆角</Option>
+                                <Option value="2px">很小 (2px)</Option>
+                                <Option value="4px">小 (4px)</Option>
+                                <Option value="6px">标准 (6px)</Option>
+                                <Option value="8px">大 (8px)</Option>
+                                <Option value="12px">很大 (12px)</Option>
+                            </Select>
+                        </Form.Item>
 
-                <Form.Item label="组件阴影">
-                    <Select
-                        value={theme.boxShadow || 'none'}
-                        onChange={(value) => updateTheme({ boxShadow: value })}
-                    >
-                        <Option value="none">无阴影</Option>
-                        <Option value="0 1px 2px rgba(0,0,0,0.1)">轻微阴影</Option>
-                        <Option value="0 2px 4px rgba(0,0,0,0.1)">标准阴影</Option>
-                        <Option value="0 4px 8px rgba(0,0,0,0.15)">明显阴影</Option>
-                        <Option value="0 8px 16px rgba(0,0,0,0.2)">强烈阴影</Option>
-                    </Select>
-                </Form.Item>
+                        <Form.Item label="组件阴影" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.boxShadow || 'none'}
+                                onChange={(value) => updateTheme({ boxShadow: value })}
+                                size="small"
+                            >
+                                <Option value="none">无阴影</Option>
+                                <Option value="0 1px 2px rgba(0,0,0,0.1)">轻微阴影</Option>
+                                <Option value="0 2px 4px rgba(0,0,0,0.1)">标准阴影</Option>
+                                <Option value="0 4px 8px rgba(0,0,0,0.15)">明显阴影</Option>
+                                <Option value="0 8px 16px rgba(0,0,0,0.2)">强烈阴影</Option>
+                            </Select>
+                        </Form.Item>
 
-                <Form.Item label="表单边框">
-                    <Switch
-                        checked={theme.showFormBorder || false}
-                        onChange={(checked) => updateTheme({ showFormBorder: checked })}
-                    />
-                </Form.Item>
+                        <Form.Item label="表单边框" style={{ marginBottom: '12px' }}>
+                            <Switch
+                                checked={theme.showFormBorder || false}
+                                onChange={(checked) => updateTheme({ showFormBorder: checked })}
+                                size="small"
+                            />
+                        </Form.Item>
 
-                <Form.Item label="紧凑模式">
-                    <Switch
-                        checked={theme.compactMode || false}
-                        onChange={(checked) => updateTheme({ compactMode: checked })}
-                    />
-                </Form.Item>
-            </div>
+                        <Form.Item label="紧凑模式" style={{ marginBottom: '12px' }}>
+                            <Switch
+                                checked={theme.compactMode || false}
+                                onChange={(checked) => updateTheme({ compactMode: checked })}
+                                size="small"
+                            />
+                        </Form.Item>
+                    </div>
+                </div>
 
-            {/* 说明文字设置 */}
-            <div style={{ marginBottom: '24px' }}>
-                <h4 style={{ margin: '0 0 16px 0', fontSize: '14px', fontWeight: 600, color: '#262626' }}>
-                    说明文字设置
-                </h4>
+                {/* 📝 字体设置 */}
+                <div style={{
+                    marginBottom: '32px',
+                    background: '#fff',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    border: '1px solid #f0f0f0'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginBottom: '16px',
+                        paddingBottom: '8px',
+                        borderBottom: '1px solid #f0f0f0'
+                    }}>
+                        <span style={{
+                            fontSize: '16px',
+                            marginRight: '8px',
+                            color: '#1890ff',
+                            display: 'inline-flex',
+                            alignItems: 'center'
+                        }}>
+                            {getLinearIcon('text')}
+                        </span>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#262626' }}>
+                            字体设置
+                        </h4>
+                    </div>
 
-                <Form.Item label="说明文字位置">
-                    <Select
-                        value={theme.descriptionPosition || 'bottom'}
-                        onChange={(value) => updateTheme({ descriptionPosition: value })}
-                    >
-                        <Option value="bottom">底部</Option>
-                        <Option value="top">顶部</Option>
-                        <Option value="right">右侧</Option>
-                    </Select>
-                </Form.Item>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <Form.Item label="字体大小" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.fontSize || '14px'}
+                                onChange={(value) => updateTheme({ fontSize: value })}
+                                size="small"
+                            >
+                                <Option value="12px">小 (12px)</Option>
+                                <Option value="13px">较小 (13px)</Option>
+                                <Option value="14px">标准 (14px)</Option>
+                                <Option value="15px">较大 (15px)</Option>
+                                <Option value="16px">大 (16px)</Option>
+                                <Option value="18px">很大 (18px)</Option>
+                            </Select>
+                        </Form.Item>
 
-                <Form.Item label="说明文字大小">
-                    <Select
-                        value={theme.descriptionFontSize || '12px'}
-                        onChange={(value) => updateTheme({ descriptionFontSize: value })}
-                    >
-                        <Option value="10px">很小 (10px)</Option>
-                        <Option value="11px">小 (11px)</Option>
-                        <Option value="12px">标准 (12px)</Option>
-                        <Option value="13px">较大 (13px)</Option>
-                        <Option value="14px">大 (14px)</Option>
-                        <Option value="15px">很大 (15px)</Option>
-                    </Select>
-                </Form.Item>
+                        <Form.Item label="标签字体大小" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.labelFontSize || '14px'}
+                                onChange={(value) => updateTheme({ labelFontSize: value })}
+                                size="small"
+                            >
+                                <Option value="12px">小 (12px)</Option>
+                                <Option value="13px">较小 (13px)</Option>
+                                <Option value="14px">标准 (14px)</Option>
+                                <Option value="15px">较大 (15px)</Option>
+                                <Option value="16px">大 (16px)</Option>
+                            </Select>
+                        </Form.Item>
+                    </div>
+                </div>
 
-                <Form.Item label="说明文字颜色">
-                    <ColorPicker
-                        value={theme.descriptionColor || '#8c8c8c'}
-                        onChange={(color) => updateTheme({ descriptionColor: color?.toHexString() || '#8c8c8c' })}
-                        showText
-                    />
-                </Form.Item>
-            </div>
-        </Form>
+                {/* 💬 说明文字 */}
+                <div style={{
+                    background: '#fff',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    border: '1px solid #f0f0f0'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginBottom: '16px',
+                        paddingBottom: '8px',
+                        borderBottom: '1px solid #f0f0f0'
+                    }}>
+                        <span style={{
+                            fontSize: '16px',
+                            marginRight: '8px',
+                            color: '#1890ff',
+                            display: 'inline-flex',
+                            alignItems: 'center'
+                        }}>
+                            {getLinearIcon('message')}
+                        </span>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#262626' }}>
+                            说明文字
+                        </h4>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                        <Form.Item label="显示位置" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.descriptionPosition || 'bottom'}
+                                onChange={(value) => updateTheme({ descriptionPosition: value })}
+                                size="small"
+                            >
+                                <Option value="bottom">底部</Option>
+                                <Option value="top">顶部</Option>
+                                <Option value="right">右侧</Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item label="字体大小" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.descriptionFontSize || '12px'}
+                                onChange={(value) => updateTheme({ descriptionFontSize: value })}
+                                size="small"
+                            >
+                                <Option value="10px">很小 (10px)</Option>
+                                <Option value="11px">小 (11px)</Option>
+                                <Option value="12px">标准 (12px)</Option>
+                                <Option value="13px">较大 (13px)</Option>
+                                <Option value="14px">大 (14px)</Option>
+                                <Option value="15px">很大 (15px)</Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item label="文字颜色" style={{ marginBottom: '12px' }}>
+                            <ColorPicker
+                                value={theme.descriptionColor || '#8c8c8c'}
+                                onChange={(color) => updateTheme({ descriptionColor: color?.toHexString() || '#8c8c8c' })}
+                                showText
+                                size="small"
+                            />
+                        </Form.Item>
+                    </div>
+                </div>
+
+                {/* 📋 表单标题 */}
+                <div style={{
+                    marginBottom: '32px',
+                    background: '#fff',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    border: '1px solid #f0f0f0'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginBottom: '16px',
+                        paddingBottom: '8px',
+                        borderBottom: '1px solid #f0f0f0'
+                    }}>
+                        <span style={{
+                            fontSize: '16px',
+                            marginRight: '8px',
+                            color: '#1890ff',
+                            display: 'inline-flex',
+                            alignItems: 'center'
+                        }}>
+                            {getLinearIcon('text')}
+                        </span>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#262626' }}>
+                            表单标题
+                        </h4>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <Form.Item label="对齐方式" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.formTitleAlign || 'center'}
+                                onChange={(value) => updateTheme({ formTitleAlign: value })}
+                                size="small"
+                            >
+                                <Option value="left">左对齐</Option>
+                                <Option value="center">居中</Option>
+                                <Option value="right">右对齐</Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item label="字体大小" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.formTitleFontSize || '28px'}
+                                onChange={(value) => updateTheme({ formTitleFontSize: value })}
+                                size="small"
+                            >
+                                <Option value="20px">小 (20px)</Option>
+                                <Option value="24px">较小 (24px)</Option>
+                                <Option value="28px">标准 (28px)</Option>
+                                <Option value="32px">较大 (32px)</Option>
+                                <Option value="36px">大 (36px)</Option>
+                                <Option value="40px">很大 (40px)</Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item label="字体颜色" style={{ marginBottom: '12px' }}>
+                            <ColorPicker
+                                value={theme.formTitleColor || theme.textColor || '#262626'}
+                                onChange={(color) => updateTheme({ formTitleColor: color?.toHexString() || '#262626' })}
+                                showText
+                                size="small"
+                            />
+                        </Form.Item>
+
+                        <Form.Item label="字体粗细" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.formTitleFontWeight || '600'}
+                                onChange={(value) => updateTheme({ formTitleFontWeight: value })}
+                                size="small"
+                            >
+                                <Option value="400">正常</Option>
+                                <Option value="500">中等</Option>
+                                <Option value="600">半粗体</Option>
+                                <Option value="700">粗体</Option>
+                                <Option value="800">很粗</Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item label="下边距" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.formTitleMarginBottom || '16px'}
+                                onChange={(value) => updateTheme({ formTitleMarginBottom: value })}
+                                size="small"
+                            >
+                                <Option value="8px">小 (8px)</Option>
+                                <Option value="12px">较小 (12px)</Option>
+                                <Option value="16px">标准 (16px)</Option>
+                                <Option value="20px">较大 (20px)</Option>
+                                <Option value="24px">大 (24px)</Option>
+                                <Option value="32px">很大 (32px)</Option>
+                            </Select>
+                        </Form.Item>
+                    </div>
+                </div>
+
+                {/* 📄 表单描述 */}
+                <div style={{
+                    background: '#fff',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    border: '1px solid #f0f0f0'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginBottom: '16px',
+                        paddingBottom: '8px',
+                        borderBottom: '1px solid #f0f0f0'
+                    }}>
+                        <span style={{
+                            fontSize: '16px',
+                            marginRight: '8px',
+                            color: '#1890ff',
+                            display: 'inline-flex',
+                            alignItems: 'center'
+                        }}>
+                            {getLinearIcon('file')}
+                        </span>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: '#262626' }}>
+                            表单描述
+                        </h4>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                        <Form.Item label="对齐方式" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.formDescriptionAlign || 'center'}
+                                onChange={(value) => updateTheme({ formDescriptionAlign: value })}
+                                size="small"
+                            >
+                                <Option value="left">左对齐</Option>
+                                <Option value="center">居中</Option>
+                                <Option value="right">右对齐</Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item label="字体大小" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.formDescriptionFontSize || '16px'}
+                                onChange={(value) => updateTheme({ formDescriptionFontSize: value })}
+                                size="small"
+                            >
+                                <Option value="12px">小 (12px)</Option>
+                                <Option value="14px">较小 (14px)</Option>
+                                <Option value="16px">标准 (16px)</Option>
+                                <Option value="18px">较大 (18px)</Option>
+                                <Option value="20px">大 (20px)</Option>
+                                <Option value="22px">很大 (22px)</Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item label="字体颜色" style={{ marginBottom: '12px' }}>
+                            <ColorPicker
+                                value={theme.formDescriptionColor || theme.descriptionColor || '#8c8c8c'}
+                                onChange={(color) => updateTheme({ formDescriptionColor: color?.toHexString() || '#8c8c8c' })}
+                                showText
+                                size="small"
+                            />
+                        </Form.Item>
+
+                        <Form.Item label="行高" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.formDescriptionLineHeight || '1.6'}
+                                onChange={(value) => updateTheme({ formDescriptionLineHeight: value })}
+                                size="small"
+                            >
+                                <Option value="1.2">紧凑 (1.2)</Option>
+                                <Option value="1.4">较紧 (1.4)</Option>
+                                <Option value="1.6">标准 (1.6)</Option>
+                                <Option value="1.8">较松 (1.8)</Option>
+                                <Option value="2.0">宽松 (2.0)</Option>
+                            </Select>
+                        </Form.Item>
+
+                        <Form.Item label="下边距" style={{ marginBottom: '12px' }}>
+                            <Select
+                                value={theme.formDescriptionMarginBottom || '32px'}
+                                onChange={(value) => updateTheme({ formDescriptionMarginBottom: value })}
+                                size="small"
+                            >
+                                <Option value="16px">小 (16px)</Option>
+                                <Option value="20px">较小 (20px)</Option>
+                                <Option value="24px">中等 (24px)</Option>
+                                <Option value="32px">标准 (32px)</Option>
+                                <Option value="40px">较大 (40px)</Option>
+                                <Option value="48px">大 (48px)</Option>
+                            </Select>
+                        </Form.Item>
+                    </div>
+                </div>
+            </Form>
+        </div>
     );
 
     // 新增逻辑设置
@@ -1378,7 +1743,7 @@ const PropertyPanel: React.FC = () => {
         };
 
         return (
-            <div style={{ padding: '8px 0' }}>
+            <div>
                 {/* 逻辑规则列表 */}
                 <div style={{ marginBottom: '16px' }}>
                     {logicRules.map((rule: any, index: number) => renderLogicRule(rule, index))}
@@ -1479,16 +1844,12 @@ const PropertyPanel: React.FC = () => {
             }
             size="small"
             style={{
-                height: '100%',
-                overflow: 'hidden',
                 borderRadius: '8px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
             }}
             styles={{
                 body: {
                     padding: '8px',
-                    height: 'calc(100% - 57px)',
-                    overflow: 'auto',
                     backgroundColor: '#f8f9fa'
                 },
                 header: {
@@ -1500,15 +1861,12 @@ const PropertyPanel: React.FC = () => {
             <Tabs
                 defaultActiveKey="component"
                 size="small"
-                style={{
-                    height: '100%'
-                }}
                 items={[
                     {
                         key: 'component',
                         label: (
                             <span style={{ fontWeight: 500 }}>
-                                <AppstoreOutlined style={{ marginRight: 6 }} />
+                                <AppstoreOutlined style={{ marginRight: 8 }} />
                                 组件设置
                             </span>
                         ),
@@ -1518,7 +1876,7 @@ const PropertyPanel: React.FC = () => {
                         key: 'logic',
                         label: (
                             <span style={{ fontWeight: 500 }}>
-                                <BranchesOutlined style={{ marginRight: 6 }} />
+                                <BranchesOutlined style={{ marginRight: 8 }} />
                                 逻辑设置
                             </span>
                         ),
@@ -1528,7 +1886,7 @@ const PropertyPanel: React.FC = () => {
                         key: 'layout-theme',
                         label: (
                             <span style={{ fontWeight: 500 }}>
-                                <FormatPainterOutlined style={{ marginRight: 6 }} />
+                                <FormatPainterOutlined style={{ marginRight: 8 }} />
                                 布局主题
                             </span>
                         ),

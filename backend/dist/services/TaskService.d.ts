@@ -1,9 +1,13 @@
 import { ITask } from '../models/Task';
 declare class TaskService {
+    private userService;
+    private specificationService;
+    private servicePricingService;
+    private serviceProcessService;
     createTask(taskData: Partial<ITask>): Promise<ITask>;
     createTasks(tasksData: Partial<ITask>[]): Promise<ITask[]>;
     getTaskById(id: string): Promise<ITask | null>;
-    getTasksByProject(projectId: string): Promise<ITask[]>;
+    getTasksByProject(projectId: string): Promise<any[]>;
     getTasksByDesigner(designerId: string, status?: string): Promise<ITask[]>;
     getTasks(query: {
         page?: number;
@@ -21,7 +25,7 @@ declare class TaskService {
     updateTask(id: string, updateData: Partial<ITask>, updatedBy: string): Promise<ITask | null>;
     updateTaskStatus(id: string, status: string, updatedBy: string, progress?: number): Promise<ITask | null>;
     updateTaskSettlementStatus(id: string, status: string, updatedBy: string): Promise<ITask | null>;
-    assignDesigners(taskId: string, designerIds: string[], updatedBy: string): Promise<ITask | null>;
+    assignDesigners(taskId: string, mainDesignerIds: string[], assistantDesignerIds: string[], updatedBy: string): Promise<ITask | null>;
     deleteTask(id: string, deletedBy: string): Promise<boolean>;
     deleteTasksByProject(projectId: string): Promise<number>;
     getTaskStats(projectId?: string, designerId?: string): Promise<{

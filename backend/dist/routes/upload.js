@@ -29,6 +29,7 @@ const fileFilter = (req, file, cb) => {
         'image/jpeg',
         'image/png',
         'image/gif',
+        'image/webp',
         'application/pdf',
         'text/plain',
         'application/msword',
@@ -107,6 +108,33 @@ router.post('/business-license', createUpload('enterprises').single('businessLic
         return res.status(500).json({
             success: false,
             message: '营业执照上传失败',
+            error: error instanceof Error ? error.message : '未知错误'
+        });
+    }
+});
+router.post('/bank-permit', createUpload('enterprises').single('bankPermit'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: '没有上传开户许可证文件'
+            });
+        }
+        return res.json({
+            success: true,
+            message: '开户许可证上传成功',
+            data: {
+                filename: req.file.filename,
+                originalname: req.file.originalname,
+                size: req.file.size,
+                url: `/uploads/enterprises/${req.file.filename}`
+            }
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: '开户许可证上传失败',
             error: error instanceof Error ? error.message : '未知错误'
         });
     }
@@ -414,6 +442,51 @@ router.post('/department', createUpload('departments').single('departmentFile'),
         });
     }
 });
+const articleImageFilter = (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+    }
+    else {
+        cb(new Error('只支持 JPG、PNG、GIF、WebP 格式的图片'));
+    }
+};
+const createArticleImageUpload = () => {
+    return (0, multer_1.default)({
+        storage: createStorage('article-image'),
+        fileFilter: articleImageFilter,
+        limits: {
+            fileSize: 5 * 1024 * 1024
+        }
+    });
+};
+router.post('/article-image', createArticleImageUpload().single('file'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: '没有上传图片文件'
+            });
+        }
+        return res.json({
+            success: true,
+            message: '文章图片上传成功',
+            data: {
+                filename: req.file.filename,
+                originalname: req.file.originalname,
+                size: req.file.size,
+                url: `/uploads/article-image/${req.file.filename}`
+            }
+        });
+    }
+    catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: '文章图片上传失败',
+            error: error instanceof Error ? error.message : '未知错误'
+        });
+    }
+});
 router.use((error, req, res, next) => {
     if (error instanceof multer_1.default.MulterError) {
         if (error.code === 'LIMIT_FILE_SIZE') {
@@ -434,6 +507,12 @@ router.use((error, req, res, next) => {
             error: error.message
         });
     }
+    if (error.message && error.message.includes('只支持')) {
+        return res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
     next(error);
 });
 router.delete('/:category/:filename', (req, res) => {
@@ -448,9 +527,9 @@ router.delete('/:category/:filename', (req, res) => {
             });
         }
         else {
-            return res.status(404).json({
-                success: false,
-                message: '文件不存在'
+            return res.json({
+                success: true,
+                message: '文件已不存在'
             });
         }
     }

@@ -279,6 +279,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           key: '/settings/login',
           label: '登录设置',
         },
+        {
+          key: '/settings/email',
+          label: '邮件设置',
+        },
       ],
     },
   ]

@@ -320,6 +320,7 @@ export interface ThemeConfig {
     fontSize: string;
     // 新增主题属性
     textColor?: string; // 文字颜色
+    buttonTextColor?: string; // 按钮文本颜色
     labelColor?: string; // 标签颜色
     labelFontSize?: string; // 标签字体大小
     boxShadow?: string; // 组件阴影
@@ -329,6 +330,18 @@ export interface ThemeConfig {
     descriptionPosition?: 'bottom' | 'top' | 'right'; // 说明文字位置
     descriptionFontSize?: string; // 说明文字字体大小
     descriptionColor?: string; // 说明文字颜色
+    // 表单标题设置
+    formTitleAlign?: 'left' | 'center' | 'right'; // 标题对齐方式
+    formTitleFontSize?: string; // 标题字体大小
+    formTitleColor?: string; // 标题颜色
+    formTitleFontWeight?: string; // 标题字重
+    formTitleMarginBottom?: string; // 标题下边距
+    // 表单描述设置
+    formDescriptionAlign?: 'left' | 'center' | 'right'; // 描述对齐方式
+    formDescriptionFontSize?: string; // 描述字体大小
+    formDescriptionColor?: string; // 描述颜色
+    formDescriptionLineHeight?: string; // 描述行高
+    formDescriptionMarginBottom?: string; // 描述下边距
 }
 
 // 表单配置

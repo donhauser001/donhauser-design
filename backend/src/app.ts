@@ -30,6 +30,7 @@ import articleCategoryRoutes from './routes/articleCategories';
 import articleTagRoutes from './routes/articleTags';
 import formCategoryRoutes from './routes/formCategories';
 import formRoutes from './routes/forms';
+import emailSettingRoutes from './routes/emailSettings';
 import authRoutes from './routes/auth';
 
 // 加载环境变量
@@ -136,6 +137,7 @@ app.use('/api/article-categories', articleCategoryRoutes);
 app.use('/api/article-tags', articleTagRoutes);
 app.use('/api/form-categories', formCategoryRoutes);
 app.use('/api/forms', formRoutes);
+app.use('/api/email-settings', emailSettingRoutes);
 
 // 错误处理中间件
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

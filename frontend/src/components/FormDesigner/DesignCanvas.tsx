@@ -11,12 +11,14 @@ import SortableComponent from './components/SortableComponent';
 import FormComponentRenderer from './FormComponentRenderer';
 import LogicEngineProvider from './LogicEngineProvider';
 import { globalLogicEngine } from './utils/logicEngine';
+import { getButtonIcon } from './utils/iconUtils';
 
 interface DesignCanvasProps {
     isPreviewMode?: boolean;
+    formData?: any; // 表单数据，包含提交按钮配置
 }
 
-const DesignCanvas: React.FC<DesignCanvasProps> = ({ isPreviewMode = false }) => {
+const DesignCanvas: React.FC<DesignCanvasProps> = ({ isPreviewMode = false, formData: formSettings }) => {
     const {
         components,
         selectComponent,
@@ -363,12 +365,9 @@ const DesignCanvas: React.FC<DesignCanvasProps> = ({ isPreviewMode = false }) =>
     return (
         <Card
             title={isPreviewMode ? "表单预览" : "设计画布"}
-            style={{ height: '100%', overflow: 'hidden' }}
             styles={{
                 body: {
                     padding: '16px',
-                    height: 'calc(100% - 57px)',
-                    overflow: 'auto',
                     backgroundColor: isPreviewMode ? '#fff' : '#fafafa'
                 }
             }}
@@ -417,6 +416,38 @@ const DesignCanvas: React.FC<DesignCanvasProps> = ({ isPreviewMode = false }) =>
                     // 预览模式：使用逻辑引擎提供者包装组件
                     <LogicEngineProvider isPreviewMode={isPreviewMode}>
                         <div style={{ position: 'relative' }}>
+                            {/* 表单标题和描述 */}
+                            {(formSettings?.showFormTitle || formSettings?.showFormDescription) && (
+                                <div style={{
+                                    marginBottom: theme.formDescriptionMarginBottom || '32px',
+                                    paddingBottom: '24px',
+                                    borderBottom: '1px solid #f0f0f0'
+                                }}>
+                                    {formSettings?.showFormTitle && formSettings?.name && (
+                                        <h1 style={{
+                                            margin: `0 0 ${theme.formTitleMarginBottom || '16px'} 0`,
+                                            fontSize: theme.formTitleFontSize || '28px',
+                                            fontWeight: theme.formTitleFontWeight || 600,
+                                            color: theme.formTitleColor || theme.textColor || '#262626',
+                                            textAlign: theme.formTitleAlign || 'center'
+                                        }}>
+                                            {formSettings.name}
+                                        </h1>
+                                    )}
+                                    {formSettings?.showFormDescription && formSettings?.description && (
+                                        <p style={{
+                                            margin: 0,
+                                            fontSize: theme.formDescriptionFontSize || '16px',
+                                            color: theme.formDescriptionColor || theme.descriptionColor || '#8c8c8c',
+                                            textAlign: theme.formDescriptionAlign || 'center',
+                                            lineHeight: theme.formDescriptionLineHeight || 1.6
+                                        }}>
+                                            {formSettings.description}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
                             {rootComponents.map((component) => (
                                 <div key={component.id} style={{ marginBottom: getComponentSpacing() }}>
                                     <FormComponentRenderer component={component} isDesignMode={false} />
@@ -428,17 +459,45 @@ const DesignCanvas: React.FC<DesignCanvasProps> = ({ isPreviewMode = false }) =>
                                 marginTop: '32px',
                                 paddingTop: '24px',
                                 borderTop: '1px solid #f0f0f0',
-                                textAlign: 'center'
+                                textAlign: formSettings?.submitButtonPosition || 'center'
                             }}>
+                                {/* 添加样式覆盖 */}
+                                <style>
+                                    {`
+                                        .custom-submit-button.ant-btn-primary {
+                                            color: ${theme.buttonTextColor || '#ffffff'} !important;
+                                            background-color: ${theme.primaryColor || '#1890ff'} !important;
+                                            border-color: ${theme.primaryColor || '#1890ff'} !important;
+                                        }
+                                        .custom-submit-button.ant-btn-primary:hover {
+                                            color: ${theme.buttonTextColor || '#ffffff'} !important;
+                                            background-color: ${theme.primaryColor || '#1890ff'} !important;
+                                            border-color: ${theme.primaryColor || '#1890ff'} !important;
+                                            opacity: 0.8;
+                                        }
+                                        .custom-submit-button.ant-btn-primary:focus {
+                                            color: ${theme.buttonTextColor || '#ffffff'} !important;
+                                            background-color: ${theme.primaryColor || '#1890ff'} !important;
+                                            border-color: ${theme.primaryColor || '#1890ff'} !important;
+                                        }
+                                        .custom-submit-button .anticon {
+                                            color: ${theme.buttonTextColor || '#ffffff'} !important;
+                                        }
+                                    `}
+                                </style>
                                 <Button
                                     type="primary"
                                     size="large"
-                                    icon={<SendOutlined />}
+                                    icon={formSettings?.submitButtonIcon ? getButtonIcon(formSettings.submitButtonIcon) : <SendOutlined />}
                                     loading={isSubmitting}
                                     onClick={handleSubmit}
-                                    style={{ minWidth: '120px' }}
+                                    className="custom-submit-button"
+                                    style={{
+                                        minWidth: '120px',
+                                        transition: 'all 0.3s ease'
+                                    }}
                                 >
-                                    {isSubmitting ? '提交中...' : '提交表单'}
+                                    {isSubmitting ? '提交中...' : (formSettings?.submitButtonText || '提交表单')}
                                 </Button>
                             </div>
                         </div>

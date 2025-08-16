@@ -22,6 +22,7 @@ import articleCategoryRoutes from './articleCategories';
 import articleTagRoutes from './articleTags';
 import formCategoryRoutes from './formCategories';
 import formRoutes from './forms';
+import emailSettingRoutes from './emailSettings';
 
 const router = Router();
 
@@ -92,5 +93,8 @@ router.use('/form-categories', formCategoryRoutes);
 
 // 表单管理路由
 router.use('/forms', formRoutes);
+
+// 邮件设置路由
+router.use('/email-settings', emailSettingRoutes);
 
 export default router; 

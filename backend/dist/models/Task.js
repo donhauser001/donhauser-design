@@ -38,7 +38,8 @@ const TaskSchema = new mongoose_1.Schema({
     taskName: { type: String, required: true },
     projectId: { type: String, required: true },
     serviceId: { type: String, required: true },
-    assignedDesigners: [{ type: String }],
+    mainDesigners: [{ type: String }],
+    assistantDesigners: [{ type: String }],
     specificationId: { type: String },
     quantity: { type: Number, required: true },
     unit: { type: String, required: true },
@@ -62,9 +63,11 @@ const TaskSchema = new mongoose_1.Schema({
     },
     priority: {
         type: String,
-        enum: ['low', 'medium', 'high', 'urgent'],
+        enum: ['low', 'medium', 'high', 'urgent', 'waiting', 'on-hold', 'completed'],
         default: 'medium'
     },
+    processStepId: { type: String },
+    processStepName: { type: String },
     progress: { type: Number, default: 0, min: 0, max: 100 },
     startDate: { type: Date },
     dueDate: { type: Date },

@@ -192,6 +192,21 @@ class UserService {
             throw new Error('获取所有用户失败');
         }
     }
+    async getEmployeesAndAdmins() {
+        try {
+            const users = await User_1.default.find({
+                role: { $in: ['员工', '超级管理员'] },
+                status: 'active'
+            }).lean();
+            return users.map(user => ({
+                ...user,
+                id: user._id.toString()
+            }));
+        }
+        catch (error) {
+            throw new Error('获取员工和管理员失败');
+        }
+    }
     async isUsernameExists(username) {
         try {
             const user = await User_1.default.findOne({ username });
@@ -223,6 +238,16 @@ class UserService {
         }
         catch (error) {
             throw new Error('检查邮箱失败');
+        }
+    }
+    async updateLastLogin(id) {
+        try {
+            await User_1.default.findByIdAndUpdate(id, {
+                lastLogin: new Date().toISOString().split('T')[0]
+            });
+        }
+        catch (error) {
+            throw new Error('更新最后登录时间失败');
         }
     }
 }

@@ -13,8 +13,10 @@ export declare class UserService {
     updateUserPermissions(id: string, permissionData: UpdateUserPermissionsRequest): Promise<any | null>;
     toggleUserStatus(id: string): Promise<any | null>;
     getAllUsers(): Promise<any[]>;
+    getEmployeesAndAdmins(): Promise<any[]>;
     isUsernameExists(username: string): Promise<boolean>;
     getUserByEmail(email: string): Promise<any | null>;
     isEmailExists(email: string): Promise<boolean>;
+    updateLastLogin(id: string): Promise<void>;
 }
 //# sourceMappingURL=UserService.d.ts.map

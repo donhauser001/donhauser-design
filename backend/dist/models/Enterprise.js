@@ -58,6 +58,14 @@ const EnterpriseSchema = new mongoose_1.Schema({
         type: String,
         trim: true
     },
+    bankPermit: {
+        type: String,
+        trim: true
+    },
+    bankPermitNumber: {
+        type: String,
+        trim: true
+    },
     legalRepresentative: {
         type: String,
         required: true,

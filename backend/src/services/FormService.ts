@@ -16,6 +16,45 @@ export interface UpdateFormData {
     categoryId?: string
     content?: any
     status?: 'draft' | 'published' | 'disabled'
+    allowGuestView?: boolean
+    allowGuestSubmit?: boolean
+    showFormTitle?: boolean
+    showFormDescription?: boolean
+    submitButtonText?: string
+    submitButtonPosition?: 'left' | 'center' | 'right'
+    submitButtonIcon?: string
+    enableDraft?: boolean
+    requireConfirmation?: boolean
+    redirectAfterSubmit?: boolean
+    redirectUrl?: string
+    settings?: {
+        security?: {
+            autoSave?: boolean
+            autoSaveInterval?: number
+            enableFormAutoSave?: boolean
+            formAutoSaveInterval?: number
+            saveTrigger?: 'interval' | 'change' | 'both'
+            saveLocation?: 'localStorage' | 'server' | 'both'
+            autoSaveNotification?: boolean
+        }
+        submission?: {
+            enableSubmissionLimit?: boolean
+            maxSubmissions?: number
+            limitType?: 'ip' | 'user'
+            resetPeriod?: 'never' | 'daily' | 'weekly' | 'monthly'
+            limitMessage?: string
+        }
+        expiry?: {
+            enableExpiry?: boolean
+            expiryType?: 'date' | 'duration' | 'submissions'
+            expiryDate?: string | null
+            expiryDuration?: number
+            expirySubmissions?: number
+            expiryMessage?: string
+        }
+        layout?: any
+        theme?: any
+    }
 }
 
 export interface FormQuery {
@@ -118,7 +157,29 @@ class FormService {
             await this.updateCategoryFormCount(data.categoryId, 1)
         }
 
-        return Form.findByIdAndUpdate(id, data, { new: true })
+        // 验证submitButtonPosition字段
+        if (data.submitButtonPosition && !['left', 'center', 'right'].includes(data.submitButtonPosition)) {
+            throw new Error('Invalid submitButtonPosition value')
+        }
+
+        // 验证status字段
+        if (data.status && !['draft', 'published', 'disabled'].includes(data.status)) {
+            throw new Error('Invalid status value')
+        }
+
+        console.log('更新表单数据:', {
+            id,
+            name: data.name,
+            status: data.status,
+            allowGuestView: data.allowGuestView,
+            allowGuestSubmit: data.allowGuestSubmit,
+            submitButtonText: data.submitButtonText,
+            submitButtonPosition: data.submitButtonPosition,
+            submitButtonIcon: data.submitButtonIcon,
+            hasSettings: !!data.settings
+        })
+
+        return Form.findByIdAndUpdate(id, data, { new: true, runValidators: true })
             .populate('categoryId', 'name color')
             .populate('createdBy', 'username realName')
     }

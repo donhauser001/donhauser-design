@@ -152,8 +152,7 @@ const ComponentLibrary: React.FC = () => {
         <Card
             title="组件库"
             size="small"
-            style={{ height: '100%', overflow: 'hidden' }}
-            styles={{ body: { padding: '12px', height: 'calc(100% - 57px)', overflow: 'auto' } }}
+            styles={{ body: { padding: '12px' } }}
         >
             <Collapse
                 defaultActiveKey={['basic']}
